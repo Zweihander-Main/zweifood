@@ -4,8 +4,84 @@
 		"selected_items":
 		[
 			[
+				"get",
+				"getElementsByName〔function〕"
+			],
+			[
+				"price",
+				"price_level"
+			],
+			[
+				"open",
+				"open_now"
+			],
+			[
 				"obs",
+				"observable"
+			],
+			[
+				"cur",
+				"currentViewModel"
+			],
+			[
+				"last",
+				"lastOpenMapMarker"
+			],
+			[
+				"newLoc",
+				"newLocOpenNow"
+			],
+			[
+				"obser",
+				"observable"
+			],
+			[
+				"attr",
+				"attributionsToPush"
+			],
+			[
+				"observ",
 				"observableArray"
+			],
+			[
+				"curren",
+				"currentMapBounds"
+			],
+			[
+				"getRes",
+				"getRestaurantsFromGooglePlacesAPICallArray"
+			],
+			[
+				"call",
+				"callArrayIndex"
+			],
+			[
+				"view",
+				"viewModel1"
+			],
+			[
+				"googl",
+				"googleSearchType"
+			],
+			[
+				"goo",
+				"googleSearchType"
+			],
+			[
+				"radar",
+				"radarSearchIDArray"
+			],
+			[
+				"google",
+				"googleSearchID〔argument〕"
+			],
+			[
+				"marker",
+				"marker"
+			],
+			[
+				"ob",
+				"observable"
 			],
 			[
 				"fun",
@@ -23,6 +99,33 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "app/index.html",
+			"settings":
+			{
+				"buffer_size": 3391,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "app/css/style.css",
+			"settings":
+			{
+				"buffer_size": 3345,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "var app = (function() {\n\n	function isScrolledIntoView( element ) {\n	    var elementTop    = element.getBoundingClientRect().top,\n	        elementBottom = element.getBoundingClientRect().bottom;\n\n	    return elementTop >= 0 && elementBottom <= window.innerHeight;\n	}\n\n	ko.bindingHandlers.updateScroll = {\n		update: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {\n			var value = ko.unwrap(valueAccessor());\n			if (value && !isScrolledIntoView(element)) {\n				$('.marker-list').animate({scrollTop: $(element).position().top + $('.marker-list').scrollTop()});\n			}\n		}\n	};\n\n    function Location(currentViewModel, marker, searchType, id, open_now, rating, types, vicinity, price_level, icon) {\n        var self = this;\n        self.marker = ko.observable(marker);\n        self.googleSearchType = ko.observable(searchType);\n        //Radar\n        self.id = {};\n        self.id.placeId = id;\n        //Nearby\n        self.isInViewOnMap = ko.observable(true);\n        self.googleOpenNow = ko.observable(open_now);\n        self.googleRating = ko.observable(rating);\n        self.googleTypes = ko.observableArray(types);\n        self.googleVicinity = ko.observable(vicinity);\n        self.googlePriceLevel = ko.observable(price_level);\n        self.googleIconURL = ko.observable(icon);\n        //Places\n        self.googleAdrAddress = ko.observable();\n        self.googleFormattedPhone = ko.observable();\n        self.googleSingleLocAttributionsArray = ko.observableArray([]);\n        self.googleOpeningHoursObject = ko.observable();\n        self.googlePhotos = ko.observableArray([]);\n        self.googleReviews  = ko.observableArray([]);\n        self.googleTotalRatings = ko.observable();\n        self.googleUTCOffset = ko.observable();\n        self.googleURL = ko.observable();\n\n        self.isSelected = ko.observable(false);\n\n        self.googleSearchType.subscribe(function(newValue) {\n            if ((newValue === \"Nearby\") || (newValue === \"Places\")) {\n    			self.marker().setOpacity(1.0);\n    			self.marker(self.marker());\n            }\n        });\n\n        self.listable = ko.computed(function() {\n        	if (((self.googleSearchType() === \"Nearby\") || (self.googleSearchType() === \"Places\")) && (self.isInViewOnMap() === true)) {\n        		if (typeof(searchQuery) !== \"undefined\") {\n	        		if(self.marker().title.toLowerCase().indexOf(currentViewModel.searchQuery.toLowerCase()) >= 0) {\n	        		        viewModel.beers.push(beers[x]);\n	        		      }\n	        		  } else {\n        		return true;\n        	}\n        	} else {\n        		return false;\n        	}\n        });\n\n        self.isItOpenRightNow = ko.computed(function() {\n        	if (self.googleOpenNow() === true) {\n        		return \"Open\";\n        	} else if (self.googleOpenNow() === false) {\n        		return \"Closed\";\n        	}\n        });\n\n        self.infoWindowContent = ko.computed(function() {\n        	var contentString = self.marker().title + \"<br>\";\n	        contentString += self.isItOpenRightNow() + \"<br>\";\n	        contentString += \"Rating: \" + self.googleRating() + \"<br>\";\n	        contentString += \"Types: \" + self.googleTypes() + \"<br>\";\n	        contentString += \"Price Level: \" + self.googlePriceLevel() + \"<br>\";\n	        contentString += '<img src = \"' + self.googleIconURL() + '\"><br>';\n	        contentString += \"Address: \" + self.googleAdrAddress() + \"<br>\";\n	        contentString += \"Phone: \" + self.googleFormattedPhone() + \"<br>\";\n	        //contentString += \"Opening Hours: \" + JSON.stringify(self.googleOpeningHoursObject()) + \"<br>\";\n	        //contentString += \"Photos: \" + JSON.stringify(self.googlePhotos()) + \"<br>\";\n	        //contentString += \"Reviews: \" + JSON.stringify(self.googleReviews()) + \"<br>\";\n	        contentString += \"Total Ratings: \" + self.googleTotalRatings() + \"<br>\";\n	        contentString += \"URL: \" + self.googleURL() + \"<br>\";\n        	return contentString;\n        });\n\n        self.infoWindow = new google.maps.InfoWindow({\n        	    content: self.infoWindowContent()\n        	  });\n\n\n\n        self.infoWindowContent.subscribe(function(newValue) {\n        	self.infoWindow.setContent(newValue);\n        });\n\n        self.infoWindowContent.extend({ rateLimit: 50 });\n\n\n\n        self.marker().addListener('click', function() {\n        	self.getDetailedGooglePlacesAPIInfo();\n        	if (typeof(currentViewModel.lastOpenLocationObject) !== 'undefined') {\n        		currentViewModel.lastOpenLocationObject.infoWindow.close();\n        		currentViewModel.lastOpenLocationObject.isSelected(false);\n        	}\n        	self.isSelected(true);\n	        self.infoWindow.open(self.marker().map, self.marker());\n	        currentViewModel.lastOpenLocationObject = self;\n	    });\n\n	    self.listWasClicked = function() {\n	    	new google.maps.event.trigger(self.marker(), 'click' );\n	    	currentViewModel.mainMap.panTo(self.marker().getPosition());\n	    };\n\n	    self.getDetailedGooglePlacesAPIInfo = function () {\n	    	currentViewModel.service.getDetails(self.id, function(result, status) {\n	    	      if (status !== google.maps.places.PlacesServiceStatus.OK) {\n	    	        console.error(\"Google Places Search Error: \" + status);\n	    	        return;\n	    	      }\n	    	      self.marker().setTitle(result.name);\n	    	      self.googleSearchType(\"Places\");\n	    	      self.googleVicinity(result.vicinity);\n	    	      self.googleAdrAddress(result.adr_address);\n	    	      self.googleFormattedPhone(result.formatted_phone_number);\n	    	      self.googleSingleLocAttributionsArray.push(result.html_attributions);\n	    	      self.googleOpeningHoursObject(result.opening_hours);\n	    	      if (typeof(result.opening_hours) !== \"undefined\") {\n	    	      	self.googleOpenNow(result.opening_hours.open_now);\n	    	      }\n	    	      self.googleRating(result.rating);\n	    	      self.googlePriceLevel(result.price_level);\n	    	      self.googleTypes(result.types);\n	    	      self.googleIconURL(result.icon);\n	    	      self.googlePhotos(result.photos);\n	    	      self.googleReviews(result.reviews);\n	    	      self.googleTotalRatings(result.user_ratings_total);\n	    	      self.googleUTCOffset(result.utc_offset);\n	    	      self.googleURL(result.url);\n\n	    	    });\n	    };\n    }\n\n    function ViewModel(map) {\n        var self = this;\n        self.mainMap = map;\n        // Specify location, radius and place types for your Places API search.\n        self.markedLocations = ko.observableArray([]);\n        //myViewModel.personName.extend({ rateLimit: 50 });\n        self.nearbySearchIDArray = [];\n        self.allSearchIDArray = [];\n\n        self.getRestaurantsFromGoogleMapsAPICallArray = [];\n\n        self.attributionsArray = ko.observableArray([]);\n\n        self.listableEntries = ko.computed(function() {\n            return ko.utils.arrayFilter(self.markedLocations(), function(item) {\n                return item.listable() === true;\n            });\n        }, ViewModel);\n\n        self.lastOpenLocationObject;\n\n        self.service = new google.maps.places.PlacesService(self.mainMap);\n\n        self.searchQuery = ko.observable();\n\n        self.checkIfOnMap = function(currentBounds) {\n        	for (var i = 0; i<self.markedLocations().length; i++) {\n        		if (currentBounds.contains(self.markedLocations()[i].marker().getPosition()) === false) {\n        			self.markedLocations()[i].isInViewOnMap(false);\n        		} else {\n        			self.markedLocations()[i].isInViewOnMap(true);\n        		}\n        	}\n        };\n\n        self.getRestaurantsFromGoogleMapsAPI = function(callArrayIndex) {\n            var currentMapBounds = self.mainMap.getBounds();\n\n            var request = {\n                bounds: currentMapBounds,\n                types: ['restaurant']\n            };\n\n            self.service.radarSearch(request, processRadarResults);\n            self.service.nearbySearch(request, processNearbyResults);\n\n            function processNearbyResults(results, status, pagination) {\n                if (status !== google.maps.places.PlacesServiceStatus.OK) {\n                    console.log(\"Google Maps Nearby Search Error: \" + status);\n                    return;\n                } else {\n                    var markerList = [];\n                    for (var i = 0; i < results.length; i++) {\n                        if (self.nearbySearchIDArray.indexOf(results[i].place_id) === -1) {\n                        	var newLocOpenNow = results[i].opening_hours;\n	                            if (newLocOpenNow !== undefined) {\n	                            	newLocOpenNow = newLocOpenNow.open_now;\n	                         }\n                        	if (self.allSearchIDArray.indexOf(results[i].place_id) === -1) {\n	                            var marker = new google.maps.Marker({\n	                                map: self.mainMap,\n	                                title: results[i].name,\n	                                position: results[i].geometry.location,\n	                                opacity: 1.0\n	                            });\n	                            var newLoc = new Location(self, marker, \"Nearby\", results[i].place_id, newLocOpenNow, results[i].rating, results[i].types, results[i].vicinity, results[i].price_level, results[i].icon);\n	                            markerList.push(newLoc);\n	                            self.nearbySearchIDArray.push(results[i].place_id);\n	                            self.allSearchIDArray.push(results[i].place_id);\n                      	    } else {\n                      	    	for (var j = 0; j<self.markedLocations().length; j++) {\n                      	    		if (self.markedLocations()[j].id.placeId === results[i].place_id) {\n                      	    			self.markedLocations()[j].marker().setTitle(results[i].name);\n                      	    			self.markedLocations()[j].googleSearchType(\"Nearby\");\n                      	    			self.markedLocations()[j].googleOpenNow(newLocOpenNow);\n                      	    			self.markedLocations()[j].googleRating(results[i].rating);\n                      	    			self.markedLocations()[j].googleTypes(results[i].types);\n                      	    			self.markedLocations()[j].googleVicinity(results[i].vicinity);\n                      	    			self.markedLocations()[j].googlePriceLevel(results[i].price_level);\n                      	    		}\n                      	    	}\n                      	    }\n                      	    if (results[i].html_attributions.length !== 0)  {\n                      	    	console.log(\"HTML Attribution Actually Found\");\n                      	    	var attributionsToPush = [];\n                      	    	for (var z = 0; z<results[i].html_attributions.length; z++) {\n                      	    		if (self.attributionsArray.indexOf(results[i].html_attributions[z]) === -1) {\n                      	    			attributionsToPush.push(results[i].html_attributions[z]);\n                      	    		}\n                      	    	}\n                      	    	self.attributionsArray.push.apply(self.attributionsArray, attributionsToPush);\n                      	    }\n                        }\n                    }\n                    self.markedLocations.push.apply(self.markedLocations, markerList);\n                    if (pagination.hasNextPage) {\n                        setTimeout(function() {\n                        	if(self.getRestaurantsFromGoogleMapsAPICallArray[callArrayIndex] === true) {\n                            	pagination.nextPage();\n                        	}\n                        }, 2000);\n\n                    }\n                }\n\n\n            }\n\n            function processRadarResults(results, status) {\n                if (status !== google.maps.places.PlacesServiceStatus.OK) {\n                    console.log(\"Google Maps Radar Search Error: \" + status);\n                    return;\n                } else {\n                    var markerList = [];\n                    for (var i = 0; i < results.length; i++) {\n\n                        if (self.allSearchIDArray.indexOf(results[i].place_id) === -1) {\n                            var marker = new google.maps.Marker({\n                                map: self.mainMap,\n                                position: results[i].geometry.location,\n                                opacity: 0.3\n                            });\n                            var newLoc = new Location(self, marker, \"Radar\", results[i].place_id);\n                            markerList.push(newLoc);\n                            self.allSearchIDArray.push(results[i].place_id);\n                            if (results[i].html_attributions.length !== 0)  {\n                            	console.log(\"HTML Attribution Actually Found\");\n                            	var attributionsToPush = [];\n                            	for (var z = 0; z<results[i].html_attributions.length; z++) {\n                            		if (self.attributionsArray.indexOf(results[i].html_attributions[z]) === -1) {\n                            			attributionsToPush.push(results[i].html_attributions[z]);\n                            		}\n                            	}\n                            	self.attributionsArray.push.apply(self.attributionsArray, attributionsToPush);\n                            }\n                        }\n                    }\n                    self.markedLocations.push.apply(self.markedLocations, markerList);\n                }\n            }\n\n        };\n    }\n\n    function createMap() {\n        var defaultLatLng = new google.maps.LatLng(41.699, -73.925),\n            defaultZoom = 15,\n            mapElement = document.getElementById('mapDiv'),\n            defaultStyle = [{\n                \"featureType\": \"water\",\n                \"elementType\": \"geometry\",\n                \"stylers\": [{\n                    \"color\": \"#193341\"\n                }]\n            }, {\n                \"featureType\": \"landscape\",\n                \"elementType\": \"geometry\",\n                \"stylers\": [{\n                    \"color\": \"#2c5a71\"\n                }]\n            }, {\n                \"featureType\": \"road\",\n                \"elementType\": \"geometry\",\n                \"stylers\": [{\n                    \"color\": \"#29768a\"\n                }, {\n                    \"lightness\": -37\n                }]\n            }, {\n                \"featureType\": \"poi\",\n                \"elementType\": \"geometry\",\n                \"stylers\": [{\n                    \"color\": \"#406d80\"\n                }]\n            }, {\n                \"featureType\": \"transit\",\n                \"elementType\": \"geometry\",\n                \"stylers\": [{\n                    \"color\": \"#406d80\"\n                }]\n            }, {\n                \"elementType\": \"labels.text.stroke\",\n                \"stylers\": [{\n                    \"visibility\": \"on\"\n                }, {\n                    \"color\": \"#3e606f\"\n                }, {\n                    \"weight\": 2\n                }, {\n                    \"gamma\": 0.84\n                }]\n            }, {\n                \"elementType\": \"labels.text.fill\",\n                \"stylers\": [{\n                    \"color\": \"#ffffff\"\n                }]\n            }, {\n                \"featureType\": \"administrative\",\n                \"elementType\": \"geometry\",\n                \"stylers\": [{\n                    \"weight\": 0.6\n                }, {\n                    \"color\": \"#1a3541\"\n                }]\n            }, {\n                \"elementType\": \"labels.icon\",\n                \"stylers\": [{\n                    \"visibility\": \"off\"\n                }]\n            }, {\n                \"featureType\": \"poi.park\",\n                \"elementType\": \"geometry\",\n                \"stylers\": [{\n                    \"color\": \"#2c5a71\"\n                }]\n            }];\n\n        var mapOptions = {\n            center: defaultLatLng,\n            zoom: defaultZoom,\n            mapTypeId: google.maps.MapTypeId.ROADMAP,\n            styles: defaultStyle\n        };\n\n        var mainGoogleMap = new google.maps.Map(mapElement, mapOptions);\n        var viewModel1 = new ViewModel(mainGoogleMap);\n        ko.applyBindings(viewModel1);\n\n        var lastBoundChange = 0;\n        google.maps.event.addListener(mainGoogleMap, 'bounds_changed', function() {\n        	if (Date.now() - lastBoundChange > 50) {\n        		viewModel1.checkIfOnMap(viewModel1.mainMap.getBounds());\n	            if (Date.now() - lastBoundChange > 1000) {\n	            	if (typeof(viewModel1.getRestaurantsFromGoogleMapsAPICallArray[viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1]) !== 'undefined') {\n	            		viewModel1.getRestaurantsFromGoogleMapsAPICallArray[viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1] = false;\n	            	}\n	            	viewModel1.getRestaurantsFromGoogleMapsAPICallArray.push(true);\n	                viewModel1.getRestaurantsFromGoogleMapsAPI(viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1);\n	                lastBoundChange = Date.now();\n	            }\n        	}\n        });\n    }\n\n\n    return {\n        createMap: createMap\n    };\n\n}());",
+			"file": "app/js/app.js",
+			"file_size": 16750,
+			"file_write_time": 130919571038273335,
+			"settings":
+			{
+				"buffer_size": 17059,
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -31,10 +134,22 @@
 	"build_varint": "",
 	"command_palette":
 	{
-		"height": 469.0,
-		"last_filter": "enable",
+		"height": 301.0,
+		"last_filter": "install",
 		"selected_items":
 		[
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"remove packa",
+				"Package Control: Remove Package"
+			],
+			[
+				"",
+				"About"
+			],
 			[
 				"enable",
 				"Package Control: Enable Package"
@@ -54,10 +169,6 @@
 			[
 				"remove",
 				"Package Control: Remove Package"
-			],
-			[
-				"install",
-				"Package Control: Install Package"
 			]
 		],
 		"width": 707.0
@@ -81,15 +192,23 @@
 	},
 	"expanded_folders":
 	[
-		"/C/dev/src/udacity/p5"
+		"/C/dev/src/udacity/p5",
+		"/C/dev/src/udacity/p5/app",
+		"/C/dev/src/udacity/p5/app/js"
 	],
 	"file_history":
 	[
+		"/C/Users/Zweihander/Desktop/snazzy-maps-example-neutral-blue-style.html",
+		"/C/dev/src/udacity/extra files/kocatclicker/index.html",
+		"/C/dev/src/udacity/extra files/kocatclicker/js/app.js",
+		"/C/dev/src/udacity/p5/app/js/app.js",
+		"/C/dev/src/udacity/p5/app/css/main.css",
+		"/C/dev/src/udacity/p5/app/blank-page.html",
+		"/C/dev/src/udacity/p5/app/browserconfig.xml",
+		"/C/dev/src/udacity/p4/app/index.html",
 		"/C/dev/src/udacity/extra files/todoapp/index.html",
 		"/C/dev/src/udacity/extra files/todoapp/js/views/todo-view.js",
 		"/C/dev/src/udacity/extra files/todoapp/js/models/todo.js",
-		"/C/dev/src/udacity/extra files/kocatclicker/index.html",
-		"/C/dev/src/udacity/extra files/kocatclicker/js/app.js",
 		"/C/dev/src/udacity/extra files/cat clicker/index.html",
 		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/User/SublimeLinter.sublime-settings",
 		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/User/HTML.sublime-settings",
@@ -104,7 +223,7 @@
 	],
 	"find":
 	{
-		"height": 29.0
+		"height": 46.0
 	},
 	"find_in_files":
 	{
@@ -118,6 +237,35 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"console.log",
+			".id",
+			"nearbysearchid",
+			"allSearchIDArray",
+			"googlesearchtype",
+			"infowindow()",
+			"infowindow",
+			"infoWindow",
+			"infoWindowContent",
+			"lastOpenMapMarker",
+			"googleSearchType",
+			"photos",
+			"console.log",
+			"Location(",
+			"getRestaurantsFromGooglePlacesAPI",
+			"indexof",
+			"console.log",
+			"self.marker",
+			"placesList",
+			"styles",
+			"border-radi",
+			"        border-radius: 0;",
+			"top:",
+			"huge",
+			"wrapper",
+			"message",
+			"panel",
+			"admin",
+			"sb",
 			"complete",
 			"panel",
 			"tern",
@@ -130,6 +278,8 @@
 		"regex": false,
 		"replace_history":
 		[
+			"lastOpenMapInfoWindow",
+			"getRestaurantsFromGoogleMapsAPI"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -140,8 +290,279 @@
 	"groups":
 	[
 		{
+			"selected": 2,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "app/index.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3391,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2750,
+								2761
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"auto_complete": false,
+							"bh_regions":
+							[
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_default_content",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_angle_content",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_tag_content",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_unmatched_content",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content"
+							],
+							"color_scheme": "Packages/User/Color Highlighter/themes/Monokai (SL).tmTheme",
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 504.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "app/css/style.css",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3345,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3301,
+								3316
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"bh_regions":
+							[
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_default_content",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_angle_content",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_tag_content",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_unmatched_content",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content"
+							],
+							"color_scheme": "Packages/User/Color Highlighter/themes/Monokai (SL).tmTheme",
+							"syntax": "Packages/CSS/CSS.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4149.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "app/js/app.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 17059,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1988,
+								1988
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"auto_complete": false,
+							"bh_regions":
+							[
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_default_content",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_angle_content",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_tag_content",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_unmatched_content",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content"
+							],
+							"color_scheme": "Packages/User/Color Highlighter/themes/Monokai (SL).tmTheme",
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": -0.0,
+						"translation.y": 761.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
 			]
 		}
 	],
@@ -184,7 +605,7 @@
 	"project": "p5.sublime-project",
 	"replace":
 	{
-		"height": 54.0
+		"height": 83.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -221,7 +642,7 @@
 	"show_minimap": true,
 	"show_open_files": false,
 	"show_tabs": true,
-	"side_bar_visible": true,
+	"side_bar_visible": false,
 	"side_bar_width": 188.0,
 	"status_bar_visible": true,
 	"template_settings":

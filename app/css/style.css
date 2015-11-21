@@ -1,9 +1,3 @@
-/*!
- * Start Bootstrap - SB Admin Bootstrap Admin Template (http://startbootstrap.com)
- * Code licensed under the Apache License v2.0.
- * For details, see http://www.apache.org/licenses/LICENSE-2.0.
- */
-
 /* Global Styles */
 
 body {
@@ -27,22 +21,17 @@ body {
     background-color: #fff;
 }
 
-.huge {
-    font-size: 50px;
-    line-height: normal;
-}
-
 @media(min-width:768px) {
     #wrapper {
-        padding-left: 225px;
+        /* padding-left: 225px; */
     }
 
     #page-wrapper {
         padding: 10px;
     }
 }
-
-/* Top Navigation */
+/*
+Top Navigation
 
 .top-nav {
     padding: 0 15px;
@@ -110,7 +99,9 @@ ul.alert-dropdown {
     width: 200px;
 }
 
-/* Side Navigation */
+
+Side Navigation
+*/
 
 @media(min-width:768px) {
     .side-nav {
@@ -154,74 +145,85 @@ ul.alert-dropdown {
     color: #fff;
 }
 
-/* Flot Chart Containers */
 
-.flot-chart {
-    display: block;
-    height: 400px;
+/**
+ * break
+ */
+* {
+    font-family: 'PT Sans Narrow';
 }
 
-.flot-chart-content {
-    width: 100%;
+#mapDiv {
     height: 100%;
+    width: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
 }
 
-/* Custom Colored Panels */
-
-.huge {
-    font-size: 40px;
+.navbar-custom {
+    position: absolute;
+    height: 75px;
+    bottom: 5%;
+    width: 90%;
+    left:0;
+    right:0;
+    margin-left:auto;
+    margin-right:auto;
 }
 
-.panel-green {
-    border-color: #5cb85c;
+.marker-list {
+    background: white;
+    position: absolute;
+    left: 5%;
+    display: block;
+    height: 75%;
+    width: 20%;
+    overflow-y: auto;
+    padding: 0;
+    margin: 0;
 }
 
-.panel-green > .panel-heading {
-    border-color: #5cb85c;
-    color: #fff;
-    background-color: #5cb85c;
+.marker-list li {
+    list-style: none;
+    border-bottom: 1px solid black;
+    display: block;
+    position: relative;
 }
 
-.panel-green > a {
-    color: #5cb85c;
+.listing-title {
+    margin-top: 0;
+    display: block;
+    font-size: 19px;
 }
 
-.panel-green > a:hover {
-    color: #3d8b3d;
+.listing-rating {
+    display: block;
+
 }
 
-.panel-red {
-    border-color: #d9534f;
+.listing-openStatus {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
-.panel-red > .panel-heading {
-    border-color: #d9534f;
-    color: #fff;
-    background-color: #d9534f;
+.listing-vicinity {
+    display: block;
 }
 
-.panel-red > a {
-    color: #d9534f;
+.listing-priceLevel {
+    display: block;
+    bottom: 0;
+    position: absolute;
+    right: 0;
 }
 
-.panel-red > a:hover {
-    color: #b52b27;
+.listingIsClosed {
+    background: #aaa;
 }
 
-.panel-yellow {
-    border-color: #f0ad4e;
-}
-
-.panel-yellow > .panel-heading {
-    border-color: #f0ad4e;
-    color: #fff;
-    background-color: #f0ad4e;
-}
-
-.panel-yellow > a {
-    color: #f0ad4e;
-}
-
-.panel-yellow > a:hover {
-    color: #df8a13;
+.listingSelected {
+    background: #ff0000;
 }
