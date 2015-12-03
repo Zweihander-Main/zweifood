@@ -9,7 +9,10 @@ var app = (function() {
 		yelpTokenSecret: '***REMOVED***',
 		yelpBaseURL: 'https://api.yelp.com/v2/',
 		yelpAccuracy: 0.001,
-		minFuzzyMatch: 0.5
+		minFuzzyMatch: 0.5,
+		locuBaseURL: 'https://api.locu.com/v1_0/venue/search/',
+		locuAPIKey: '***REMOVED***',
+		locuAccuracy: 100
 	};
 
 	function isElementVisible(el) {
@@ -58,6 +61,23 @@ var app = (function() {
 			timeout = setTimeout(later, wait);
 			if (callNow) func.apply(context, args);
 		};
+	}
+
+	function matchBasedOnName (arrayOfResults, nameToMatch, nameOfName) {
+		if (typeof(nameOfName) === "undefined") {
+			nameOfName = 'name';
+		}
+		var setToMatch = FuzzySet([]);
+		for (var i = 0; i < arrayOfResults.length; i++) {
+			setToMatch.add(arrayOfResults[i][nameOfName]);
+		}
+
+		var match = setToMatch.get(nameToMatch);
+		if (match[0][0] > config.minFuzzyMatch) {
+			return setToMatch.values().indexOf(match[0][1]);
+		} else {
+			return false;
+		}
 	}
 
 	function Location(currentViewModel, marker, searchType, id, open_now, rating, types, vicinity, price_level, icon) {
@@ -152,53 +172,54 @@ var app = (function() {
 			}
 		});
 
-		self.infoWindowContent = ko.computed(function() {
-			var contentString = self.marker().title + "<br>";
-			contentString += self.isItOpenRightNow() + "<br>";
-			contentString += "Rating: " + self.googleRating() + "<br>";
-			contentString += "Types: " + self.googleTypes() + "<br>";
-			contentString += "Price Level: " + self.googlePriceLevel() + "<br>";
+/*		self.infoWindowContent = ko.computed(function() {
+			var contentString = self.marker().title"></span></p>' +
+			contentString += self.isItOpenRightNow()"></span></p>' +
+			contentString += "Rating: " + self.googleRating()"></span></p>' +
+			contentString += "Types: " + self.googleTypes()"></span></p>' +
+			contentString += "Price Level: " + self.googlePriceLevel()"></span></p>' +
 			contentString += '<img src = "' + self.googleIconURL() + '"><br>';
-			contentString += "Address: " + self.googleAdrAddress() + "<br>";
-			contentString += "Phone: " + self.googleFormattedPhone() + "<br>";
-			//contentString += "Opening Hours: " + JSON.stringify(self.googleOpeningHoursObject()) + "<br>";
-			//contentString += "Photos: " + JSON.stringify(self.googlePhotos()) + "<br>";
-			//contentString += "Reviews: " + JSON.stringify(self.googleReviews()) + "<br>";
-			contentString += "Total Ratings: " + self.googleTotalRatings() + "<br>";
-			contentString += "Google URL: " + self.googleURL() + "<br>";
+			contentString += "Address: " + self.googleAdrAddress()"></span></p>' +
+			contentString += "Phone: " + self.googleFormattedPhone()"></span></p>' +
+			//contentString += "Opening Hours: " + JSON.stringify(self.googleOpeningHoursObject())"></span></p>' +
+			//contentString += "Photos: " + JSON.stringify(self.googlePhotos())"></span></p>' +
+			//contentString += "Reviews: " + JSON.stringify(self.googleReviews())"></span></p>' +
+			contentString += "Total Ratings: " + self.googleTotalRatings()"></span></p>' +
+			contentString += "Google URL: " + self.googleURL()"></span></p>' +
 
-			contentString += "Yelp is Perma Closed: " + self.yelpIsPermaClosed() + "<br>";
-			contentString += "Yelp Name: " + self.yelpName() + "<br>";
+			contentString += "Yelp is Perma Closed: " + self.yelpIsPermaClosed()"></span></p>' +
+			contentString += "Yelp Name: " + self.yelpName()"></span></p>' +
 			contentString += '<img src = "' + self.yelpImageURL() + '"><br>';
-			contentString += "Yelp URL: " + self.yelpURL() + "<br>";
-			contentString += "Yelp Review Count: " + self.yelpReviewCount() + "<br>";
-			contentString += "Yelp Rating: " + self.yelpRating() + "<br>";
-			contentString += "Yelp Snippet Text: " + self.yelpSnippetText() + "<br>";
-			contentString += "Yelp Menu Provider: " + self.yelpMenuProvider() + "<br>";
-			contentString += "Yelp Menu Updated: " + self.yelpMenuDateUpdated() + "<br>";
-			contentString += "Yelp Reservation URL: " + self.yelpReservationURL() + "<br>";
-			contentString += "Yelp Eat24URL: " + self.yelpEat24URL() + "<br>";
-			// contentString += "" + self.yelpGiftCertificates() + "<br>";
+			contentString += "Yelp URL: " + self.yelpURL()"></span></p>' +
+			contentString += "Yelp Review Count: " + self.yelpReviewCount()"></span></p>' +
+			contentString += "Yelp Rating: " + self.yelpRating()"></span></p>' +
+			contentString += "Yelp Snippet Text: " + self.yelpSnippetText()"></span></p>' +
+			contentString += "Yelp Menu Provider: " + self.yelpMenuProvider()"></span></p>' +
+			contentString += "Yelp Menu Updated: " + self.yelpMenuDateUpdated()"></span></p>' +
+			contentString += "Yelp Reservation URL: " + self.yelpReservationURL()"></span></p>' +
+			contentString += "Yelp Eat24URL: " + self.yelpEat24URL()"></span></p>' +
+			// contentString += "" + self.yelpGiftCertificates()"></span></p>' +
 			// self.yelpDeals = ko.observableArray([]);
 			// self.yelpCategories = ko.observableArray([]);
-			contentString += '<button data-bind="click: getDetailedReviewData">Reviews</button>'
+			contentString += '<button data-bind="click: getDetailedReviewData">Reviews</button>';
 			return contentString;
-		});
+		});*/
 
 		self.infoWindow = new google.maps.InfoWindow({
-			content: self.infoWindowContent()
+			content: currentViewModel.makeInfoWindowContent()
 		});
+
+		self.hasBeenOpened = false;
 
 		self.infoWindow.addListener("closeclick", function() {
 			currentViewModel.currentlySelectedLocation().isSelected(false);
 		});
 
-		self.infoWindowContent.subscribe(function(newValue) {
-			self.infoWindow.setContent(newValue);
-		});
-
-		self.infoWindowContent.extend({
-			rateLimit: 50
+		self.infoWindow.addListener("domready", function() {
+			if (!self.hasBeenOpened) {
+				ko.applyBindings(currentViewModel, self.infoWindow.getContent());
+				self.hasBeenOpened = true;
+			}
 		});
 
 		self.marker().addListener('click', function() {
@@ -215,6 +236,7 @@ var app = (function() {
 			if (self.yelpSearchType() === "None") {
 				currentViewModel.getYelpAPIInfo(self);
 			}
+			currentViewModel.getLocuAPIInfo(self);
 		};
 
 		self.listWasClicked = function() {
@@ -272,6 +294,14 @@ var app = (function() {
 		self.service = new google.maps.places.PlacesService(self.mainMap);
 
 		self.searchQuery = ko.observable();
+
+		self.infoWindowHTMLTemplate = $('#info-window-template-container')[0].innerHTML;
+
+		self.makeInfoWindowContent = function() {
+			var html = self.infoWindowHTMLTemplate;
+			html = $.parseHTML(html)[1];
+			return html;
+		};
 
 
 
@@ -421,12 +451,37 @@ var app = (function() {
 				selectedPlace.googleTotalRatings(result.user_ratings_total);
 				selectedPlace.googleUTCOffset(result.utc_offset);
 				selectedPlace.googleURL(result.url);
-
 			});
 			if (typeof callback === "function") {
 				callback();
 			}
 		};
+
+		// self.setYelpResultsToModel = function(result, selectedPlace, searchType) {
+		// 	if (!searchType) {
+		// 		searchType = "Search";
+		// 	}
+		// 	selectedPlace.yelpSearchType(searchType);
+		// 	if (searchType === "Search") {
+		// 		selectedPlace.yelpID(result.id);
+		// 		selectedPlace.yelpIsPermaClosed(result.is_closed);
+		// 		selectedPlace.yelpName(result.name);
+		// 		selectedPlace.yelpImageURL(result.image_url);
+		// 		selectedPlace.yelpURL(result.url);
+		// 		selectedPlace.yelpReviewCount(result.review_count);
+		// 		selectedPlace.yelpRating(result.rating);
+		// 		selectedPlace.yelpSnippetText(result.snippet_text);
+		// 		selectedPlace.yelpMenuProvider(result.menu_provider);
+		// 		selectedPlace.yelpMenuDateUpdated(result.menu_date_updated);
+		// 		selectedPlace.yelpReservationURL(result.reservation_url);
+		// 		selectedPlace.yelpEat24URL(result.eat24_url);
+		// 		selectedPlace.yelpGiftCertificates(result.gift_certificates);
+		// 		selectedPlace.yelpDeals(result.deals);
+		// 		selectedPlace.yelpCategories(result.categories);
+		// 	} else { //Reviews
+		// 		selectedPlace.yelpReviews(results.reviews);
+		// 	}
+		// };
 
 		self.getYelpAPIInfo = function(selectedPlace, callback) {
 			if (!selectedPlace) {
@@ -459,14 +514,9 @@ var app = (function() {
 				cache: true, // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
 				dataType: 'jsonp',
 				success: function(results) {
-					var setToMatch = FuzzySet([]);
-					for (var i = 0; i < results.businesses.length; i++) {
-						setToMatch.add(results.businesses[i].name);
-					}
-
-					var match = setToMatch.get(selectedPlace.marker().title);
-					if (match[0][0] > config.minFuzzyMatch) {
-						var correctResult = results.businesses[setToMatch.values().indexOf(match[0][1])];
+					var match = matchBasedOnName(results.businesses, selectedPlace.marker().title);
+					if (typeof(match) === 'number') {
+						var correctResult = results.businesses[match];
 						selectedPlace.yelpSearchType("Search");
 						selectedPlace.yelpID(correctResult.id);
 						selectedPlace.yelpIsPermaClosed(correctResult.is_closed);
@@ -484,7 +534,7 @@ var app = (function() {
 						selectedPlace.yelpDeals(correctResult.deals);
 						selectedPlace.yelpCategories(correctResult.categories);
 					} else {
-						console.log("no match");
+						console.info("Yelp: No Match");
 					}
 				},
 				fail: function() {
@@ -503,10 +553,7 @@ var app = (function() {
 			if (!selectedPlace) {
 				selectedPlace = self.currentlySelectedLocation();
 			}
-			var yelp_url = config.yelpBaseURL + 'business/' + selected_place.yelpID;
-			var selectedLoc = selectedPlace.marker().getPosition();
-			var lat = selectedLoc.lat();
-			var lng = selectedLoc.lng();
+			var yelp_url = config.yelpBaseURL + 'business/' + selectedPlace.yelpID();
 			var parameters = {
 				oauth_consumer_key: config.yelpConsumerKey,
 				oauth_token: config.yelpToken,
@@ -514,11 +561,7 @@ var app = (function() {
 				oauth_timestamp: Math.floor(Date.now() / 1000),
 				oauth_signature_method: 'HMAC-SHA1',
 				oauth_version: '1.0',
-				callback: 'cb', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
-				//ll: selectedPlace.marker().getPosition().toUrlValue(99) + ",9.5",
-				bounds: (lat - config.yelpAccuracy) + "," + (lng - config.yelpAccuracy) + "|" + (lat + config.yelpAccuracy) + "," + (lng + config.yelpAccuracy),
-				term: "food",
-				sort: 1, //sort by distance
+				callback: 'cb' // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
 			};
 
 			var encodedSignature = oauthSignature.generate('GET', yelp_url, parameters, config.yelpConsumerSecret, config.yelpTokenSecret);
@@ -530,33 +573,8 @@ var app = (function() {
 				cache: true, // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
 				dataType: 'jsonp',
 				success: function(results) {
-					var setToMatch = FuzzySet([]);
-					for (var i = 0; i < results.businesses.length; i++) {
-						setToMatch.add(results.businesses[i].name);
-					}
-
-					var match = setToMatch.get(selectedPlace.marker().title);
-					if (match[0][0] > config.minFuzzyMatch) {
-						var correctResult = results.businesses[setToMatch.values().indexOf(match[0][1])];
-						selectedPlace.yelpSearchType("Search");
-						selectedPlace.yelpID(correctResult.id);
-						selectedPlace.yelpIsPermaClosed(correctResult.is_closed);
-						selectedPlace.yelpName(correctResult.name);
-						selectedPlace.yelpImageURL(correctResult.image_url);
-						selectedPlace.yelpURL(correctResult.url);
-						selectedPlace.yelpReviewCount(correctResult.review_count);
-						selectedPlace.yelpRating(correctResult.rating);
-						selectedPlace.yelpSnippetText(correctResult.snippet_text);
-						selectedPlace.yelpMenuProvider(correctResult.menu_provider);
-						selectedPlace.yelpMenuDateUpdated(correctResult.menu_date_updated);
-						selectedPlace.yelpReservationURL(correctResult.reservation_url);
-						selectedPlace.yelpEat24URL(correctResult.eat24_url);
-						selectedPlace.yelpGiftCertificates(correctResult.gift_certificates);
-						selectedPlace.yelpDeals(correctResult.deals);
-						selectedPlace.yelpCategories(correctResult.categories);
-					} else {
-						console.log("no match");
-					}
+						selectedPlace.yelpReviews(results.reviews);
+						selectedPlace.yelpSearchType("Business");
 				},
 				fail: function() {
 					// Do stuff on fail
@@ -571,7 +589,51 @@ var app = (function() {
 		};
 
 		self.getDetailedReviewData = function() {
-			console.log();
+			if (self.currentlySelectedLocation().yelpSearchType() === "Search") {
+				self.getYelpDetailedReviews();
+			}
+		};
+
+		self.getLocuAPIInfo = function(selectedPlace, callback) {
+			if (!selectedPlace) {
+				selectedPlace = self.currentlySelectedLocation();
+			}
+			var locu_url = config.locuBaseURL;
+			var selectedLoc = selectedPlace.marker().getPosition();
+			var lat = selectedLoc.lat();
+			var lng = selectedLoc.lng();
+			//var locuFields = ["locu_id", "name", "description", "website_url", "menu_url", "menus", "open_hours", "external", "categories", "location", "contact", "locu", "delivery", "extended", "media"];
+			var parameters = {
+				bounds: (lat + config.yelpAccuracy) + "," + (lng - config.yelpAccuracy) + "|" + (lat - config.yelpAccuracy) + "," + (lng + config.yelpAccuracy),
+				api_key: config.locuAPIKey
+			};
+
+			var settings = {
+				url: locu_url,
+				method: "GET",
+				data: parameters,
+				cache: true,
+				dataType: 'jsonp',
+				//contentType: 'text/plain',
+				//callback: 'cb', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
+				success: function(results) {
+					console.log(results);
+						var match = matchBasedOnName(results.objects, selectedPlace.marker().title);
+							if (typeof(match) === 'number') {
+								console.log(results.objects[match]);
+							} else {
+								console.info("Locu: No Match");
+							}
+							var worker = new Worker('/js/workerFillMarkerData.js');
+							worker.postMessage("");
+				},
+				fail: function(jqXHR, textStatus, errorThrown) {
+					// Do stuff on fail
+				}
+			};
+
+			// Send AJAX query via jQuery library.
+			$.ajax(settings);
 		};
 	}
 

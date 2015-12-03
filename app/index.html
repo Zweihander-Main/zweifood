@@ -63,13 +63,42 @@
         </ul>
       </nav>
     </div>
+
+    <script type="text/template" id = "info-window-template-container">
+      <div id = "info-window-template" data-bind = "with: currentlySelectedLocation()">
+        <p>Name: <span data-bind="text: marker().title"></span></p>
+        <p>Yelp Name: <span data-bind="text: yelpName"></span></p>
+        <p>Open Now: <span data-bind="text: isItOpenRightNow()"></span></p>
+        <p>Rating: <span data-bind="text: googleRating()"></span></p>
+        <p>Types: <span data-bind="text: googleTypes()"></span></p>
+        <p>Price Level: <span data-bind="text: googlePriceLevel()"></span></p>
+        <p><img data-bind="attr: {src: googleIconURL()}"></p>
+        <p>Address: <span data-bind="text: googleAdrAddress()"></span></p>
+        <p>Phone: <span data-bind="text: googleFormattedPhone()"></span></p>
+        <p>Total Ratings: <span data-bind="text: googleTotalRatings()"></span></p>
+        <p>Google URL: <span data-bind="text: googleURL()"></span></p>
+        <p>Yelp is Perma Closed: <span data-bind="text: yelpIsPermaClosed()"></span></p>
+        <p>Yelp Name: <span data-bind="text: yelpName()"></span></p>
+        <p><img data-bind="attr: {src: yelpImageURL()}"></p>
+        <p>Yelp URL: <span data-bind="text: yelpURL()"></span></p>
+        <p>Yelp Review Count: <span data-bind="text: yelpReviewCount()"></span></p>
+        <p>Yelp Rating: <span data-bind="text: yelpRating()"></span></p>
+        <p>Yelp Snippet Text: <span data-bind="text: yelpSnippetText()"></span></p>
+        <p>Yelp Menu Provider: <span data-bind="text: yelpMenuProvider()"></span></p>
+        <p>Yelp Menu Updated: <span data-bind="text: yelpMenuDateUpdated()"></span></p>
+        <p>Yelp Reservation URL: <span data-bind="text: yelpReservationURL()"></span></p>
+        <p>Yelp Eat24URL: <span data-bind="text: yelpEat24URL()"></span></p>
+        <button data-bind="click: $parent.getDetailedReviewData">Reviews</button
+      </div>
+    </script>
+
+
     <script src="js/vendor/jquery-1.11.2.min.js"></script>
     <script src="js/vendor/bootstrap.min.js"></script>
     <script src="js/vendor/knockout-3.3.0.js"></script>
     <script src="js/vendor/sammy-latest.min.js"></script>
     <script src="js/vendor/oauth-signature.min.js"></script>
     <script src="js/vendor/fuzzyset.js"></script>
-    <script src="js/vendor/knockout.mapping-latest.js"></script>
     <script src="js/app.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&api_key=AIzaSyAypPO_LPwapkN6ykqyUDdnzxXBGV-0QyU&libraries=places&callback=app.createMap" async></script>
   </body>
