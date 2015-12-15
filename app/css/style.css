@@ -11,146 +11,32 @@ body {
     }
 }
 
-#wrapper {
+.wrapper {
     padding-left: 0;
 }
 
-#page-wrapper {
+.page-wrapper {
     width: 100%;
     padding: 0;
-    background-color: #fff;
+    /*background-color: #fff;*/
 }
 
 @media(min-width:768px) {
-    #wrapper {
+    .wrapper {
         /* padding-left: 225px; */
     }
 
-    #page-wrapper {
-        padding: 10px;
-    }
-}
-/*
-Top Navigation
-
-.top-nav {
-    padding: 0 15px;
-}
-
-.top-nav>li {
-    display: inline-block;
-    float: left;
-}
-
-.top-nav>li>a {
-    padding-top: 15px;
-    padding-bottom: 15px;
-    line-height: 20px;
-    color: #999;
-}
-
-.top-nav>li>a:hover,
-.top-nav>li>a:focus,
-.top-nav>.open>a,
-.top-nav>.open>a:hover,
-.top-nav>.open>a:focus {
-    color: #fff;
-    background-color: #000;
-}
-
-.top-nav>.open>.dropdown-menu {
-    float: left;
-    position: absolute;
-    margin-top: 0;
-    border: 1px solid rgba(0,0,0,.15);
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    background-color: #fff;
-    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
-    box-shadow: 0 6px 12px rgba(0,0,0,.175);
-}
-
-.top-nav>.open>.dropdown-menu>li>a {
-    white-space: normal;
-}
-
-ul.message-dropdown {
-    padding: 0;
-    max-height: 250px;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-li.message-preview {
-    width: 275px;
-    border-bottom: 1px solid rgba(0,0,0,.15);
-}
-
-li.message-preview>a {
-    padding-top: 15px;
-    padding-bottom: 15px;
-}
-
-li.message-footer {
-    margin: 5px 0;
-}
-
-ul.alert-dropdown {
-    width: 200px;
-}
-
-
-Side Navigation
-*/
-
-@media(min-width:768px) {
-    .side-nav {
-        position: fixed;
-        top: 51px;
-        left: 225px;
-        width: 225px;
-        margin-left: -225px;
-        border: none;
-        border-radius: 0;
-        overflow-y: auto;
-        background-color: #222;
-        bottom: 0;
-        overflow-x: hidden;
-        padding-bottom: 40px;
-    }
-
-    .side-nav>li>a {
-        width: 225px;
-    }
-
-    .side-nav li a:hover,
-    .side-nav li a:focus {
-        outline: none;
-        background-color: #000 !important;
+    .page-wrapper {
+    padding: 10px;
     }
 }
 
-.side-nav>li>ul {
-    padding: 0;
+.pac-container {
+    z-index: 9999999999999999;
 }
 
-.side-nav>li>ul>li>a {
-    display: block;
-    padding: 10px 15px 10px 38px;
-    text-decoration: none;
-    color: #999;
-}
-
-.side-nav>li>ul>li>a:hover {
-    color: #fff;
-}
-
-
-/**
- * break
- */
 * {
-    font-family: 'PT Sans Narrow';
+    font-family: 'Lato';
 }
 
 #mapDiv {
@@ -161,40 +47,76 @@ Side Navigation
     top: 0;
 }
 
+.map-center {
+    width: 128px;
+    height: 128px;
+    margin: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.map-center img{
+    z-index: 1;
+    position: relative;
+
+}
+
 .navbar-custom {
     position: absolute;
-    height: 75px;
+    height: 80px;
     bottom: 5%;
+    margin-bottom:0px;
     width: 90%;
     left:0;
     right:0;
     margin-left:auto;
     margin-right:auto;
+    border-radius: 0px;
+    background-color: #212121;
+    color: white;
+    border: 1px solid #4a4a4a;
+    -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
 }
 
+
 .marker-list {
-    background: white;
+    background: #212121;
     position: absolute;
     left: 5%;
     display: block;
     height: 75%;
+    top: 5%;
     width: 20%;
     overflow-y: auto;
     padding: 0;
-    margin: 0;
+    margin: 0px 0 0px 0;
+    min-width: 300px;
+    color: white;
 }
 
 .marker-list li {
     list-style: none;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #c1b9a2;
     display: block;
     position: relative;
 }
 
 .listing-title {
-    margin-top: 0;
+    margin: 0px 0 13px 0;
     display: block;
-    font-size: 19px;
+    font-size: 27px;
+    line-height: 20px;
+    font-weight: 700;
+    letter-spacing: -0.1px;
+    font-family: 'Scheherazade';
 }
 
 .listing-rating {
@@ -220,10 +142,598 @@ Side Navigation
     right: 0;
 }
 
+.listing-rating, .listing-openStatus, .listing-vicinity, .listing-priceLevel {
+    font-family: 'Lato';
+    font-size: 12px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
 .listingIsClosed {
-    background: #aaa;
+    background: #373737;
+    color: #4a4a4a;
 }
 
 .listingSelected {
-    background: #ff0000;
+    background: #c1b9a2;
+}
+
+.navbar-custom .navbar-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.search-filter-icon {
+    position: absolute;
+    top: 19px;
+    right: 12px;
+}
+
+.nav-block-search {
+    width: 30%;
+}
+
+.nav-block-sort {
+    width: 19%;
+}
+
+.nav-block-filter {
+    width: 41%;
+}
+
+.nav-block-etc {
+    width: 10%;
+}
+
+.search-box {
+    width: 100%;
+    background: none;
+    border: 1px solid #585858;
+    height: 42px;
+    margin-top: 5px;
+    text-transform: uppercase;
+    color: white;
+    padding: 0 0 0 15px;
+    transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+    letter-spacing: 0.6px;
+}
+
+.search-box:focus {
+    outline: none !important;
+    border: 1px solid #c1b9a2;
+}
+
+.search-box::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    font-size: 12px;
+    letter-spacing: 5px;
+    color:    #585858;
+}
+.search-box:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    font-size: 12px;
+    letter-spacing: 5px;
+   color:    #585858;
+   opacity:  1;
+}
+.search-box::-moz-placeholder { /* Mozilla Firefox 19+ */
+    font-size: 12px;
+    letter-spacing: 5px;
+   color:    #585858;
+   opacity:  1;
+}
+.search-box:-ms-input-placeholder { /* Internet Explorer 10-11 */
+    font-size: 12px;
+    letter-spacing: 5px;
+   color:    #585858;
+}
+
+.nav-divider {
+    background: black;
+    width: 1px;
+    height: 55px;
+    margin-top: 10px;
+}
+
+.nav-block {
+    padding: 0 10px;
+}
+
+.nav-description {
+    margin: 6px 0 1px 0;
+    text-transform: uppercase;
+    color: #585858;
+    font-size: 12px;
+    letter-spacing: 0.6px
+
+}
+
+.sort-button {
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    margin: -8px 0px 0px -2px;
+    padding: 9px 28px 38px 10px;
+}
+
+.sort-button-4 {
+    margin: -8px 0px 0px -1px;
+}
+
+.diamond-outer {
+    margin: 10px 25px 0 0;
+    zoom: 1;
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    display: inline-block;
+    border: 1px solid #686868;
+    width: 30px;
+    height: 30px;
+    transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+}
+
+.diamond-outer:hover {
+    background: #c0baa2;
+    box-shadow: 0 0 1px rgba(255,255,255,.12),1px 1px 1px rgba(255,255,255,.2);
+}
+
+.diamond-outer:focus {
+    outline: none;
+    outline: -webkit-focus-ring-color auto 0px;
+}
+
+.diamond-outer:active {
+    background: #d1c9b2;
+    box-shadow: 0 0 2px rgba(255,255,255,.32),2px 2px 3px rgba(255,255,255,.4);
+}
+
+.diamond-inner {
+    -moz-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    width: 30px;
+    height: 30px;
+}
+
+.tooltip {
+    font-family: 'Lato';
+}
+
+.filter-button {
+    display: inline-block;
+    font-size: 13px;
+    height: 42px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+}
+
+.filter-button-single {
+    border: 1px solid #585858;
+    text-transform: uppercase;
+    font-family: 'Lato';
+    letter-spacing: 0.6px;
+    padding: 10px 15px 10px 15px;
+    margin: 5px 10px 0 0;
+}
+
+.filter-button-multi {
+    border-left: 1px solid #585858;
+    border-top: 1px solid #585858;
+    border-bottom: 1px solid #585858;
+    padding: 10px 15px 10px 15px;
+    margin: 5px -2px 0 -1px;
+}
+
+.filter-button-multi-last {
+    border-right: 1px solid #585858;
+    margin: 5px 10px 0 -1px;
+}
+
+.filter-button-pressed {
+    background: #585858;
+}
+
+.rateit-filter {
+    border: 1px solid #585858;
+    display: inline-block;
+    height: 42px;
+    margin: 0px 10px 0px 0px;
+    padding: 9px 10px 0px 10px;
+    top: 1px;
+}
+
+.logo-button {
+    display: inline-block;
+    font-size: 17px;
+    margin: -9px 0px 0px -2px;
+    padding: 9px 28px 38px 10px;
+    cursor: pointer;
+}
+
+div.bigstars {
+    transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+}
+
+div.bigstars div.rateit-range {
+    background: url(/img/star.png);
+    height: 16px;
+}
+
+div.bigstars div.rateit-hover {
+    background: url(/img/star-hover.png);
+}
+
+div.bigstars div.rateit-selected {
+    background: url(/img/star-active.png);
+}
+
+div.bigstars button.rateit-reset {
+    background: url(/img/star-reset.png);
+    width: 16px;
+    height: 16px;
+}
+
+div.bigstars button.rateit-reset:hover {
+    background: url(/img/star-reset-hover.png);
+}
+
+div.bigstars button.rateit-reset:active {
+    background: url(/img/star-reset-active.png);
+}
+
+.custom-info-window {
+}
+
+
+
+
+@media(max-width:1199px) {
+    .marker-list {
+        display: none;
+    }
+    .navbar-custom {
+        width: 92%;
+        bottom: 0%;
+        margin-bottom:27px;
+    }
+}
+
+@media(max-width: 991px) {
+    .navbar-custom {
+        position: fixed;
+        bottom: 0px;
+        overflow: hidden;
+        width: 100%;
+        margin-bottom: 0px;
+    }
+
+    .page-wrapper {
+        position:absolute;
+        bottom: 80px;
+        height:100%;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* -----------------------------------
+ * Slidebars
+ * Version 0.10.3
+ * http://plugins.adchsm.me/slidebars/
+ *
+ * Written by Adam Smith
+ * http://www.adchsm.com/
+ *
+ * Released under MIT License
+ * http://plugins.adchsm.me/slidebars/license.txt
+ *
+ * -------------------
+ * Slidebars CSS Index
+ *
+ * 001 - Box Model, Html & Body
+ * 002 - Site
+ * 003 - Slidebars
+ * 004 - Animation
+ * 005 - Helper Classes
+ *
+ * ----------------------------
+ * 001 - Box Model, Html & Body
+ */
+
+html, body, #sb-site, .sb-site-container, .sb-slidebar {
+    /* Set box model to prevent any user added margins or paddings from altering the widths or heights. */
+    margin: 0;
+    padding: 0;
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    overflow-x: hidden; /* Stops horizontal scrolling. */
+}
+
+html {
+    height: 100%; /* Site is as tall as device. */
+}
+
+body {
+    min-height: 100%;
+    height: auto;
+    position: relative; /* Required for static Slidebars to function properly. */
+}
+
+/* Site scroll locking - prevent site from scrolling when a Slidebar is open, except when static Slidebars are only available. */
+html.sb-scroll-lock.sb-active:not(.sb-static) {
+    overflow: hidden;
+}
+
+/* ----------
+ * 002 - Site
+ */
+
+#sb-site, .sb-site-container {
+    /* You may now use class .sb-site-container instead of #sb-site and use your own id. However please make sure you don't set any of the following styles any differently on your id. */
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1; /* Site sits above Slidebars */
+    background-color: #ffffff; /* Default background colour, overwrite this with your own css. I suggest moving your html or body background styling here. Making this transparent will allow the Slidebars beneath to be visible. */
+}
+
+/* Micro clearfix by Nicolas Gallagher, ensures the site container hits the top and bottom of the screen. */
+#sb-site:before, #sb-site:after, .sb-site-container:before, .sb-site-container:after {
+    content: ' ';
+    display: table;
+}
+
+#sb-site:before, #sb-site:after, .sb-site-container:before, .sb-site-container:after {
+    clear: both;
+}
+
+/* ---------------
+ * 003 - Slidebars
+ */
+
+.sb-slidebar {
+    height: 100%;
+    overflow-y: auto; /* Enable vertical scrolling on Slidebars when needed. */
+    position: fixed;
+    top: 0;
+    z-index: 0; /* Slidebars sit behind sb-site. */
+    display: none; /* Initially hide the Slidebars. Changed from visibility to display to allow -webkit-overflow-scrolling. */
+    background-color: #222222; /* Default Slidebars background colour, overwrite this with your own css. */
+}
+
+.sb-slidebar, .sb-slidebar * {
+    -webkit-transform: translateZ( 0px ); /* Fixes issues with translated and z-indexed elements on iOS 7. */
+}
+
+.sb-left {
+    left: 0; /* Set Slidebar to the left. */
+}
+
+.sb-right {
+    right: 0; /* Set Slidebar to the right. */
+}
+
+html.sb-static .sb-slidebar,
+.sb-slidebar.sb-static {
+    position: absolute; /* Makes Slidebars scroll naturally with the site, and unfixes them for Android Browser < 3 and iOS < 5. */
+}
+
+.sb-slidebar.sb-active {
+    display: block; /* Makes Slidebars visibile when open. Changed from visibility to display to allow -webkit-overflow-scrolling. */
+}
+
+.sb-style-overlay {
+    z-index: 9999; /* Set z-index high to ensure it overlays any other site elements. */
+}
+
+.sb-momentum-scrolling {
+    -webkit-overflow-scrolling: touch; /* Adds native momentum scrolling for iOS & Android devices. */
+}
+
+/* Slidebar widths for browsers/devices that don't support media queries. */
+    .sb-slidebar {
+        width: 30%;
+    }
+
+    .sb-width-thin {
+        width: 15%;
+    }
+
+    .sb-width-wide {
+        width: 45%;
+    }
+
+@media (max-width: 480px) { /* Slidebar widths on extra small screens. */
+    .sb-slidebar {
+        width: 70%;
+    }
+
+    .sb-width-thin {
+        width: 55%;
+    }
+
+    .sb-width-wide {
+        width: 85%;
+    }
+}
+
+@media (min-width: 481px) { /* Slidebar widths on small screens. */
+    .sb-slidebar {
+        width: 55%;
+    }
+
+    .sb-width-thin {
+        width: 40%;
+    }
+
+    .sb-width-wide {
+        width: 70%;
+    }
+}
+
+@media (min-width: 768px) { /* Slidebar widths on medium screens. */
+    .sb-slidebar {
+        width: 40%;
+    }
+
+    .sb-width-thin {
+        width: 25%;
+    }
+
+    .sb-width-wide {
+        width: 55%;
+    }
+}
+
+@media (min-width: 992px) { /* Slidebar widths on large screens. */
+    .sb-slidebar {
+        width: 30%;
+    }
+
+    .sb-width-thin {
+        width: 15%;
+    }
+
+    .sb-width-wide {
+        width: 45%;
+    }
+}
+
+@media (min-width: 1200px) { /* Slidebar widths on extra large screens. */
+    .sb-slidebar {
+        width: 20%;
+    }
+
+    .sb-width-thin {
+        width: 5%;
+    }
+
+    .sb-width-wide {
+        width: 35%;
+    }
+}
+
+/* ---------------
+ * 004 - Animation
+ */
+
+.sb-slide, #sb-site, .sb-site-container, .sb-slidebar {
+    -webkit-transform: translate( 0px );
+       -moz-transform: translate( 0px );
+         -o-transform: translate( 0px );
+            transform: translate( 0px );
+
+    -webkit-transition: -webkit-transform 400ms ease;
+       -moz-transition:    -moz-transform 400ms ease;
+         -o-transition:      -o-transform 400ms ease;
+            transition:         transform 400ms ease;
+
+    -webkit-transition-property: -webkit-transform, left, right; /* Add left/right for Android < 4.4. */
+    -webkit-backface-visibility: hidden; /* Prevents flickering. This is non essential, and you may remove it if your having problems with fixed background images in Chrome. */
+}
+
+/* --------------------
+ * 005 - Helper Classes
+ */
+
+.sb-hide {
+    display: none; /* Optionally applied to control classes when Slidebars is disabled over a certain width. */
 }
