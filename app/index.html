@@ -19,8 +19,9 @@
     <link rel="stylesheet" href="css/vendor/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="js/vendor/jquery-ui/jquery-ui.min.css">
     <link rel="stylesheet" href="js/vendor/jquery-ui/jquery-ui.structure.min.css">
-    <link rel="stylesheet" href="js/vendor/jquery-ui/jquery-ui.theme.min.css">
+    <link rel="stylesheet" href="css/jquery-ui.theme.custom.css">
     <link rel="stylesheet" href="js/vendor/rateit/rateit.css">
+    <link rel='stylesheet' href='js/vendor/perfect-scrollbar/css/perfect-scrollbar.min.css' />
 
 
     <!--[if lt IE 9]>
@@ -30,86 +31,94 @@
 
   <body data-bind="ko_bootstrapTooltip: true">
     <div class="sb-slidebar sb-right sb-style-overlay sb-width-custom" data-sb-width="300px">
-      <input type="search" id="place-search" data-bind="addressAutocomplete: true">
-      <button data-bind = "click: getNavWithCallback">Get Current Location</button>
-      <div data-bind="ko_slider: {value: lowMarkerOpacity, step: 0.01, min: 0, max: 1}"></div>
-      <div data-bind="text: lowMarkerOpacity"></div>
-      <div data-bind="ko_slider: {value: maxMarkerLimit, step: 100, min: 1000, max: 10000}"></div>
-      <div data-bind="text: maxMarkerLimit"></div>
+      <div class = "sb-close logo-button" data-bind="menuToggle: 'marker-list'"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span></div>
+      <h5 class = "settings-description">Search for location</h5>
+      <input type="search" id="place-search" class = "place-search" data-bind="addressAutocomplete: true">
+      <span class = "settings-divider"></span>
+      <h5 class = "settings-description">Get Current Browser Location</h5>
+      <span class = "filter-button filter-button-single" data-bind = "click: getNavWithCallback">Get Current Location</span>
+      <span class = "settings-divider"></span>
+      <h5 class = "settings-description">Opacity of Filtered/Unkown Results</h5>
+      <div class = "settings-amount-slider" data-bind="ko_slider: {value: lowMarkerOpacity, step: 0.01, min: 0, max: 1}"></div>
+      <div class = "settings-amount-box" data-bind="text: lowMarkerOpacity"></div>
+      <span class = "settings-divider"></span>
+      <h5 class = "settings-description">Maximum Amount of Markers on Map</h5>
+      <div class = "settings-amount-slider" data-bind="ko_slider: {value: maxMarkerLimit, step: 100, min: 1000, max: 10000}"></div>
+      <div class = "settings-amount-box" data-bind="text: maxMarkerLimit"></div>
     </div>
     <div id = "sb-site" class="wrapper">
       <div class="page-wrapper">
         <div class="container-fluid">
-          <div class = "map-center"><img src = "/img/centerMarker.png" height = "128" width = "128"></div>
           <div id="mapDiv"></div>
           <div class="marker-list-container">
-            <ul class = "marker-list" data-bind="foreach: {data: sortedEntries, afterRender: scrollToItem}, hoverToggle: true">
+            <ul id = "marker-list" class = "marker-list" data-bind="foreach: {data: sortedEntries}, scrollToItem: sortedEntries, hoverToggle: true, ko_perfectScrollbar: sortedEntries">
               <li data-bind = "css: { listingIsClosed: isItOpenRightNow() === 'Closed', listingSelected: isSelected }, click: listWasClicked, scrollTo: $root.scrolledItem() == $data" >
                 <h4 class = "listing-title" data-bind="text: google_name"></h4>
-                <span class = "listing-openStatus" data-bind="text: isItOpenRightNow"></span>
                 <span class = "listing-vicinity" data-bind="text: google_vicinity"></span>
-                <span class = "listing-rating" data-bind="text: google_rating"></span>
-                <span class = "listing-priceLevel" data-bind="text: google_priceLevel"></span>
+                <div class = "listing-rating" data-bind="visible: google_rating() > 0"><span class = "listing-rating-stars-container" data-bind="generateStars: google_rating"></span>(<span class = "listing-rating-text" data-bind="text: google_rating"></span>)<span data-bind="visible: google_priceLevel">,&nbsp;</span></div>
+                <span class = "listing-priceLevel" data-bind="visible: google_priceLevel, text: google_priceLevel, generateUSD: google_priceLevel"></span>
+                <span class = "listing-openStatus" data-bind="text: isItOpenRightNow"></span>
               </li>
             </ul>
           </div>
         </div>
       </div>
 
-      <nav class="navbar navbar-custom" role="navigation">
-        <div class="navbar-header">
-          <!-- <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button> -->
-          <div class = "nav-block nav-block-search">
-            <h5 class = "nav-description">Search</h5>
-            <div class = "search-wrapper">
-              <input class = "search-box" type="text" id="name-search" data-bind="value: searchQuery, ko_autocomplete: { source: listableEntries().allNames, position: {collision: 'flip'} }, valueUpdate: 'keyup'" autocomplete="off" placeholder="Filter the current results...">
-              <i class="fa fa-filter search-filter-icon"></i>
-            </div>
+      <nav class="navbar navbar-custom mobile-nav" role="navigation">
+      <div class = "nav-block nav-block-locations">
+        <h5 class = "nav-description">Results</h5>
+        <div class = "logo-button" data-bind="menuToggle: 'marker-list'"><span class="glyphicon glyphicon-list" aria-hidden="true"></span></div>
+      </div>
+      <div class = "nav-block nav-block-options">
+        <h5 class = "nav-description">Options</h5>
+        <div class = "logo-button" data-bind="menuToggle: 'navbar-header'"><span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span></div>
+      </div>
+      </nav>
+
+      <nav id = "navbar-header" class="navbar navbar-custom navbar-header">
+        <div class = "nav-block nav-block-search">
+          <h5 class = "nav-description">Search</h5>
+          <div class = "search-wrapper">
+            <input class = "search-box" type="text" id="name-search" data-bind="textInput: searchQuery, ko_autocomplete: { source: listableEntries().allNames, position: {collision: 'flip'} }" autocomplete="off" placeholder="Filter current results">
+            <i class="fa fa-filter search-filter-icon"></i>
           </div>
-          <span class = "nav-divider"></span>
-          <div class = "nav-block nav-block-sort">
-            <h5 class = "nav-description">Sort</h5>
-            <div class="diamond-outer" data-bind = "click: function() {sortType('count')}" data-toggle="tooltip" data-placement="top" title="Order Received">
-              <div class = "diamond-inner sort-button"><i class="fa fa-sort-numeric-asc"></i></div>
-            </div>
-            <div class="diamond-outer" data-bind = "click: function() {sortType('alpha')}" data-toggle="tooltip" data-placement="top" title="Alphabetical">
-              <div class = "diamond-inner sort-button"><i class="fa fa-sort-alpha-asc"></i></div>
-            </div>
-            <div class="diamond-outer" data-bind = "click: function() {sortType('rating')}" data-toggle="tooltip" data-placement="top" title="Rating">
-              <div class = "diamond-inner sort-button"><i class="fa fa-sort-amount-desc"></i></div>
-            </div>
-            <div class="diamond-outer" data-bind = "click: function() {sortType('distance')}" data-toggle="tooltip" data-placement="top" title="Distance to Center">
-              <div class = "diamond-inner sort-button sort-button-4"><i class="fa fa-arrows-alt"></i></div>
-            </div>
+        </div>
+        <span class = "nav-divider"></span>
+        <div class = "nav-block nav-block-sort">
+          <h5 class = "nav-description">Sort</h5>
+          <div class="diamond-outer" data-bind = "click: function() {sortType('count')}" data-toggle="tooltip" data-placement="top" title="Order Received">
+            <div class = "diamond-inner sort-button"><i class="fa fa-sort-numeric-asc"></i></div>
           </div>
-          <span class = "nav-divider"></span>
-          <div class = "nav-block nav-block-filter">
-            <h5 class = "nav-description">Filter</h5>
-            <div class = "filter-button filter-button-single" data-bind = "css: { 'filter-button-pressed': openButtonFilter }, click: function() {openButtonFilter(!openButtonFilter())}">Open</div>
-            <div class = "filter-button filter-button-single" data-bind = "css: { 'filter-button-pressed': favoriteButtonFilter }, click: function() {favoriteButtonFilter(!favoriteButtonFilter())}"><i class="fa fa-heart"></i></div>
-            <div class = "filter-button filter-button-multi" data-bind = "css: { 'filter-button-pressed': priceButtonFilter()[0] }, click: function() {var temp = priceButtonFilter();temp[0] = !temp[0]; priceButtonFilter(temp)}">&Oslash;</div>
+          <div class="diamond-outer" data-bind = "click: function() {sortType('alpha')}" data-toggle="tooltip" data-placement="top" title="Alphabetical">
+            <div class = "diamond-inner sort-button"><i class="fa fa-sort-alpha-asc"></i></div>
+          </div>
+          <div class="diamond-outer" data-bind = "click: function() {sortType('rating')}" data-toggle="tooltip" data-placement="top" title="Rating">
+            <div class = "diamond-inner sort-button"><i class="fa fa-sort-amount-desc"></i></div>
+          </div>
+          <div class="diamond-outer" data-bind = "click: function() {sortType('distance')}" data-toggle="tooltip" data-placement="top" title="Distance to Center">
+            <div class = "diamond-inner sort-button sort-button-4"><i class="fa fa-arrows-alt"></i></div>
+          </div>
+        </div>
+        <span class = "nav-divider"></span>
+        <div class = "nav-block nav-block-filter">
+          <h5 class = "nav-description">Filter</h5>
+          <div class = "filter-button filter-button-single" data-bind = "css: { 'filter-button-pressed': openButtonFilter }, click: function() {openButtonFilter(!openButtonFilter())}">Open</div>
+          <div class = "filter-button filter-button-single" data-bind = "css: { 'filter-button-pressed': favoriteButtonFilter }, click: function() {favoriteButtonFilter(!favoriteButtonFilter())}"><i class="fa fa-heart"></i></div>
+          <div class = "filter-button-multi-container">
+            <div class = "filter-button filter-button-multi filter-button-multi-first" data-bind = "css: { 'filter-button-pressed': priceButtonFilter()[0] }, click: function() {var temp = priceButtonFilter();temp[0] = !temp[0]; priceButtonFilter(temp)}">&Oslash;</div>
             <div class = "filter-button filter-button-multi" data-bind = "css: { 'filter-button-pressed': priceButtonFilter()[1] }, click: function() {var temp = priceButtonFilter();temp[1] = !temp[1]; priceButtonFilter(temp)}">$</div>
             <div class = "filter-button filter-button-multi" data-bind = "css: { 'filter-button-pressed': priceButtonFilter()[2] }, click: function() {var temp = priceButtonFilter();temp[2] = !temp[2]; priceButtonFilter(temp)}">$$</div>
             <div class = "filter-button filter-button-multi" data-bind = "css: { 'filter-button-pressed': priceButtonFilter()[3] }, click: function() {var temp = priceButtonFilter();temp[3] = !temp[3]; priceButtonFilter(temp)}">$$$</div>
             <div class = "filter-button filter-button-multi filter-button-multi-last" data-bind = "css: { 'filter-button-pressed': priceButtonFilter()[4] }, click: function() {var temp = priceButtonFilter();temp[4] = !temp[4]; priceButtonFilter(temp)}">$$$$</div>
-            <input type="range" min="0" max="5" value="0" step="0.5" id="stars-backing" data-bind="value: minRatingButtonFilter">
-            <div class="rateit bigstars rateit-filter" data-rateit-backingfld="#stars-backing" data-bind="css: { 'filter-button-pressed': minRatingButtonFilter() > 0 }, ko_rateit: {value: minRatingButtonFilter}" data-rateit-starwidth="16" data-rateit-starheight="16" ></div>
           </div>
-          <span class = "nav-divider"></span>
-          <div class = "nav-block nav-block-etc">
-            <h5 class = "nav-description">Ect.</h5>
-            <div class="diamond-outer">
-              <div class = "diamond-inner logo-button"><i class="fa fa-info-circle"></i></div>
-            </div>
-            <div class="diamond-outer">
-              <div class = "diamond-inner logo-button sb-open-right" data-bind = "ko_slideOutMenu: true"><i class="fa fa-cog"></i></div>
-            </div>
-          </div>
+          <input type="range" min="0" max="5" value="0" step="0.5" id="stars-backing" data-bind="value: minRatingButtonFilter">
+          <div class="rateit bigstars rateit-filter" data-rateit-backingfld="#stars-backing" data-bind="css: { 'filter-button-pressed': minRatingButtonFilter() > 0 }, ko_rateit: {value: minRatingButtonFilter}" data-rateit-starwidth="16" data-rateit-starheight="16" ></div>
+        </div>
+        <span class = "nav-divider"></span>
+        <div class = "nav-block nav-block-etc">
+          <h5 class = "nav-description">Ect.</h5>
+          <div class = "logo-button" data-toggle="tooltip" data-placement="top" title="Attributions  &amp; Credits"><i class="fa fa-info-circle"></i></div>
+          <div class = "logo-button sb-open-right" data-bind = "ko_slideOutMenu: true" data-toggle="tooltip" data-placement="top" title="Settings"><i class="fa fa-cog"></i></div>
         </div>
       </nav>
     </div>
@@ -162,11 +171,12 @@
     <script src="js/vendor/knockout-3.3.0.js"></script>
     <script src="js/vendor/oauth-signature.min.js"></script>
     <script src="js/vendor/fuzzyset.js"></script>
-    <script src="js/vendor/jquery.scrollintoview.min.js"></script>
+    <script src="js/vendor/perfect-scrollbar/js/min/perfect-scrollbar.jquery.min.js"></script>
+    <script src="js/jquery.scrollintoview.custom.js"></script>
     <script src="js/vendor/slidebars.min.js"></script>
     <script src="js/vendor/rateit/jquery.rateit.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&api_key=AIzaSyAypPO_LPwapkN6ykqyUDdnzxXBGV-0QyU&libraries=places&callback=app.createMap" async></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.22&api_key=AIzaSyAypPO_LPwapkN6ykqyUDdnzxXBGV-0QyU&libraries=places&callback=app.createMap" async></script>
   </body>
 </html>

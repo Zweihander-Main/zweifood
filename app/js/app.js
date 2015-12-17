@@ -144,12 +144,28 @@ var app = (function() {
 		}
 	}
 
+	var updatePerfectScrollbar = throttle(function(jqueryObject) {
+		jqueryObject.perfectScrollbar('update');
+	}, 16, {
+		"leading": false
+	});
+
 	ko.bindingHandlers.ko_autocomplete = {
-		init: function(element, valueAccessor) {
+		init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			$(element).autocomplete(valueAccessor());
 		},
-		update: function(element, valueAccessor) {
-			$(element).autocomplete("option", "source", valueAccessor().source);
+		update: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+			var source = function(request, response) {
+				var results = $.ui.autocomplete.filter(valueAccessor().source, request.term);
+				response(results.slice(0, 6));
+			};
+			var select = function(event, ui) {
+				allBindingsAccessor().textInput(ui.item.value);
+			};
+			$(element).autocomplete({
+				source: source,
+				select: select
+			});
 		}
 	};
 
@@ -201,9 +217,12 @@ var app = (function() {
 			var _value = valueAccessor();
 			var _valueUnwrapped = ko.unwrap(_value);
 			if (_valueUnwrapped) {
-				$(element).scrollintoview({
-					duration: 100
-				});
+				var scrollItemIntoView = throttle(function() {
+					$(element).scrollintoview({
+						duration: 100
+					});
+				}, 50);
+				scrollItemIntoView();
 			}
 		}
 	};
@@ -223,14 +242,14 @@ var app = (function() {
 			var passValue = valueAccessor();
 			passValue.value = valueAccessor().value();
 			$(element).slider(passValue).on("slidechange", function(event, ui) {
-					valueAccessor().value(ui.value);
-				});
+				valueAccessor().value(ui.value);
+			});
 		}
 	};
 
 	ko.bindingHandlers.ko_rateit = {
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-			$(element).bind('reset', function () {
+			$(element).bind('reset', function() {
 				valueAccessor().value(0);
 			});
 		}
@@ -238,13 +257,105 @@ var app = (function() {
 
 	ko.bindingHandlers.ko_styleInfoWindow = {
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-			$(element).parent().parent().parent().parent().addClass('custom-info-window');
+			var subContainer = $(element).parent().parent().addClass('custom-info-window-subcontainer');
+			var containerSiblings = subContainer.siblings();
+			var containerSubSiblings, backgroundContainer;
+			for (var i = 0; i < containerSiblings.length; i++) {
+				if ($(containerSiblings[i]).css('top') === '0px') {
+					containerSubSiblings = $(containerSiblings[i]).addClass('custom-info-window-background-container').children();
+					break;
+				}
+			}
+			if (containerSubSiblings) {
+				for (var j = 0; j < containerSubSiblings.length; j++) {
+					if ($(containerSubSiblings[j]).css('background-color') === 'rgb(255, 255, 255)') {
+						backgroundContainer = $(containerSubSiblings[j]).addClass('custom-info-window-background');
+						break;
+					}
+				}
+				if (backgroundContainer) {
+					var container = subContainer.parent().parent().parent().addClass('custom-info-window');
+					backgroundContainer.css({'background-color':'', 'border-radius': ''});
+				}
+			}
 		}
 	};
 
 	ko.bindingHandlers.ko_bootstrapTooltip = {
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-			 $('[data-toggle="tooltip"]').tooltip()
+			$('[data-toggle="tooltip"]').tooltip({
+				container: 'body'
+			});
+		}
+	};
+
+	ko.bindingHandlers.ko_perfectScrollbar = {
+		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			$(element).perfectScrollbar();
+
+			function hoverHandler(event) {
+				updatePerfectScrollbar($(this));
+				killHandler();
+			}
+
+			function killHandler() {
+				$(element).unbind('mouseenter', hoverHandler);
+			}
+			$(element).bind("mouseenter", hoverHandler);
+		},
+		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			var data = ko.utils.unwrapObservable(valueAccessor());
+			updatePerfectScrollbar($(element));
+		}
+	};
+
+	ko.bindingHandlers.generateStars = {
+		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			var stars = ko.unwrap(valueAccessor());
+			var wholeStars = Math.floor(stars);
+			var partialStar = stars - wholeStars;
+			var toAppend = '';
+			for (var i = 1; i <= stars; i++) {
+				toAppend += '<span class="glyphicon glyphicon-star" aria-hidden="true"></span>';
+			}
+			if (partialStar > 0) {
+				toAppend += '<span class="glyphicon glyphicon-star partial-width-' +
+					Math.round(partialStar * 10) + '" aria-hidden="true"></span>';
+			}
+			if (toAppend !== '') {
+				$(element).html(toAppend);
+			}
+		}
+	};
+
+	ko.bindingHandlers.generateUSD = {
+		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			var price = ko.unwrap(valueAccessor());
+			var toAppend = '';
+			for (var i = 1; i <= price; i++) {
+				toAppend += '<i class="fa fa-usd"></i>';
+			}
+			if (toAppend !== '') {
+				$(element).html(toAppend);
+			}
+		}
+	};
+
+	ko.bindingHandlers.menuToggle = {
+		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			var value = ko.unwrap(valueAccessor());
+			ko.utils.registerEventHandler(element, "click", function() {
+				$(element).toggleClass('mobile-button-pressed');
+				$('#' + value).toggleClass('panel-visible');
+				$(element).trigger('mouseleave');
+			});
+		}
+	};
+
+	ko.bindingHandlers.scrollToItem = {
+		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			var data = ko.utils.unwrapObservable(valueAccessor());
+			bindingContext.$data.scrollToItem();
 		}
 	};
 
@@ -291,7 +402,19 @@ var app = (function() {
 		currentViewModel.modelConstructor(self);
 		self.marker = ko.observable(new google.maps.Marker({
 			map: currentViewModel.mainMap,
-			opacity: (self.isListed() === false ? currentViewModel.lowMarkerOpacity() : appConfigObject.highMarkerOpacity)
+			opacity: (self.isListed() === false ? currentViewModel.lowMarkerOpacity() : appConfigObject.highMarkerOpacity),
+			icon: currentViewModel.markerImageCreator(),
+			shape: appConfigObject.defaultMarkerShape,
+		}));
+
+		self.disposableArray.push(self.google_priceLevel.subscribe(function(newValue) {
+			self.marker().setIcon(currentViewModel.markerImageCreator(self.isFavorite(), newValue));
+			self.marker(self.marker());
+		}));
+
+		self.disposableArray.push(self.isFavorite.subscribe(function(newValue) {
+			self.marker().setIcon(currentViewModel.markerImageCreator(newValue, self.google_priceLevel()));
+			self.marker(self.marker());
 		}));
 
 		self.disposableArray.push(self.google_name.subscribe(function(newValue) {
@@ -355,6 +478,10 @@ var app = (function() {
 				currentViewModel.currentlySelectedLocation().isSelected(false);
 			}
 			self.isSelected(true);
+			self.marker().setAnimation(google.maps.Animation.BOUNCE);
+			setTimeout(function() {
+				self.marker().setAnimation(null);
+			}, 750);
 			self.infoWindow.open(self.marker().map, self.marker());
 		}));
 
@@ -381,6 +508,37 @@ var app = (function() {
 		self.storageAvailable = storageAvailable('localStorage');
 		self.maxMarkerLimit = ko.observable(appConfigObject.maxMarkerLimit);
 		self.lowMarkerOpacity = ko.observable(appConfigObject.lowMarkerOpacity);
+		self.defaultMarkerImage = {
+			size: new google.maps.Size(appConfigObject.markerImageSize[0], appConfigObject.markerImageSize[1]),
+			origin: new google.maps.Point(appConfigObject.markerImageOrigin[0], appConfigObject.markerImageOrigin[1]),
+			anchor: new google.maps.Point(appConfigObject.markerImageAnchor[0], appConfigObject.markerImageAnchor[1])
+		};
+
+		self.markerImageCreator = function(isFavorite, priceLevel) {
+			var markerObject = self.defaultMarkerImage;
+			if (isFavorite === true) {
+				markerObject.url = appConfigObject.markerImageURLFav;
+				return markerObject;
+			}
+			switch (priceLevel) {
+				case 1:
+					markerObject.url = appConfigObject.markerImageURL1;
+					return markerObject;
+				case 2:
+					markerObject.url = appConfigObject.markerImageURL2;
+					return markerObject;
+				case 3:
+					markerObject.url = appConfigObject.markerImageURL3;
+					return markerObject;
+				case 4:
+					markerObject.url = appConfigObject.markerImageURL4;
+					return markerObject;
+				default:
+					markerObject.url = appConfigObject.markerImageURLEmpty;
+					return markerObject;
+
+			}
+		};
 
 		self.lowMarkerOpacity.subscribe(function(newValue) {
 			newValue = (Number(newValue).toFixed(2)) / 1;
@@ -465,12 +623,16 @@ var app = (function() {
 			}
 		};
 
-		self.modelRebuilder = function(model, blueprint) {
+		self.modelRebuilder = function(model, blueprint, location) {
 			for (var prop in self.APIMappingsForModel) {
 				var currentType = self.APIMappingsForModel[prop];
 				for (var i = 0; i < currentType.length; i++) {
-					if (currentType[i].oType !== 0) {
+					if ((currentType[i].oType !== 0) && (currentType[i].model !== "google_geometry")) {
 						model[currentType[i].model](blueprint[currentType[i].model]);
+					} else if (currentType[i].model === "google_geometry") {
+						var geometryBlueprint = blueprint[currentType[i].model];
+						geometryBlueprint.location = location;
+						model[currentType[i].model](geometryBlueprint);
 					} else {
 						model[currentType[i].model] = blueprint[currentType[i].model];
 					}
@@ -749,6 +911,7 @@ var app = (function() {
 					updateModel(results[match]);
 					results.splice(match, 1);
 				} else {
+					setResultSearchType(selectedPlace);
 					console.info(type + ": No Match");
 				}
 
@@ -1254,10 +1417,9 @@ var app = (function() {
 						var markerList = [];
 						for (var i = 0; i < favArray.length; i++) {
 							var newLoc = new LocationModel(self, "Nearby");
-							self.modelRebuilder(newLoc, favArray[i]);
-							newLoc.google_geometry().location =
-								new google.maps.LatLng(favArray[i].google_geometry.location.lat,
+							var passedGeometry = new google.maps.LatLng(favArray[i].google_geometry.location.lat,
 									favArray[i].google_geometry.location.lng);
+							self.modelRebuilder(newLoc, favArray[i], passedGeometry);
 							newLoc.isFavorite(true);
 							newLoc.google_openingHoursObject(undefined);
 							markerList.push(newLoc);
@@ -1292,14 +1454,40 @@ var app = (function() {
 			zoom: defaultZoom,
 			mapTypeId: google.maps.MapTypeId.ROADMAP,
 			mapTypeControlOptions: {
-			     mapTypeIds: []
-			  },
+				mapTypeIds: []
+			},
 			styles: defaultStyle
+		};
+
+		var reticleImage = new google.maps.MarkerImage(
+			'img/reticle.png', // marker image
+			new google.maps.Size(16, 16), // marker size
+			new google.maps.Point(0, 0), // marker origin
+			new google.maps.Point(8, 8)); // marker anchor point
+
+		var reticleShape = {
+			coords: [8, 8, 8, 8], // 1px
+			type: 'rect' // rectangle
 		};
 
 		var mainGoogleMap = new google.maps.Map(mapElement, mapOptions);
 		var viewModel1 = new ViewModel(mainGoogleMap);
 		ko.applyBindings(viewModel1);
+
+		reticleMarker = new google.maps.Marker({
+			position: mainGoogleMap.getCenter(),
+			map: mainGoogleMap,
+			icon: reticleImage,
+			shape: reticleShape,
+			optimized: false,
+			zIndex: 5
+		});
+
+		var centerReticle = throttle(function(center) {
+			reticleMarker.setPosition(center);
+		}, 16, {
+			"leading": false
+		});
 
 		var callAPIs = throttle(function() {
 			if (typeof(viewModel1.getRestaurantsFromGoogleMapsAPICallArray[viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1]) !== 'undefined') {
@@ -1308,11 +1496,11 @@ var app = (function() {
 			viewModel1.getRestaurantsFromGoogleMapsAPICallArray.push(true);
 			viewModel1.getRestaurantsFromGoogleMapsAPI(viewModel1
 				.getRestaurantsFromGoogleMapsAPICallArray.length - 1);
-		}, 1100, {
+		}, 1150, {
 			"trailing": false
 		});
 
-		var boundsChange = throttle(function() {
+		var boundsChange = throttle(function(center) {
 			viewModel1.checkIfOnMap(viewModel1.mainMap.getBounds());
 			viewModel1.mainMapCenter(mainGoogleMap.getCenter());
 			callAPIs();
@@ -1320,8 +1508,12 @@ var app = (function() {
 			"leading": false
 		});
 
+
+
 		google.maps.event.addListener(mainGoogleMap, 'bounds_changed', function() {
-			boundsChange();
+			var center = mainGoogleMap.getCenter();
+			boundsChange(center);
+			centerReticle(center);
 		});
 
 		if (viewModel1.storageAvailable === true) {

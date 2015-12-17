@@ -1,5 +1,5 @@
 var appConfigObject = {
-	lowMarkerOpacity: 0.25,
+	lowMarkerOpacity: 0.35,
 	highMarkerOpacity: 1.0,
 	maxMarkerLimit: 4000,
 	defaultLat: 41.699,
@@ -356,7 +356,7 @@ var appConfigObject = {
 			"oType": 1
 		}]
 	},
-	mapStyle:// [{
+	mapStyle: // [{
 	// 	"featureType": "all",
 	// 	"elementType": "labels.text.fill",
 	// 	"stylers": [{
@@ -513,7 +513,7 @@ var appConfigObject = {
 	// 		"lightness": 17
 	// 	}]
 	// }]
-	[{
+		[{
 		"featureType": "all",
 		"elementType": "labels.text.fill",
 		"stylers": [{
@@ -532,6 +532,14 @@ var appConfigObject = {
 			"color": "#000000"
 		}, {
 			"lightness": 16
+		}]
+	}, {
+		"featureType": "poi",
+		"elementType": "labels.icon",
+		"stylers": [{
+			"saturation": "-89"
+		}, {
+			"lightness": "-55"
 		}]
 	}, {
 		"featureType": "all",
@@ -572,36 +580,12 @@ var appConfigObject = {
 			"lightness": 3
 		}]
 	}, {
-		"featureType": "landscape",
-		"elementType": "labels.icon",
-		"stylers": [{
-			"saturation": "-100"
-		}, {
-			"lightness": "-54"
-		}]
-	}, {
-		"featureType": "poi",
-		"elementType": "all",
-		"stylers": [{
-			"visibility": "on"
-		}, {
-			"lightness": "0"
-		}]
-	}, {
 		"featureType": "poi",
 		"elementType": "geometry",
 		"stylers": [{
 			"color": "#000000"
 		}, {
 			"lightness": 4
-		}]
-	}, {
-		"featureType": "poi",
-		"elementType": "labels.icon",
-		"stylers": [{
-			"saturation": "-89"
-		}, {
-			"lightness": "-55"
 		}]
 	}, {
 		"featureType": "road",
@@ -669,5 +653,35 @@ var appConfigObject = {
 		}, {
 			"lightness": 17
 		}]
-	}]
+	}],
+	markerImageURLDefault: 'img/marker-default.png',
+	markerImageURLEmpty: 'img/marker-empty.png',
+	markerImageURL1: 'img/marker-1.png',
+	markerImageURL2: 'img/marker-2.png',
+	markerImageURL3: 'img/marker-3.png',
+	markerImageURL4: 'img/marker-4.png',
+	markerImageURLFav: 'img/marker-heart.png',
+	markerImageSize: [40, 75],
+	markerImageOrigin: [0, 0],
+	markerImageAnchor: [20, 65],
+	defaultMarkerShape: {
+		coords: [20, 0,
+			19, 0,
+			0, 19,
+			0, 20,
+			19, 39,
+			19, 62,
+			17, 63,
+			17, 66,
+			18, 67,
+			21, 67,
+			22, 66,
+			22, 63,
+			20, 62,
+			20, 39,
+			39, 20,
+			39, 19
+		],
+		type: 'poly'
+	},
 };
