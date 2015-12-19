@@ -1,32 +1,11 @@
 var app = (function() {
 
-	function isElementVisible(el) {
-		var elRect = el.getBoundingClientRect();
-		var elTop = elRect.top;
-		var elBottom = elTop + $(el).height();
-		var listTop = $('.marker-list').get(0).offsetTop;
-		var listBottom = listTop + $('.marker-list').height();
+	String.prototype.toProperCase = function() {
+		return this.replace(/\w\S*/g, function(txt) {
+			return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+		});
+	};
 
-		console.debug("elTop      : " + elTop + "\n" +
-			"elBottom   : " + elBottom + "\n" +
-			"listTop    : " + listTop + "\n" +
-			"listBottom : " + listBottom + "\n"
-		);
-
-		if ((elBottom > listBottom) || (elTop < listTop)) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	/**
-	 * Generates a random number and returns it as a string for OAuthentication
-	 * @return {string}
-	 */
-	function nonce_generate() {
-		return (Math.floor(Math.random() * 1e12).toString());
-	}
 
 	_now = Date.now || function() {
 		return new Date().getTime();
@@ -34,10 +13,8 @@ var app = (function() {
 
 	function debounce(func, wait, immediate) {
 		var timeout, args, context, timestamp, result;
-
 		var later = function() {
 			var last = _now() - timestamp;
-
 			if (last < wait && last >= 0) {
 				timeout = setTimeout(later, wait - last);
 			} else {
@@ -48,7 +25,6 @@ var app = (function() {
 				}
 			}
 		};
-
 		return function() {
 			context = this;
 			args = arguments;
@@ -59,7 +35,6 @@ var app = (function() {
 				result = func.apply(context, args);
 				context = args = null;
 			}
-
 			return result;
 		};
 	}
@@ -104,23 +79,12 @@ var app = (function() {
 		for (var i = 0; i < arrayOfResults.length; i++) {
 			setToMatch.add(arrayOfResults[i][nameOfName]);
 		}
-
 		var match = setToMatch.get(nameToMatch);
 		if ((match !== null) && (match[0][0] > appConfigObject.minFuzzyMatch)) {
 			return setToMatch.values().indexOf(match[0][1]);
 		} else {
 			return false;
 		}
-	}
-
-	function distanceBetweenTwoPointsInMeters(lat1, lon1, lat2, lon2) {
-		var p = 0.017453292519943295; // Math.PI / 180
-		var c = Math.cos;
-		var a = 0.5 - c((lat2 - lat1) * p) / 2 +
-			c(lat1 * p) * c(lat2 * p) *
-			(1 - c((lon2 - lon1) * p)) / 2;
-		// 2 * R; R = 6371 km * 1000 for meters
-		return 12742000 * Math.asin(Math.sqrt(a));
 	}
 
 	function allValuesSameInTwoArray(a1, a2) {
@@ -140,6 +104,14 @@ var app = (function() {
 			storage.removeItem(x);
 			return true;
 		} catch (e) {
+			return false;
+		}
+	}
+
+	function workersAvailable() {
+		if ((typeof(Worker) !== "undefined") && (window.location.protocol !== "file:")) {
+			return true;
+		} else {
 			return false;
 		}
 	}
@@ -275,7 +247,10 @@ var app = (function() {
 				}
 				if (backgroundContainer) {
 					var container = subContainer.parent().parent().parent().addClass('custom-info-window');
-					backgroundContainer.css({'background-color':'', 'border-radius': ''});
+					backgroundContainer.css({
+						'background-color': '',
+						'border-radius': ''
+					});
 				}
 			}
 		}
@@ -359,6 +334,53 @@ var app = (function() {
 		}
 	};
 
+	ko.bindingHandlers.infoWindowTemplate = {
+		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			if (!$(element).prev().hasClass('info-window-loaded')) {
+				ko.renderTemplate("info-window-template-container", bindingContext.$data, {}, element, 'replaceNode');
+			}
+		}
+	};
+
+	ko.bindingHandlers.errorsHandler = {
+		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			function killPanel(element, time) {
+				element.hide(time, function() {
+					element.unbind("click", onClickPanel);
+					element.remove();
+				});
+			}
+			function onClickPanel(event) {
+				killPanel($(event.currentTarget), 50);
+			}
+
+			var error = valueAccessor().data();
+			if (error !== false) {
+				valueAccessor().data(false);
+				var verbose = valueAccessor().verbose();
+				var isVerbose = error.verbose;
+				if ((verbose === true) || (isVerbose === false)) {
+					var customMessage = error.customMessage;
+					var textStatus = error.textStatus;
+					var toAdd = '<div class="panel ';
+					toAdd += (isVerbose === true ? 'panel-warning' : 'panel-danger');
+					toAdd += '"><div class="panel-heading"><h3 class="panel-title">';
+					toAdd += customMessage;
+					toAdd += '</h3></div><div class="panel-body">';
+					toAdd += textStatus;
+					toAdd += '</div></div>';
+					$('#error-container').append(toAdd);
+					var added = $('#error-container').children().last();
+					added.show(200);
+					added.bind("click", onClickPanel);
+					if (isVerbose === true) {
+						setTimeout(function() {killPanel(added, 200);}, 3000);
+					}
+				}
+			}
+		}
+	};
+
 	ko.extenders.numeric = function(target, precision) {
 		var result = ko.computed({
 			read: function() {
@@ -376,55 +398,36 @@ var app = (function() {
 		var self = this;
 		//Initialize
 		self.googleSearchType = ko.observable(searchType);
-		self.yelpSearchType = ko.observable("None");
-		self.locuSearchType = ko.observable("None");
-		self.foursquareSearchType = ko.observable("None");
+		self.googleIsLoading = ko.observable(false);
 
 		self.isInViewOnMap = ko.observable(true);
 		self.isListed = ko.observable(false);
 		self.isSelected = ko.observable(false);
 		self.hasBeenOpened = false;
-		self.modelNumber = currentViewModel.locationModelNumber;
-		currentViewModel.locationModelNumber++;
+		self.modelNumber = currentViewModel.getLocationModelNumber();
 		self.isFavorite = ko.observable(false);
-
-		self.isFavorite.subscribe(function(newValue) {
-			if (newValue === true) {
-				currentViewModel.favoriteArray.push(self);
-			} else {
-				currentViewModel.favoriteArray.remove(self);
-			}
-		});
 
 		self.disposableArray = [];
 		self.listenerStorage = [];
 
 		currentViewModel.modelConstructor(self);
+		currentViewModel.modelSearchTypeConstructor(self);
+
 		self.marker = ko.observable(new google.maps.Marker({
 			map: currentViewModel.mainMap,
 			opacity: (self.isListed() === false ? currentViewModel.lowMarkerOpacity() : appConfigObject.highMarkerOpacity),
 			icon: currentViewModel.markerImageCreator(),
-			shape: appConfigObject.defaultMarkerShape,
-		}));
-
-		self.disposableArray.push(self.google_priceLevel.subscribe(function(newValue) {
-			self.marker().setIcon(currentViewModel.markerImageCreator(self.isFavorite(), newValue));
-			self.marker(self.marker());
+			shape: appConfigObject.defaultMarkerShape
 		}));
 
 		self.disposableArray.push(self.isFavorite.subscribe(function(newValue) {
 			self.marker().setIcon(currentViewModel.markerImageCreator(newValue, self.google_priceLevel()));
 			self.marker(self.marker());
-		}));
-
-		self.disposableArray.push(self.google_name.subscribe(function(newValue) {
-			self.marker().setTitle(newValue);
-			self.marker(self.marker());
-		}));
-
-		self.disposableArray.push(self.google_geometry.subscribe(function(newValue) {
-			self.marker().setPosition(newValue.location);
-			self.marker(self.marker());
+			if (newValue === true) {
+				currentViewModel.favoriteArray.push(self);
+			} else {
+				currentViewModel.favoriteArray.remove(self);
+			}
 		}));
 
 		self.disposableArray.push(self.isSelected.subscribe(function(newValue) {
@@ -445,6 +448,21 @@ var app = (function() {
 			}
 		}));
 
+		self.disposableArray.push(self.google_priceLevel.subscribe(function(newValue) {
+			self.marker().setIcon(currentViewModel.markerImageCreator(self.isFavorite(), newValue));
+			self.marker(self.marker());
+		}));
+
+		self.disposableArray.push(self.google_name.subscribe(function(newValue) {
+			self.marker().setTitle(newValue);
+			self.marker(self.marker());
+		}));
+
+		self.disposableArray.push(self.google_geometry.subscribe(function(newValue) {
+			self.marker().setPosition(newValue.location);
+			self.marker(self.marker());
+		}));
+
 		self.isItOpenRightNow = ko.pureComputed(function() {
 			if (typeof(self.google_openingHoursObject()) !== "undefined") {
 				if (self.google_openingHoursObject().open_now === true) {
@@ -459,35 +477,29 @@ var app = (function() {
 			content: currentViewModel.makeInfoWindowContent(),
 		});
 
-		self.listenerStorage.push(self.infoWindow.addListener("closeclick", function() {
-			currentViewModel.currentlySelectedLocation().isSelected(false);
-		}));
+		self.listenerStorage.push(self.infoWindow.addListener("closeclick", currentViewModel.markerCloseClick));
 
-		self.listenerStorage.push(self.infoWindow.addListener("domready", function() {
-			if (!self.hasBeenOpened) {
-				ko.applyBindings(currentViewModel, self.infoWindow.getContent());
-				self.hasBeenOpened = true;
-			}
-		}));
+		self.listenerStorage.push(self.infoWindow.addListener("domready", currentViewModel.markerDomReady));
 
 		self.listenerStorage.push(self.marker().addListener('click', function() {
 			currentViewModel.shouldScroll(true);
-			currentViewModel.getDetailedGooglePlacesAPIInfo(self, currentViewModel.callSearchAPIs, self);
+			currentViewModel.getDetailedGooglePlacesAPIInfo(self, currentViewModel.callSearchAPIs);
 			if (typeof(currentViewModel.currentlySelectedLocation()) !== 'undefined') {
 				currentViewModel.currentlySelectedLocation().infoWindow.close();
 				currentViewModel.currentlySelectedLocation().isSelected(false);
 			}
 			self.isSelected(true);
-			self.marker().setAnimation(google.maps.Animation.BOUNCE);
-			setTimeout(function() {
-				self.marker().setAnimation(null);
-			}, 750);
+			currentViewModel.markerAnimation(self);
 			self.infoWindow.open(self.marker().map, self.marker());
 		}));
 
 		self.listWasClicked = function() {
 			new google.maps.event.trigger(self.marker(), 'click');
 			self.marker().map.panTo(self.google_geometry().location);
+		};
+
+		self.searchType = function(type) {
+			return self[type.toLowerCase() + 'SearchType'];
 		};
 
 		self.dispose = function() {
@@ -503,9 +515,13 @@ var app = (function() {
 
 	function ViewModel(map) {
 		var self = this;
+
 		self.mainMap = map;
 		self.mainMapCenter = ko.observable();
+		self.service = new google.maps.places.PlacesService(self.mainMap);
+
 		self.storageAvailable = storageAvailable('localStorage');
+		self.workersAvailable = workersAvailable();
 		self.maxMarkerLimit = ko.observable(appConfigObject.maxMarkerLimit);
 		self.lowMarkerOpacity = ko.observable(appConfigObject.lowMarkerOpacity);
 		self.defaultMarkerImage = {
@@ -513,32 +529,32 @@ var app = (function() {
 			origin: new google.maps.Point(appConfigObject.markerImageOrigin[0], appConfigObject.markerImageOrigin[1]),
 			anchor: new google.maps.Point(appConfigObject.markerImageAnchor[0], appConfigObject.markerImageAnchor[1])
 		};
+		self.APIMappingsForModel = appConfigObject.APIMappingsForModel;
+		self.APIConfiguredSearchTypes = appConfigObject.configuredSearchTypes;
 
-		self.markerImageCreator = function(isFavorite, priceLevel) {
-			var markerObject = self.defaultMarkerImage;
-			if (isFavorite === true) {
-				markerObject.url = appConfigObject.markerImageURLFav;
-				return markerObject;
-			}
-			switch (priceLevel) {
-				case 1:
-					markerObject.url = appConfigObject.markerImageURL1;
-					return markerObject;
-				case 2:
-					markerObject.url = appConfigObject.markerImageURL2;
-					return markerObject;
-				case 3:
-					markerObject.url = appConfigObject.markerImageURL3;
-					return markerObject;
-				case 4:
-					markerObject.url = appConfigObject.markerImageURL4;
-					return markerObject;
-				default:
-					markerObject.url = appConfigObject.markerImageURLEmpty;
-					return markerObject;
+		self.markedLocations = ko.observableArray([]);
+		self.locationModelNumber = 0;
+		self.currentlySelectedLocation = ko.observable();
+		self.scrolledItem = ko.observable();
+		self.shouldScroll = ko.observable(false);
 
-			}
-		};
+		self.attributionsArray = ko.observableArray([]);
+		self.favoriteArray = ko.observableArray([]);
+
+		self.getRestaurantsFromGoogleMapsAPICallArray = [];
+		self.currentDetailedAPIInfoBeingFetched = {};
+
+		self.errors = ko.observable(false);
+		self.verboseErrors = ko.observable(false);
+
+		self.sortType = ko.observable("count");
+		self.searchQuery = ko.observable();
+		self.priceButtonFilter = ko.observableArray([true, true, true, true, true]);
+		self.minRatingButtonFilter = ko.observable(0);
+		self.openButtonFilter = ko.observable(false);
+		self.favoriteButtonFilter = ko.observable(false);
+
+		self.infoWindowHTMLTemplate = '<div class = "info-window-template" data-bind = "infoWindowTemplate: true"></div>';
 
 		self.lowMarkerOpacity.subscribe(function(newValue) {
 			newValue = (Number(newValue).toFixed(2)) / 1;
@@ -553,7 +569,6 @@ var app = (function() {
 			numeric: 2
 		});
 
-
 		self.mainMapCenter.subscribe(function(newValue) {
 			self.setLocalStorage("mapCenter", JSON.stringify({
 				'lat': newValue.lat(),
@@ -562,110 +577,11 @@ var app = (function() {
 			}));
 		});
 
-		self.getNavWithCallback = function() {
-			if (navigator.geolocation) {
-				return navigator.geolocation.getCurrentPosition(self.mapPanFromNavigation);
-			} else {
-				return false;
-			}
-		};
-
-		self.mapPanFromNavigation = function(position) {
-			self.mapPan(position.coords.latitude, position.coords.longitude);
-		};
-
-		self.mapPan = function(lat, lng) {
-			var userLatLng = new google.maps.LatLng(lat, lng);
-			self.mainMap.panTo(userLatLng);
-		};
-
-		self.APIMappingsForModel = appConfigObject.APIMappingsForModel;
-
-		self.modelConstructor = function(model) {
-			for (var prop in self.APIMappingsForModel) {
-				var currentType = self.APIMappingsForModel[prop];
-				for (var i = 0; i < currentType.length; i++) {
-					if (currentType[i].oType === 1) {
-						model[currentType[i].model] = ko.observable();
-					} else if (currentType[i].oType === 2) {
-						model[currentType[i].model] = ko.observableArray([]);
-					}
-				}
-			}
-		};
-
-		self.modelDeconstructor = function(model) {
-			var returnModel = {};
-			for (var prop in self.APIMappingsForModel) {
-				var currentType = self.APIMappingsForModel[prop];
-				for (var i = 0; i < currentType.length; i++) {
-					if (currentType[i].oType === 0) {
-						returnModel[currentType[i].model] = model[currentType[i].model];
-					} else {
-						returnModel[currentType[i].model] = model[currentType[i].model]();
-					}
-				}
-			}
-			return returnModel;
-		};
-
-
-		self.modelUpdater = function(model, type, result) {
-			currentType = self.APIMappingsForModel[type];
-			for (var i = 0; i < currentType.length; i++) {
-				if (typeof(result[currentType[i].server]) !== "undefined") {
-					if (currentType[i].oType !== 0) {
-						model[currentType[i].model](result[currentType[i].server]);
-					} else {
-						model[currentType[i].model] = result[currentType[i].server];
-					}
-				}
-			}
-		};
-
-		self.modelRebuilder = function(model, blueprint, location) {
-			for (var prop in self.APIMappingsForModel) {
-				var currentType = self.APIMappingsForModel[prop];
-				for (var i = 0; i < currentType.length; i++) {
-					if ((currentType[i].oType !== 0) && (currentType[i].model !== "google_geometry")) {
-						model[currentType[i].model](blueprint[currentType[i].model]);
-					} else if (currentType[i].model === "google_geometry") {
-						var geometryBlueprint = blueprint[currentType[i].model];
-						geometryBlueprint.location = location;
-						model[currentType[i].model](geometryBlueprint);
-					} else {
-						model[currentType[i].model] = blueprint[currentType[i].model];
-					}
-				}
-			}
-		};
-
-		// Specify location, radius and place types for your Places API search.
-		self.markedLocations = ko.observableArray([]);
-
-		self.removeMultipleLocations = throttle(function(newValue) {
-			var toRemove = [];
-			var j = 0;
-			self.markedLocations.sort(function(left, right) {
-				return (left.isFavorite() === true ? 1 : (left.modelNumber < right.modelNumber ? -1 : 1));
-			});
-			for (var i = 0; i < appConfigObject.markerLimitRemoveBulkAmount; i++) {
-				newValue[i].dispose();
-			}
-			self.markedLocations.splice(0, appConfigObject.markerLimitRemoveBulkAmount);
-		}, 1000, {
-			"trailing": false
-		});
-
 		self.markedLocations.subscribe(function(newValue) {
 			if (newValue.length > self.maxMarkerLimit()) {
 				self.removeMultipleLocations(newValue);
 			}
 		});
-
-		self.locationModelNumber = 0;
-
-		self.favoriteArray = ko.observableArray([]);
 
 		self.favoriteArray.subscribe(function(newValue) {
 			var favoritesArray = [];
@@ -682,13 +598,11 @@ var app = (function() {
 			rateLimit: 2000
 		});
 
-		self.setLocalStorage = throttle(function(name, item) {
-			if (self.storageAvailable === true) {
-				localStorage.setItem(name, item);
+		self.currentlySelectedLocation.subscribe(debounce(function(newValue) {
+			if (typeof(newValue) !== "undefined") {
+				self.scrollToItem();
 			}
-		}, 1000, {
-			"trailing": false
-		});
+		}, 5));
 
 		self.idArray = ko.pureComputed(function() {
 			var returnArray = {
@@ -704,84 +618,9 @@ var app = (function() {
 			return returnArray;
 		});
 
-		self.locationArrayForWorkers = function() {
-			return ko.utils.arrayMap(self.listableEntries(), function(item) {
-				return {
-					"lat": item.google_geometry().location.lat(),
-					"lng": item.google_geometry().location.lng(),
-					"name": item.google_name(),
-					"google_placeId": item.google_placeId
-				};
-			});
-		};
-
-		self.getRestaurantsFromGoogleMapsAPICallArray = [];
-
-		self.attributionsArray = ko.observableArray([]);
-
-		self.sortType = ko.observable("count");
-
-		self.searchQuery = ko.observable();
-
-		self.priceButtonFilter = ko.observableArray([true, true, true, true, true]);
 		self.priceButtonFilterHasChanged = ko.pureComputed(function() {
 			return !allValuesSameInTwoArray(self.priceButtonFilter(), [true, true, true, true, true]);
 		});
-		self.minRatingButtonFilter = ko.observable(0);
-		self.openButtonFilter = ko.observable(false);
-		self.favoriteButtonFilter = ko.observable(false);
-
-		self.isSearchFiltered = function(item) {
-			if (typeof(self.searchQuery()) !== "undefined") {
-				if (item.google_name().toLowerCase()
-					.indexOf(self.searchQuery().toLowerCase()) >= 0) {
-					return false;
-				} else {
-					return true;
-				}
-			} else {
-				return false;
-			}
-		};
-
-		self.isButtonFiltered = function(item) {
-			if (self.priceButtonFilterHasChanged() === true) {
-				if (typeof(item.google_priceLevel()) !== "undefined") {
-					for (var i = 0; i < 5; i++) {
-						if (self.priceButtonFilter()[i] !== true) {
-							if (item.google_priceLevel() === i) {
-								return true;
-							}
-						}
-					}
-				} else {
-					if (self.priceButtonFilter()[0] !== true) {
-						return true;
-					}
-				}
-			}
-			if (self.minRatingButtonFilter() !== 0) {
-				if (typeof(item.google_rating()) !== "undefined") {
-					if (item.google_rating() < self.minRatingButtonFilter()) {
-						return true;
-					}
-				} else {
-					return true;
-				}
-			}
-			if (self.openButtonFilter() !== false) {
-				if (item.isItOpenRightNow() !== "Open") {
-					return true;
-				}
-			}
-			if (self.favoriteButtonFilter() !== false) {
-				if (item.isFavorite() !== true) {
-					return true;
-				}
-			}
-
-			return false;
-		};
 
 		self.listableEntries = ko.computed(function() {
 			var returnArray = {
@@ -842,8 +681,8 @@ var app = (function() {
 						var y1 = left.google_geometry().location.lng();
 						var y2 = right.google_geometry().location.lng();
 						var y3 = self.mainMapCenter().lng();
-						var dist1 = distanceBetweenTwoPointsInMeters(x1, y1, x3, y3);
-						var dist2 = distanceBetweenTwoPointsInMeters(x2, y2, x3, y3);
+						var dist1 = appConfigObject.distanceBetweenTwoPointsInMeters(x1, y1, x3, y3);
+						var dist2 = appConfigObject.distanceBetweenTwoPointsInMeters(x2, y2, x3, y3);
 						return (dist1 === dist2 ? 0 : (dist1 < dist2 ? -1 : 1));
 					});
 			}
@@ -854,17 +693,274 @@ var app = (function() {
 			rateLimit: 50
 		});
 
-		self.currentlySelectedLocation = ko.observable();
-
-		self.scrolledItem = ko.observable();
-
-		self.shouldScroll = ko.observable(false);
-
-		self.currentlySelectedLocation.subscribe(debounce(function(newValue) {
-			if (typeof(newValue) !== "undefined") {
-				self.scrollToItem();
+		self.initializeCurrentDetailedAPIInfoBeingFetched = function() {
+			self.currentDetailedAPIInfoBeingFetched.findID = function(service, type, ID) {
+				return this[service][type].indexOf(ID);
+			};
+			self.currentDetailedAPIInfoBeingFetched.pushID = function(service, type, ID) {
+				this[service][type].push(ID);
+				this[service][type][this[service][type].length - 1][service + "IsLoading"](true);
+			};
+			self.currentDetailedAPIInfoBeingFetched.removedID = function(service, type, ID) {
+				var index = this.findID(service, type, ID);
+				if (index > -1) {
+					this[service][type][index][service + "IsLoading"](false);
+					this[service][type].splice(index, 1);
+				}
+				for (var i = 0; i < this.intercept.length; i++) {
+					if (this.intercept.ID === ID) {
+						self.getDetailedAPIData(this.intercept[i].service, this.intercept[i].ID);
+						this.intercept.splice(i, 1);
+					}
+				}
+			};
+			self.currentDetailedAPIInfoBeingFetched.intercept = [];
+			self.currentDetailedAPIInfoBeingFetched.interceptIDPush = function(service, type, ID) {
+				for (var i = 0; i < this.intercept.length; i++) {
+					if (this.intercept.ID === ID) {
+						return;
+					}
+				}
+				this.intercept.push({
+					"ID": ID,
+					"type": type,
+					"service": service
+				});
+			};
+			self.currentDetailedAPIInfoBeingFetched.interceptIDRemove = function(service, type, ID) {
+				for (var i = 0; i < this.intercept.length; i++) {
+					if (this.intercept.ID === ID) {
+						this.intercept.splice(i, 1);
+					}
+				}
+			};
+			for (var i = 0; i < self.APIConfiguredSearchTypes.length; i++) {
+				self.currentDetailedAPIInfoBeingFetched[self.APIConfiguredSearchTypes[i]] = {
+					"basic": [],
+					"detailed": []
+				};
 			}
-		}, 5));
+			self.currentDetailedAPIInfoBeingFetched.google = {
+				"detailed": []
+			};
+		};
+
+		self.markerCloseClick = function() {
+			self.currentlySelectedLocation().isSelected(false);
+		};
+
+		self.markerDomReady = function() {
+			if (!self.currentlySelectedLocation().hasBeenOpened) {
+				ko.applyBindings(self, self.currentlySelectedLocation().infoWindow.getContent());
+				self.currentlySelectedLocation().hasBeenOpened = true;
+			}
+		};
+
+		self.markerAnimation = function(loc) {
+			loc.marker().setAnimation(google.maps.Animation.BOUNCE);
+			setTimeout(function() {
+				loc.marker().setAnimation(null);
+			}, 750);
+		};
+
+		self.markerImageCreator = function(isFavorite, priceLevel) {
+			var markerObject = self.defaultMarkerImage;
+			if (isFavorite === true) {
+				markerObject.url = appConfigObject.markerImageURLFav;
+				return markerObject;
+			}
+			switch (priceLevel) {
+				case 1:
+					markerObject.url = appConfigObject.markerImageURL1;
+					return markerObject;
+				case 2:
+					markerObject.url = appConfigObject.markerImageURL2;
+					return markerObject;
+				case 3:
+					markerObject.url = appConfigObject.markerImageURL3;
+					return markerObject;
+				case 4:
+					markerObject.url = appConfigObject.markerImageURL4;
+					return markerObject;
+				default:
+					markerObject.url = appConfigObject.markerImageURLEmpty;
+					return markerObject;
+			}
+			markerObject.url = appConfigObject.markerImageURLEmpty;
+			return markerObject;
+		};
+
+		self.getNavWithCallback = function() {
+			if (navigator.geolocation) {
+				return navigator.geolocation.getCurrentPosition(self.mapPanFromNavigation);
+			} else {
+				return false;
+			}
+		};
+
+		self.mapPanFromNavigation = function(position) {
+			self.mapPan(position.coords.latitude, position.coords.longitude);
+		};
+
+		self.mapPan = function(lat, lng) {
+			var userLatLng = new google.maps.LatLng(lat, lng);
+			self.mainMap.panTo(userLatLng);
+		};
+
+		self.modelConstructor = function(model) {
+			for (var prop in self.APIMappingsForModel) {
+				var currentType = self.APIMappingsForModel[prop];
+				for (var i = 0; i < currentType.length; i++) {
+					if (currentType[i].oType === 1) {
+						model[currentType[i].model] = ko.observable();
+					} else if (currentType[i].oType === 2) {
+						model[currentType[i].model] = ko.observableArray([]);
+					}
+				}
+			}
+		};
+
+		self.modelDeconstructor = function(model) {
+			var returnModel = {};
+			for (var prop in self.APIMappingsForModel) {
+				var currentType = self.APIMappingsForModel[prop];
+				for (var i = 0; i < currentType.length; i++) {
+					if (currentType[i].oType === 0) {
+						returnModel[currentType[i].model] = model[currentType[i].model];
+					} else {
+						returnModel[currentType[i].model] = model[currentType[i].model]();
+					}
+				}
+			}
+			return returnModel;
+		};
+
+		self.modelUpdater = function(model, type, result) {
+			currentType = self.APIMappingsForModel[type];
+			for (var i = 0; i < currentType.length; i++) {
+				if (typeof(result[currentType[i].server]) !== "undefined") {
+					if (currentType[i].oType !== 0) {
+						model[currentType[i].model](result[currentType[i].server]);
+					} else {
+						model[currentType[i].model] = result[currentType[i].server];
+					}
+				}
+			}
+		};
+
+		self.modelRebuilder = function(model, blueprint, location) {
+			for (var prop in self.APIMappingsForModel) {
+				var currentType = self.APIMappingsForModel[prop];
+				for (var i = 0; i < currentType.length; i++) {
+					if ((currentType[i].oType !== 0) && (currentType[i].model !== "google_geometry")) {
+						model[currentType[i].model](blueprint[currentType[i].model]);
+					} else if (currentType[i].model === "google_geometry") {
+						var geometryBlueprint = blueprint[currentType[i].model];
+						geometryBlueprint.location = location;
+						model[currentType[i].model](geometryBlueprint);
+					} else {
+						model[currentType[i].model] = blueprint[currentType[i].model];
+					}
+				}
+			}
+		};
+
+		self.modelSearchTypeConstructor = function(model) {
+			for (var i = 0; i < self.APIConfiguredSearchTypes.length; i++) {
+				model[self.APIConfiguredSearchTypes[i].toLowerCase() + 'SearchType'] = ko.observable("None");
+				model[self.APIConfiguredSearchTypes[i].toLowerCase() + 'IsLoading'] = ko.observable(false);
+			}
+		};
+
+		self.removeMultipleLocations = throttle(function(newValue) {
+			var toRemove = [];
+			var j = 0;
+			self.markedLocations.sort(function(left, right) {
+				return (left.isFavorite() === true ? 1 : (left.modelNumber < right.modelNumber ? -1 : 1));
+			});
+			for (var i = 0; i < appConfigObject.markerLimitRemoveBulkAmount; i++) {
+				newValue[i].dispose();
+			}
+			self.markedLocations.splice(0, appConfigObject.markerLimitRemoveBulkAmount);
+		}, 1000, {
+			"trailing": false
+		});
+
+		self.getLocationModelNumber = function() {
+			self.locationModelNumber++;
+			return (self.locationModelNumber - 1);
+		};
+
+		self.setLocalStorage = throttle(function(name, item) {
+			if (self.storageAvailable === true) {
+				localStorage.setItem(name, item);
+			}
+		}, 1000, {
+			"trailing": false
+		});
+
+		self.locationArrayForWorkers = function() {
+			return ko.utils.arrayMap(self.listableEntries(), function(item) {
+				return {
+					"lat": item.google_geometry().location.lat(),
+					"lng": item.google_geometry().location.lng(),
+					"name": item.google_name(),
+					"google_placeId": item.google_placeId
+				};
+			});
+		};
+
+		self.isSearchFiltered = function(item) {
+			if (typeof(self.searchQuery()) !== "undefined") {
+				if (item.google_name().toLowerCase()
+					.indexOf(self.searchQuery().toLowerCase()) >= 0) {
+					return false;
+				} else {
+					return true;
+				}
+			} else {
+				return false;
+			}
+		};
+
+		self.isButtonFiltered = function(item) {
+			if (self.priceButtonFilterHasChanged() === true) {
+				if (typeof(item.google_priceLevel()) !== "undefined") {
+					for (var i = 0; i < 5; i++) {
+						if (self.priceButtonFilter()[i] !== true) {
+							if (item.google_priceLevel() === i) {
+								return true;
+							}
+						}
+					}
+				} else {
+					if (self.priceButtonFilter()[0] !== true) {
+						return true;
+					}
+				}
+			}
+			if (self.minRatingButtonFilter() !== 0) {
+				if (typeof(item.google_rating()) !== "undefined") {
+					if (item.google_rating() < self.minRatingButtonFilter()) {
+						return true;
+					}
+				} else {
+					return true;
+				}
+			}
+			if (self.openButtonFilter() !== false) {
+				if (item.isItOpenRightNow() !== "Open") {
+					return true;
+				}
+			}
+			if (self.favoriteButtonFilter() !== false) {
+				if (item.isFavorite() !== true) {
+					return true;
+				}
+			}
+
+			return false;
+		};
 
 		self.scrollToItem = function() {
 			if ((typeof(self.currentlySelectedLocation()) !== "undefined") && (self.shouldScroll() === true)) {
@@ -872,13 +968,9 @@ var app = (function() {
 			}
 		};
 
-		self.service = new google.maps.places.PlacesService(self.mainMap);
-
-		self.infoWindowHTMLTemplate = $('#info-window-template-container')[0].innerHTML;
-
 		self.makeInfoWindowContent = function() {
 			var html = self.infoWindowHTMLTemplate;
-			html = $.parseHTML(html)[1];
+			html = $.parseHTML(html)[0];
 			return html;
 		};
 
@@ -898,21 +990,27 @@ var app = (function() {
 			});
 		};
 
-		self.successAPIFunction = function(results, selectedPlace, setResultSearchType, type, clonedMarkedLocations, initialPoint) {
+		self.successAPIFunction = function(results, selectedPlace, setResultSearchType, service, clonedMarkedLocations, initialPoint, workerHandler) {
+			var type;
+			if (typeof(clonedMarkedLocations) !== "undefined") {
+				type = "basic";
+			} else {
+				type = "detailed";
+			}
 
 			function updateModel(result) {
 				setResultSearchType(selectedPlace);
-				self.modelUpdater(selectedPlace, type, result);
+				self.modelUpdater(selectedPlace, service, result);
 			}
 
-			if (typeof(clonedMarkedLocations) !== "undefined") {
+			if (type === "basic") {
 				var match = matchBasedOnName(results, selectedPlace.google_name());
 				if (typeof(match) === 'number') {
 					updateModel(results[match]);
 					results.splice(match, 1);
 				} else {
-					setResultSearchType(selectedPlace);
-					console.info(type + ": No Match");
+					setResultSearchType(selectedPlace, "Not Found");
+					self.failAPIFunction((service.toProperCase() + " Search Problem"), "No Match Found", undefined, true);
 				}
 
 				var workerArray = {
@@ -920,8 +1018,9 @@ var app = (function() {
 					"locationsArray": clonedMarkedLocations,
 					"initialPoint": initialPoint,
 					"maxDistance": appConfigObject.latLngAccuracy,
-					"type": type,
-					"minFuzzyMatch": appConfigObject.minFuzzyMatch
+					"service": service,
+					"minFuzzyMatch": appConfigObject.minFuzzyMatch,
+					"workerHandler": workerHandler
 				};
 
 				self.workerHandler(workerArray, "yelp", setResultSearchType);
@@ -930,42 +1029,52 @@ var app = (function() {
 			}
 		};
 
-		self.failAPIFunction = function(customMessage, textStatus, errorThrown) {
-			console.warn(customMessage + ": " + textStatus);
-		};
-
-		self.currentDetailedReviewDataBeingFetched = [];
-		self.currentDetailedMenuDataBeingFetched = [];
-		self.currentDetailedFoursquareDataBeingFetched = [];
-
-		self.getDetailedReviewData = function() {
-			if ((self.currentlySelectedLocation().yelpSearchType() === "Search") &&
-				(self.currentDetailedReviewDataBeingFetched
-					.indexOf(self.currentlySelectedLocation().google_placeId) === -1)) {
-				self.currentDetailedReviewDataBeingFetched
-					.push(self.currentlySelectedLocation().google_placeId);
-				self.getYelpDetailedReviews();
+		self.failAPIFunction = function(customMessage, textStatus, errorThrown, verbose) {
+			if (typeof(verbose) === "undefined") {
+				verbose = false;
+			}
+			var errorObject = {};
+			errorObject.customMessage = customMessage;
+			errorObject.textStatus = textStatus;
+			errorObject.verbose = verbose;
+			self.errors(errorObject);
+			if (errorThrown) {
+				console.warn(errorThrown);
 			}
 		};
 
-		self.getDetailedMenuData = function() {
-			if ((self.currentlySelectedLocation().locuSearchType() === "Search") &&
-				(self.currentDetailedMenuDataBeingFetched
-					.indexOf(self.currentlySelectedLocation().google_placeId) === -1)) {
-				self.currentDetailedMenuDataBeingFetched
-					.push(self.currentlySelectedLocation().google_placeId);
-				self.getLocuDetailedInfo();
+		self.getDetailedAPIData = function(service, selectedPlace) {
+			if (selectedPlace.searchType(service)() === "None") {
+				if (self.currentDetailedAPIInfoBeingFetched.findID(service, "basic", selectedPlace) === -1) {
+					self.callBasicAPIData(service, selectedPlace);
+				}
+				self.currentDetailedAPIInfoBeingFetched.interceptIDPush(service, "detailed", selectedPlace);
+			} else if (selectedPlace.searchType(service)() === "Basic") {
+				if (self.currentDetailedAPIInfoBeingFetched.findID(service, "detailed", selectedPlace) === -1) {
+					self.currentDetailedAPIInfoBeingFetched.pushID(service, "detailed", selectedPlace);
+					self.callAPIInfo("detailed", service, selectedPlace);
+				}
 			}
 		};
 
-		self.getDetailedFoursquareData = function() {
-			if ((self.currentlySelectedLocation().foursquareSearchType() === "Search") &&
-				(self.currentDetailedFoursquareDataBeingFetched
-					.indexOf(self.currentlySelectedLocation().google_placeId) === -1)) {
-				self.currentDetailedFoursquareDataBeingFetched
-					.push(self.currentlySelectedLocation().google_placeId);
-				self.getFoursquareDetailedAPIInfo();
+		self.callSearchAPIs = function(currentLoc) {
+			var clonedMarkedLocations = ko.toJS(self.locationArrayForWorkers());
+			for (var i = 0; i < self.APIConfiguredSearchTypes.length; i++) {
+				var currentServiceType = self.APIConfiguredSearchTypes[i];
+				if (currentLoc.searchType(currentServiceType)() === "None") {
+					if (self.currentDetailedAPIInfoBeingFetched.findID(currentServiceType, "basic", currentLoc) === -1) {
+						self.callBasicAPIData(currentServiceType, currentLoc, clonedMarkedLocations);
+					}
+				}
 			}
+		};
+
+		self.callBasicAPIData = function(service, selectedPlace, clonedMarkedLocations) {
+			if (typeof(clonedMarkedLocations) === "undefined") {
+				clonedMarkedLocations = ko.toJS(self.locationArrayForWorkers());
+			}
+			self.currentDetailedAPIInfoBeingFetched.pushID(service, "basic", selectedPlace);
+			self.callAPIInfo("basic", service, selectedPlace, clonedMarkedLocations);
 		};
 
 		self.getRestaurantsFromGoogleMapsAPI = function(callArrayIndex) {
@@ -987,8 +1096,12 @@ var app = (function() {
 				self.attributionsArray.push.apply(self.attributionsArray, attributionsToPush);
 			}
 
-			var setResultSearchType = function(result) {
-				result.googleSearchType("Nearby");
+			var setResultSearchType = function(result, override) {
+				var toSet = "Nearby";
+				if (override) {
+					toSet = override;
+				}
+				result.googleSearchType(toSet);
 			};
 
 			function processNearbyResults(results, status, pagination) {
@@ -1051,361 +1164,116 @@ var app = (function() {
 			self.service.nearbySearch(request, processNearbyResults);
 		};
 
-		self.getDetailedGooglePlacesAPIInfo = function(selectedPlace, callback, toPassToCallback) {
-			if (!selectedPlace) {
-				selectedPlace = self.currentlySelectedLocation();
+		self.getDetailedGooglePlacesAPIInfo = function(selectedPlace, callback) {
+			if (self.currentDetailedAPIInfoBeingFetched.findID("google", "detailed", selectedPlace) === -1) {
+				self.currentDetailedAPIInfoBeingFetched.pushID("google", "detailed", selectedPlace);
+
+				var setResultSearchType = function(result) {
+					result.googleSearchType("Places");
+				};
+
+				self.service.getDetails({
+					"placeId": selectedPlace.google_placeId
+				}, function(result, status) {
+					self.currentDetailedAPIInfoBeingFetched.removedID("google", "detailed", selectedPlace);
+					if (status !== google.maps.places.PlacesServiceStatus.OK) {
+						self.failAPIFunction("Google Places Search Error", status);
+						return;
+					}
+					self.successAPIFunction(result, selectedPlace, setResultSearchType, "google");
+					callback(selectedPlace);
+				});
 			}
+		};
 
-			var setResultSearchType = function(result) {
-				result.googleSearchType("Places");
-			};
-
-			self.service.getDetails({
-				"placeId": selectedPlace.google_placeId
-			}, function(result, status) {
-				if (status !== google.maps.places.PlacesServiceStatus.OK) {
-					self.failAPIFunction("Google Places Search Error", status);
-					return;
+		self.callAPIInfo = function(APIType, service, selectedPlace, clonedMarkedLocations, callback) {
+			var configObject = appConfigObject[service + '_searchAPIProperties'];
+			var settings = configObject.settings;
+			var lat, lng, initialPoint;
+			settings.url = configObject[APIType + "_URL"];
+			if (APIType !== "basic") {
+				settings.url += selectedPlace[service + "_id"]();
+				if (configObject.extraSlash === true) {
+					settings.url += '/';
 				}
-				self.successAPIFunction(result, selectedPlace, setResultSearchType, "google");
-				if (typeof callback === "function") {
-					if (typeof(toPassToCallback) !== "undefined") {
-						callback(toPassToCallback);
+			}
+			if (APIType === "basic") {
+				lat = selectedPlace.google_geometry().location.lat();
+				lng = selectedPlace.google_geometry().location.lng();
+				initialPoint = {
+					"lat": lat,
+					"lng": lng
+				};
+				for (var name2 in configObject.basicExtraParameters) {
+					if (typeof(configObject.basicExtraParameters[name2]) === "function") {
+						settings.data[name2] = configObject.basicExtraParameters[name2](lat, lng);
 					} else {
-						callback();
+						settings.data[name2] = configObject.basicExtraParameters[name2];
 					}
 				}
-			});
-		};
-
-		self.getYelpAPIInfo = function(selectedPlace, clonedMarkedLocations, callback) {
-			if (!selectedPlace) {
-				selectedPlace = self.currentlySelectedLocation();
 			}
-			var yelp_url = appConfigObject.yelpBaseURL + 'search/';
-			var lat = selectedPlace.google_geometry().location.lat();
-			var lng = selectedPlace.google_geometry().location.lng();
-			var initialPoint = {
-				"lat": lat,
-				"lng": lng
-			};
-			var parameters = {
-				oauth_consumer_key: appConfigObject.yelpConsumerKey,
-				oauth_token: appConfigObject.yelpToken,
-				oauth_nonce: nonce_generate(),
-				oauth_timestamp: Math.floor(Date.now() / 1000),
-				oauth_signature_method: 'HMAC-SHA1',
-				oauth_version: '1.0',
-				callback: 'cb', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
-				bounds: (lat - appConfigObject.latLngAccuracy) + "," +
-					(lng - appConfigObject.latLngAccuracy) + "|" +
-					(lat + appConfigObject.latLngAccuracy) + "," +
-					(lng + appConfigObject.latLngAccuracy),
-				term: "food",
-				sort: 1, //sort by distance
-			};
-
-			var encodedSignature = oauthSignature.generate('GET', yelp_url,
-				parameters, appConfigObject.yelpConsumerSecret,
-				appConfigObject.yelpTokenSecret);
-			parameters.oauth_signature = encodedSignature;
-
-			var setResultSearchType = function(result) {
-				result.yelpSearchType("Search");
-			};
-
-			var settings = {
-				url: yelp_url,
-				data: parameters,
-				cache: true, // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
-				dataType: 'jsonp',
-				success: function(results) {
-					self.successAPIFunction(results.businesses, selectedPlace,
-						setResultSearchType, "yelp", clonedMarkedLocations, initialPoint);
-				},
-				fail: function(jqXHR, textStatus, errorThrown) {
-					self.failAPIFunction("Yelp Search Error", textStatus, errorThrown);
+			for (var name1 in configObject.allExtraParameters) {
+				settings.data[name1] = configObject.allExtraParameters[name1](settings.url, settings.data);
+			}
+			var setResultSearchType = function(result, override) {
+				var toSet = APIType.toProperCase();
+				if (override) {
+					toSet = override;
 				}
+				result.searchType(service)(toSet);
 			};
 
-			// Send AJAX query via jQuery library.
-			$.ajax(settings);
-
-			if (typeof callback === "function") {
-				callback();
-			}
-		};
-
-		self.getYelpDetailedReviews = function(selectedPlace, callback) {
-			if (!selectedPlace) {
-				selectedPlace = self.currentlySelectedLocation();
-			}
-			var yelp_url = appConfigObject.yelpBaseURL + 'business/' + selectedPlace.yelp_ID();
-			var parameters = {
-				oauth_consumer_key: appConfigObject.yelpConsumerKey,
-				oauth_token: appConfigObject.yelpToken,
-				oauth_nonce: nonce_generate(),
-				oauth_timestamp: Math.floor(Date.now() / 1000),
-				oauth_signature_method: 'HMAC-SHA1',
-				oauth_version: '1.0',
-				callback: 'cb' // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
-			};
-
-			var encodedSignature = oauthSignature.generate('GET', yelp_url,
-				parameters, appConfigObject.yelpConsumerSecret,
-				appConfigObject.yelpTokenSecret);
-			parameters.oauth_signature = encodedSignature;
-
-			var setResultSearchType = function(result) {
-				result.yelpSearchType("Business");
-			};
-
-			var settings = {
-				url: yelp_url,
-				data: parameters,
-				cache: true, // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
-				dataType: 'jsonp',
-				success: function(results) {
-					self.successAPIFunction(results, selectedPlace, setResultSearchType, "yelp");
-				},
-				fail: function(jqXHR, textStatus, errorThrown) {
-					self.failAPIFunction("Yelp Business Details Error", textStatus, errorThrown);
-				},
-				complete: function() {
-					var index = self.currentDetailedReviewDataBeingFetched
-						.indexOf(selectedPlace.google_placeId);
-					if (index > -1) {
-						self.currentDetailedReviewDataBeingFetched.splice(index, 1);
+			settings.success = function(results) {
+				var theResult = results;
+				if (typeof(configObject[APIType + '_returnType']) === "object") {
+					for (var i = 0; i < configObject[APIType + '_returnType'].length; i++) {
+						theResult = theResult[configObject[APIType + '_returnType'][i]];
 					}
+				} else if (typeof(configObject[APIType + '_returnType']) !== "undefined") {
+					theResult = theResult[configObject[APIType + '_returnType']];
+				} else {
+					theResult = results;
+				}
+				if (typeof(theResult) !== "undefined") {
+					self.successAPIFunction(theResult, selectedPlace, setResultSearchType, service, clonedMarkedLocations, initialPoint, configObject.workerHandler);
+				} else {
+					self.currentDetailedAPIInfoBeingFetched.interceptIDRemove(service, APIType, selectedPlace);
+					self.failAPIFunction(service.toProperCase() + " " + APIType.toProperCase() + " Search Error", "Couldn't interpret results");
 				}
 			};
 
-			// Send AJAX query via jQuery library.
+			settings.error = function(jqXHR, textStatus, errorThrown) {
+				self.currentDetailedAPIInfoBeingFetched.interceptIDRemove(service, APIType, selectedPlace);
+				self.failAPIFunction(service.toProperCase() + " " + APIType.toProperCase() + " Search Error", textStatus, errorThrown);
+			};
+
+			settings.complete = function(jqXHR, textStatus) {
+				self.currentDetailedAPIInfoBeingFetched.removedID(service, APIType, selectedPlace);
+			};
+
 			$.ajax(settings);
-			if (typeof callback === "function") {
+
+			if (typeof(callback) === "function") {
 				callback();
 			}
 		};
 
-		self.getLocuAPIInfo = function(selectedPlace, clonedMarkedLocations, callback) {
-			if (!selectedPlace) {
-				selectedPlace = self.currentlySelectedLocation();
-			}
-			var locu_url = appConfigObject.locuBaseURL + "search/";
-			var lat = selectedPlace.google_geometry().location.lat();
-			var lng = selectedPlace.google_geometry().location.lng();
-			var initialPoint = {
-				"lat": lat,
-				"lng": lng
-			};
-			var parameters = {
-				bounds: (lat + appConfigObject.latLngAccuracy) + "," +
-					(lng - appConfigObject.latLngAccuracy) + "|" +
-					(lat - appConfigObject.latLngAccuracy) + "," +
-					(lng + appConfigObject.latLngAccuracy),
-				api_key: appConfigObject.locuAPIKey
-			};
-
-			var setResultSearchType = function(result) {
-				result.locuSearchType("Search");
-			};
-
-			var settings = {
-				url: locu_url,
-				method: "GET",
-				data: parameters,
-				cache: true,
-				dataType: 'jsonp',
-				success: function(results) {
-					self.successAPIFunction(results.objects, selectedPlace,
-						setResultSearchType, "locu", clonedMarkedLocations, initialPoint);
-
-				},
-				fail: function(jqXHR, textStatus, errorThrown) {
-					self.failAPIFunction("Locu Search Error", textStatus, errorThrown);
-				}
-			};
-
-			// Send AJAX query via jQuery library.
-			$.ajax(settings);
-
-			if (typeof callback === "function") {
-				callback();
-			}
-		};
-
-		self.getLocuDetailedInfo = function(selectedPlace, callback) {
-			if (!selectedPlace) {
-				selectedPlace = self.currentlySelectedLocation();
-			}
-			var locu_url = appConfigObject.locuBaseURL + selectedPlace.locu_id() + "/";
-			var parameters = {
-				api_key: appConfigObject.locuAPIKey
-			};
-
-			var setResultSearchType = function(result) {
-				result.locuSearchType("Details");
-			};
-
-			var settings = {
-				url: locu_url,
-				method: "GET",
-				data: parameters,
-				cache: true,
-				dataType: 'jsonp',
-				success: function(result) {
-					self.successAPIFunction(result.objects[0], selectedPlace,
-						setResultSearchType, "locu");
-				},
-				fail: function(jqXHR, textStatus, errorThrown) {
-					self.failAPIFunction("Locu Business Details Error", textStatus, errorThrown);
-				},
-				complete: function() {
-					var index = self.currentDetailedMenuDataBeingFetched
-						.indexOf(selectedPlace.google_placeId);
-					if (index > -1) {
-						self.currentDetailedMenuDataBeingFetched.splice(index, 1);
-					}
-				}
-			};
-
-			// Send AJAX query via jQuery library.
-			$.ajax(settings);
-
-			if (typeof callback === "function") {
-				callback();
-			}
-		};
-
-		self.getFoursquareAPIInfo = function(selectedPlace, clonedMarkedLocations, callback) {
-			if (!selectedPlace) {
-				selectedPlace = self.currentlySelectedLocation();
-			}
-			var foursquare_url = appConfigObject.foursquareBaseURL + "search";
-			var lat = selectedPlace.google_geometry().location.lat();
-			var lng = selectedPlace.google_geometry().location.lng();
-			var initialPoint = {
-				"lat": lat,
-				"lng": lng
-			};
-
-			var radiusInMeters = distanceBetweenTwoPointsInMeters(lat,
-				lng, lat + appConfigObject.latLngAccuracy,
-				lng + appConfigObject.latLngAccuracy);
-			var parameters = {
-				ll: lat + ',' + lng,
-				client_id: appConfigObject.foursquareClientID,
-				client_secret: appConfigObject.foursquareClientSecret,
-				limit: 50,
-				v: '20150711',
-				categoryId: '4d4b7105d754a06374d81259', //food
-				intent: 'checkin',
-				radius: radiusInMeters
-			};
-
-			var setResultSearchType = function(result) {
-				result.foursquareSearchType("Search");
-			};
-
-			var settings = {
-				url: foursquare_url,
-				method: "GET",
-				data: parameters,
-				cache: true,
-				dataType: 'jsonp',
-				success: function(results) {
-					self.successAPIFunction(results.response.venues,
-						selectedPlace, setResultSearchType, "foursquare",
-						clonedMarkedLocations, initialPoint);
-				},
-				fail: function(jqXHR, textStatus, errorThrown) {
-					self.failAPIFunction("Foursquare Search Error", textStatus, errorThrown);
-				}
-			};
-
-			// Send AJAX query via jQuery library.
-			$.ajax(settings);
-
-			if (typeof callback === "function") {
-				callback();
-			}
-		};
-
-		self.getFoursquareDetailedAPIInfo = function(selectedPlace, callback) {
-			if (!selectedPlace) {
-				selectedPlace = self.currentlySelectedLocation();
-			}
-			var foursquare_url = appConfigObject.foursquareBaseURL + selectedPlace.foursquare_id();
-
-			var parameters = {
-				client_id: appConfigObject.foursquareClientID,
-				client_secret: appConfigObject.foursquareClientSecret,
-				v: '20150711'
-			};
-
-			var setResultSearchType = function(result) {
-				result.foursquareSearchType("Detail");
-			};
-
-			var settings = {
-				url: foursquare_url,
-				method: "GET",
-				data: parameters,
-				cache: true,
-				dataType: 'jsonp',
-				success: function(result) {
-					self.successAPIFunction(result.response.venue,
-						selectedPlace, setResultSearchType, "foursquare");
-				},
-				fail: function(jqXHR, textStatus, errorThrown) {
-					self.failAPIFunction("Foursquare Business Details Error", textStatus, errorThrown);
-				},
-				complete: function() {
-					var index = self.currentDetailedFoursquareDataBeingFetched
-						.indexOf(selectedPlace.google_placeId);
-					if (index > -1) {
-						self.currentDetailedFoursquareDataBeingFetched.splice(index, 1);
-					}
-				}
-			};
-
-			// Send AJAX query via jQuery library.
-			$.ajax(settings);
-
-			if (typeof callback === "function") {
-				callback();
-			}
-		};
-
-		self.callSearchAPIs = function(currentLoc) {
-			var clonedMarkedLocations = ko.toJS(self.locationArrayForWorkers());
-			if (currentLoc.yelpSearchType() === "None") {
-				self.getYelpAPIInfo(currentLoc, clonedMarkedLocations);
-			}
-			if (currentLoc.locuSearchType() === "None") {
-				self.getLocuAPIInfo(currentLoc, clonedMarkedLocations);
-			}
-			if (currentLoc.foursquareSearchType() === "None") {
-				self.getFoursquareAPIInfo(currentLoc, clonedMarkedLocations);
-			}
-		};
-
-		self.workerHandler = function(workerObject, type, resultFunction) {
-			var worker = new Worker('/js/workerFillMarkerData.js');
-			worker.onmessage = function(e) {
-				returnObject = e.data;
-				for (var i = 0; i < returnObject.length; i++) {
-					var matchedLocation = self.compareIDs(returnObject[i].google_placeId);
-					resultFunction(matchedLocation);
-					self.modelUpdater(matchedLocation, type, returnObject[i]);
-				}
-				avoidMemeoryLeaksDueToEventListeners(worker);
-			};
-			worker.postMessage(workerObject);
-
-
+		self.workerHandler = function(workerObject, service, resultFunction) {
 			function avoidMemeoryLeaksDueToEventListeners(toClear) {
 				toClear = undefined;
+			}
+			if (self.workersAvailable === true) {
+				var worker = new Worker('/js/workerFillMarkerData.js');
+				worker.onmessage = function(e) {
+					returnObject = e.data;
+					for (var i = 0; i < returnObject.length; i++) {
+						var matchedLocation = self.compareIDs(returnObject[i].google_placeId);
+						resultFunction(matchedLocation);
+						self.modelUpdater(matchedLocation, service, returnObject[i]);
+					}
+					avoidMemeoryLeaksDueToEventListeners(worker);
+				};
+				worker.postMessage(workerObject);
 			}
 		};
 
@@ -1417,9 +1285,11 @@ var app = (function() {
 						var markerList = [];
 						for (var i = 0; i < favArray.length; i++) {
 							var newLoc = new LocationModel(self, "Nearby");
-							var passedGeometry = new google.maps.LatLng(favArray[i].google_geometry.location.lat,
-									favArray[i].google_geometry.location.lng);
+							var lat = Number(favArray[i].google_geometry.location.lat);
+							var lng = Number(favArray[i].google_geometry.location.lng);
+							var passedGeometry = new google.maps.LatLng(lat, lng);
 							self.modelRebuilder(newLoc, favArray[i], passedGeometry);
+							newLoc.google_geometry(newLoc.google_geometry());
 							newLoc.isFavorite(true);
 							newLoc.google_openingHoursObject(undefined);
 							markerList.push(newLoc);
@@ -1432,7 +1302,7 @@ var app = (function() {
 					if ((mapCenter !== null) && (typeof(mapCenter.lat) !== "undefined") && (mapCenter.lat !== null)) {
 						self.mapPan(mapCenter.lat, mapCenter.lng);
 						if ((mapCenter.zoom !== null) && (typeof(mapCenter.zoom) === 'number')) {
-							self.mainMap.setZoom(mapCenter.zoom)
+							self.mainMap.setZoom(mapCenter.zoom);
 						}
 					}
 
@@ -1440,97 +1310,114 @@ var app = (function() {
 			}
 		};
 
+		self.singleErrorMessages = function() {
+			if (self.storageAvailable !== true) {
+				self.failAPIFunction("Local Storage Problem", "Local Storage support isn't available. Favorites will not save after page reload.");
+			}
+			if (self.workersAvailable !== true) {
+				self.failAPIFunction("Web Workers Problem", "Web Workers support isn't available. App will function normally but average data retrieval wait times will increase. \n Web workers do not work when loading this application from older browsers or directly from the local file system.");
+			}
+		};
+
+		self.initializeCurrentDetailedAPIInfoBeingFetched();
+		self.singleErrorMessages();
 		self.getLocalStorage();
 	}
 
-	function createMap() {
-		var defaultLatLng = new google.maps.LatLng(appConfigObject.defaultLat, appConfigObject.defaultLng),
-			defaultZoom = appConfigObject.defaultZoom,
-			mapElement = document.getElementById('mapDiv'),
-			defaultStyle = appConfigObject.mapStyle;
-
-		var mapOptions = {
-			center: defaultLatLng,
-			zoom: defaultZoom,
-			mapTypeId: google.maps.MapTypeId.ROADMAP,
-			mapTypeControlOptions: {
-				mapTypeIds: []
-			},
-			styles: defaultStyle
-		};
-
-		var reticleImage = new google.maps.MarkerImage(
-			'img/reticle.png', // marker image
-			new google.maps.Size(16, 16), // marker size
-			new google.maps.Point(0, 0), // marker origin
-			new google.maps.Point(8, 8)); // marker anchor point
-
-		var reticleShape = {
-			coords: [8, 8, 8, 8], // 1px
-			type: 'rect' // rectangle
-		};
-
-		var mainGoogleMap = new google.maps.Map(mapElement, mapOptions);
-		var viewModel1 = new ViewModel(mainGoogleMap);
-		ko.applyBindings(viewModel1);
-
-		reticleMarker = new google.maps.Marker({
-			position: mainGoogleMap.getCenter(),
-			map: mainGoogleMap,
-			icon: reticleImage,
-			shape: reticleShape,
-			optimized: false,
-			zIndex: 5
-		});
-
-		var centerReticle = throttle(function(center) {
-			reticleMarker.setPosition(center);
-		}, 16, {
-			"leading": false
-		});
-
-		var callAPIs = throttle(function() {
-			if (typeof(viewModel1.getRestaurantsFromGoogleMapsAPICallArray[viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1]) !== 'undefined') {
-				viewModel1.getRestaurantsFromGoogleMapsAPICallArray[viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1] = false;
-			}
-			viewModel1.getRestaurantsFromGoogleMapsAPICallArray.push(true);
-			viewModel1.getRestaurantsFromGoogleMapsAPI(viewModel1
-				.getRestaurantsFromGoogleMapsAPICallArray.length - 1);
-		}, 1150, {
-			"trailing": false
-		});
-
-		var boundsChange = throttle(function(center) {
-			viewModel1.checkIfOnMap(viewModel1.mainMap.getBounds());
-			viewModel1.mainMapCenter(mainGoogleMap.getCenter());
-			callAPIs();
-		}, 50, {
-			"leading": false
-		});
-
-
-
-		google.maps.event.addListener(mainGoogleMap, 'bounds_changed', function() {
-			var center = mainGoogleMap.getCenter();
-			boundsChange(center);
-			centerReticle(center);
-		});
-
-		if (viewModel1.storageAvailable === true) {
-			mapCenter = JSON.parse(localStorage.getItem('mapCenter'));
-			if (!localStorage.getItem('mapCenter') ||
-				(typeof(mapCenter.lat) === "undefined") ||
-				(mapCenter.lat === null)) {
-				viewModel1.getNavWithCallback();
-			}
-		} else {
-			viewModel1.getNavWithCallback();
-		}
-
-		toDebug = viewModel1;
+	function googleFailedToLoad() {
+		//TODO
 	}
 
+	function createMap() {
+		if (typeof google === 'undefined') {
+			googleFailedToLoad();
+		} else {
+			var defaultLatLng = new google.maps.LatLng(appConfigObject.defaultLat, appConfigObject.defaultLng),
+				defaultZoom = appConfigObject.defaultZoom,
+				mapElement = document.getElementById('mapDiv'),
+				defaultStyle = appConfigObject.mapStyle;
 
+			var mapOptions = {
+				center: defaultLatLng,
+				zoom: defaultZoom,
+				mapTypeId: google.maps.MapTypeId.ROADMAP,
+				mapTypeControlOptions: {
+					mapTypeIds: []
+				},
+				styles: defaultStyle
+			};
+
+			var reticleImage = new google.maps.MarkerImage(
+				'img/reticle.png', // marker image
+				new google.maps.Size(16, 16), // marker size
+				new google.maps.Point(0, 0), // marker origin
+				new google.maps.Point(8, 8)); // marker anchor point
+
+			var reticleShape = {
+				coords: [8, 8, 8, 8], // 1px
+				type: 'rect' // rectangle
+			};
+
+			var mainGoogleMap = new google.maps.Map(mapElement, mapOptions);
+			var viewModel1 = new ViewModel(mainGoogleMap);
+			ko.applyBindings(viewModel1, document.body);
+
+			reticleMarker = new google.maps.Marker({
+				position: mainGoogleMap.getCenter(),
+				map: mainGoogleMap,
+				icon: reticleImage,
+				shape: reticleShape,
+				optimized: false,
+				zIndex: 5
+			});
+
+			var centerReticle = throttle(function(center) {
+				reticleMarker.setPosition(center);
+			}, 16, {
+				"leading": false
+			});
+
+			var callAPIs = throttle(function() {
+				if (typeof(viewModel1.getRestaurantsFromGoogleMapsAPICallArray[viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1]) !== 'undefined') {
+					viewModel1.getRestaurantsFromGoogleMapsAPICallArray[viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1] = false;
+				}
+				viewModel1.getRestaurantsFromGoogleMapsAPICallArray.push(true);
+				viewModel1.getRestaurantsFromGoogleMapsAPI(viewModel1
+					.getRestaurantsFromGoogleMapsAPICallArray.length - 1);
+			}, 1200, {
+				"trailing": false
+			});
+
+			var boundsChange = throttle(function(center) {
+				viewModel1.checkIfOnMap(viewModel1.mainMap.getBounds());
+				viewModel1.mainMapCenter(mainGoogleMap.getCenter());
+				callAPIs();
+			}, 50, {
+				"leading": false
+			});
+
+
+
+			google.maps.event.addListener(mainGoogleMap, 'bounds_changed', function() {
+				var center = mainGoogleMap.getCenter();
+				boundsChange(center);
+				centerReticle(center);
+			});
+
+			if (viewModel1.storageAvailable === true) {
+				mapCenter = JSON.parse(localStorage.getItem('mapCenter'));
+				if (!localStorage.getItem('mapCenter') ||
+					(typeof(mapCenter.lat) === "undefined") ||
+					(mapCenter.lat === null)) {
+					viewModel1.getNavWithCallback();
+				}
+			} else {
+				viewModel1.getNavWithCallback();
+			}
+
+			toDebug = viewModel1;
+		}
+	}
 
 	var toDebug;
 
@@ -1539,9 +1426,9 @@ var app = (function() {
 		debugger;
 	}
 
-
 	return {
 		createMap: createMap,
+		googleFailedToLoad: googleFailedToLoad,
 		debug: debug
 	};
 
