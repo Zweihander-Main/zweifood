@@ -556,7 +556,7 @@ Object.defineProperties(appConfigObject, {
 				consumerSecret: '***REMOVED***',
 				token: '***REMOVED***',
 				tokenSecret: '***REMOVED***',
-				baseURL:'https://api.yelp.com/v2/'
+				baseURL: 'https://api.yelp.com/v2/'
 			},
 			locu: {
 				baseURL: 'https://api.locu.com/v1_0/venue/',
@@ -590,7 +590,11 @@ Object.defineProperties(appConfigObject, {
 				oauth_timestamp: Math.floor(Date.now() / 1000),
 				oauth_signature_method: 'HMAC-SHA1',
 				oauth_version: '1.0',
-				callback: 'cb', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
+				/**
+				 * This is crucial to include for jsonp implementation in AJAX or
+				 * else the oauth-signature will be wrong.
+				 */
+				callback: 'cb',
 				actionlinks: true
 			};
 
@@ -598,30 +602,37 @@ Object.defineProperties(appConfigObject, {
 				method: 'GET',
 				timeout: self.callAPITimeout,
 				data: parameters,
-				cache: true, // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter '_=23489489749837', invalidating our oauth-signature
+				/**
+				 * This is crucial to include as well to prevent jQuery from
+				 * adding on a cache-buster parameter '_=23489489749837',
+				 * invalidating our oauth-signature
+				 */
+				cache: true,
 				dataType: 'jsonp'
 			};
 
 			var basicExtraParameters = {
-					bounds: function(lat, lng) {
-						return ((lat - self.latLngAccuracy) + ',' +
+				bounds: function(lat, lng) {
+					return ((lat - self.latLngAccuracy) + ',' +
 						(lng - self.latLngAccuracy) + '|' +
 						(lat + self.latLngAccuracy) + ',' +
 						(lng + self.latLngAccuracy));
-					},
-					term: 'food',
-					sort: 1 //sort by distance
+				},
+				term: 'food',
+				sort: 1 //sort by distance
 			};
 
 			var allExtraParameters = {
 				oauth_signature: function(url, fullParameters) {
-					return (oauthSignature.generate('GET', url, fullParameters, self.searchAPIInfo.yelp.consumerSecret, self.searchAPIInfo.yelp.tokenSecret));
+					return (oauthSignature.generate('GET', url, fullParameters,
+						self.searchAPIInfo.yelp.consumerSecret,
+						self.searchAPIInfo.yelp.tokenSecret));
 				}
 			};
 
 			var workerHandler = {
-				'lat': ['location','coordinate','latitude'],
-				'lng': ['location','coordinate','longitude'],
+				'lat': ['location', 'coordinate', 'latitude'],
+				'lng': ['location', 'coordinate', 'longitude'],
 			};
 
 			returnObject.settings = settings;
@@ -653,12 +664,12 @@ Object.defineProperties(appConfigObject, {
 			};
 
 			var basicExtraParameters = {
-					bounds: function(lat, lng) {
-						return ((lat + self.latLngAccuracy) + ',' +
+				bounds: function(lat, lng) {
+					return ((lat + self.latLngAccuracy) + ',' +
 						(lng - self.latLngAccuracy) + '|' +
 						(lat - self.latLngAccuracy) + ',' +
 						(lng + self.latLngAccuracy));
-					}
+				}
 			};
 
 			var workerHandler = {
@@ -697,30 +708,30 @@ Object.defineProperties(appConfigObject, {
 			};
 
 			var basicExtraParameters = {
-				    radius: function(lat, lng) {
+				radius: function(lat, lng) {
 					return self.distanceBetweenTwoPointsInMeters(lat,
-					lng, lat + self.latLngAccuracy,
-					lng + self.latLngAccuracy);
-					},
-					ll: function(lat, lng) {
-						return (lat + ',' + lng);
-					},
-					limit: 50,
-					categoryId: '4d4b7105d754a06374d81259', //food
-					intent: 'checkin'
+						lng, lat + self.latLngAccuracy,
+						lng + self.latLngAccuracy);
+				},
+				ll: function(lat, lng) {
+					return (lat + ',' + lng);
+				},
+				limit: 50,
+				categoryId: '4d4b7105d754a06374d81259', //food
+				intent: 'checkin'
 			};
 
 			var workerHandler = {
-				'lat': ['location','lat'],
-				'lng': ['location','lng'],
+				'lat': ['location', 'lat'],
+				'lng': ['location', 'lng'],
 			};
 
 			returnObject.settings = settings;
 			returnObject.basicExtraParameters = basicExtraParameters;
 			returnObject.basic_URL = self.searchAPIInfo.foursquare.baseURL + 'search';
 			returnObject.detailed_URL = self.searchAPIInfo.foursquare.baseURL;
-			returnObject.basic_returnType = ['response','venues'];
-			returnObject.detailed_returnType = ['response','venue'];
+			returnObject.basic_returnType = ['response', 'venues'];
+			returnObject.detailed_returnType = ['response', 'venue'];
 			returnObject.workerHandler = workerHandler;
 
 			return returnObject;

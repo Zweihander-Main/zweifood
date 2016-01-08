@@ -66,7 +66,8 @@ self.addEventListener('message', function(e) {
 	 * Make sure locations are within the search point plus the search distance
 	 */
 	var narrowedDownLocations = e.data.locationsArray.filter(function(item) {
-		return checkIfMarkerIsWithinBounds(e.data.initialPoint.lat, e.data.initialPoint.lng, item.lat, item.lng, e.data.maxDistance);
+		return checkIfMarkerIsWithinBounds(e.data.initialPoint.lat,
+			e.data.initialPoint.lng, item.lat, item.lng, e.data.maxDistance);
 	});
 
 	/**
@@ -74,7 +75,8 @@ self.addEventListener('message', function(e) {
 	 * If a match exists, push it back to the return object.
 	 */
 	for (var i = 0; i < narrowedDownLocations.length; i++) {
-		var match = matchBasedOnNameForWorker(fuzzySetOfResultsNames, narrowedDownLocations[i].name, e.data.minFuzzyMatch);
+		var match = matchBasedOnNameForWorker(fuzzySetOfResultsNames,
+			narrowedDownLocations[i].name, e.data.minFuzzyMatch);
 		if (typeof(match) === 'number') {
 			var correctResult = resultsArray[match];
 			correctResult.google_placeId = narrowedDownLocations[i].google_placeId;

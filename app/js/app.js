@@ -228,11 +228,12 @@ var app = (function() {
 	 * @param {object} jQueryObject   jQuery object that perfectscrollbar is
 	 *                                attached to
 	 */
-	var perfectScrollbar_updatePerfectScrollbar = throttle(function(jqueryObject) {
-		jqueryObject.perfectScrollbar('update');
-	}, 16, {
-		'leading': false
-	});
+	var perfectScrollbar_updatePerfectScrollbar =
+		throttle(function(jqueryObject) {
+			jqueryObject.perfectScrollbar('update');
+		}, 16, {
+			'leading': false
+		});
 
 	/**
 	 * /**
@@ -252,7 +253,8 @@ var app = (function() {
 	 *                                         bindinghandler
 	 * @return {string/boolean}         	   String of parsed input or false
 	 */
-	function dropdown_interpretValue(input, binding, element, allBindings, viewModel, bindingContext) {
+	function dropdown_interpretValue(input, binding, element,
+		allBindings, viewModel, bindingContext) {
 		if ((typeof(input) !== 'undefined') && (input !== null)) {
 			// Array will likely be a checkNested object
 			if (input.constructor === Array) {
@@ -274,7 +276,8 @@ var app = (function() {
 			return false;
 		}
 		if (typeof(binding) !== 'undefined') {
-			input = ko.bindingHandlers[binding].update(element, input, allBindings, viewModel, bindingContext, true);
+			input = ko.bindingHandlers[binding].update(element, input,
+				allBindings, viewModel, bindingContext, true);
 		}
 		return input;
 	}
@@ -334,7 +337,8 @@ var app = (function() {
 		/**
 		 * Bind jQuery UI autocomplete to element
 		 */
-		init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+		init: function(element, valueAccessor, allBindingsAccessor,
+			viewModel, bindingContext) {
 			$(element).autocomplete(valueAccessor());
 		},
 		/**
@@ -343,7 +347,8 @@ var app = (function() {
 		update: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			$(element).autocomplete({
 				source: function(request, response) {
-					var results = $.ui.autocomplete.filter(valueAccessor().source, request.term);
+					var results = $.ui.autocomplete.filter(valueAccessor()
+						.source, request.term);
 					response(results.slice(0, 6));
 				},
 				select: function(event, ui) {
@@ -373,7 +378,8 @@ var app = (function() {
 			};
 			ko.utils.extend(options, allBindings.autocompleteOptions);
 
-			var autocomplete = new google.maps.places.Autocomplete(element, options);
+			var autocomplete = new google.maps.places.
+			Autocomplete(element, options);
 			autocomplete.bindTo('bounds', map);
 
 			autocomplete.addListener('place_changed', function() {
@@ -447,7 +453,8 @@ var app = (function() {
 	 */
 	ko.bindingHandlers.ko_slider = {
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-			ko.bindingHandlers.value.init(element, valueAccessor, allBindings, viewModel, bindingContext);
+			ko.bindingHandlers.value.init(element, valueAccessor,
+				allBindings, viewModel, bindingContext);
 			var passValue = valueAccessor();
 			passValue.value = valueAccessor().value();
 			$(element).slider(passValue).on('slidechange', function(event, ui) {
@@ -482,24 +489,30 @@ var app = (function() {
 		 * element inline styling that can't be overriden by CSS.
 		 */
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-			var subContainer = $(element).parent().parent().addClass('custom-info-window-subcontainer');
+			var subContainer = $(element).parent().parent()
+				.addClass('custom-info-window-subcontainer');
 			var containerSiblings = subContainer.siblings();
 			var containerSubSiblings, backgroundContainer;
 			for (var i = 0; i < containerSiblings.length; i++) {
 				if ($(containerSiblings[i]).css('top') === '0px') {
-					containerSubSiblings = $(containerSiblings[i]).addClass('custom-info-window-background-container').children();
+					containerSubSiblings = $(containerSiblings[i])
+						.addClass('custom-info-window-background-container')
+						.children();
 					break;
 				}
 			}
 			if (containerSubSiblings) {
 				for (var j = 0; j < containerSubSiblings.length; j++) {
-					if ($(containerSubSiblings[j]).css('background-color') === 'rgb(255, 255, 255)') {
-						backgroundContainer = $(containerSubSiblings[j]).addClass('custom-info-window-background');
+					if ($(containerSubSiblings[j])
+						.css('background-color') === 'rgb(255, 255, 255)') {
+						backgroundContainer = $(containerSubSiblings[j])
+							.addClass('custom-info-window-background');
 						break;
 					}
 				}
 				if (backgroundContainer) {
-					var container = subContainer.parent().parent().parent().addClass('custom-info-window');
+					var container = subContainer.parent().parent().parent()
+						.addClass('custom-info-window');
 					backgroundContainer.css({
 						'background-color': '',
 						'border-radius': ''
@@ -565,7 +578,8 @@ var app = (function() {
 		 *                                  them to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext, internal) {
+		update: function(element, valueAccessor, allBindings,
+			viewModel, bindingContext, internal) {
 			var stars;
 			if (typeof(valueAccessor) === 'function') {
 				stars = ko.unwrap(valueAccessor());
@@ -576,7 +590,8 @@ var app = (function() {
 			var partialStar = stars - wholeStars;
 			var toAppend = '';
 			for (var i = 1; i <= stars; i++) {
-				toAppend += '<span class="glyphicon glyphicon-star" aria-hidden="true"></span>';
+				toAppend += '<span class="glyphicon glyphicon-star" ' +
+					'aria-hidden="true"></span>';
 			}
 			if (partialStar > 0) {
 				toAppend += '<span class="glyphicon glyphicon-star partial-width-' +
@@ -606,7 +621,8 @@ var app = (function() {
 		 *                                  it to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext, internal) {
+		update: function(element, valueAccessor, allBindings,
+			viewModel, bindingContext, internal) {
 			var value;
 			if (typeof(valueAccessor) === 'function') {
 				value = ko.unwrap(valueAccessor());
@@ -640,7 +656,8 @@ var app = (function() {
 		 *                                  them to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext, internal) {
+		update: function(element, valueAccessor, allBindings,
+			viewModel, bindingContext, internal) {
 			var price;
 			if (typeof(valueAccessor) === 'function') {
 				price = ko.unwrap(valueAccessor());
@@ -716,7 +733,8 @@ var app = (function() {
 	ko.bindingHandlers.infoWindowTemplate = {
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
 			if (!$(element).prev().hasClass('info-window-loaded')) {
-				ko.renderTemplate('info-window-template-container', bindingContext.$data, {}, element, 'replaceNode');
+				ko.renderTemplate('info-window-template-container',
+					bindingContext.$data, {}, element, 'replaceNode');
 			}
 		}
 	};
@@ -771,7 +789,8 @@ var app = (function() {
 	ko.bindingHandlers.listOutOpeningHours = {
 		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
 			var value = ko.unwrap(valueAccessor());
-			if (typeof(value) !== 'undefined' && checkNested(value, 'weekday_text', '0') !== false) {
+			if ((typeof(value) !== 'undefined') &&
+				(checkNested(value, 'weekday_text', '0') !== false)) {
 				var toAdd = '';
 				for (var i = 0; i < value.weekday_text.length; i++) {
 					toAdd += '<div>' + value.weekday_text[i] + '</div>';
@@ -826,30 +845,40 @@ var app = (function() {
 		 */
 		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
 			var value = valueAccessor().data;
-			var starter = '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret caret-dropdown"></span></button><ul class="dropdown-menu dropdown-menu-right">';
+			var starter = '<button type="button" class="btn btn-default ' +
+				'dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" ' +
+				'aria-expanded="false"><span class="caret caret-dropdown">' +
+				'</span></button><ul class="dropdown-menu dropdown-menu-right">';
 			var toAdd = starter;
 
 			for (var service in value) {
 				var binding, theValue;
 				//Interpret the value and send them to binding handler if needed
 				if (typeof(value[service].value_binding) !== 'undefined') {
-					theValue = dropdown_interpretValue(value[service].value, value[service].value_binding, element, allBindings, viewModel, bindingContext);
+					theValue = dropdown_interpretValue(value[service].value,
+						value[service].value_binding, element, allBindings,
+						viewModel, bindingContext);
 				} else {
 					theValue = dropdown_interpretValue(value[service].value);
 				}
 				if (theValue !== false) {
-					toAdd += '<li><strong>' + service + ':</strong> <span>' + theValue + '</span>';
+					toAdd += '<li><strong>' + service + ':</strong> <span>' +
+						theValue + '</span>';
 					//Add in value_binding_show_text if it's declared
-					if (typeof(value[service].value_binding_show_text) !== 'undefined') {
-						toAdd += ' (' + dropdown_interpretValue(value[service].value) + ')';
+					if (typeof(value[service].value_binding_show_text) !==
+						'undefined') {
+						toAdd += ' (' + dropdown_interpretValue(value[service]
+							.value) + ')';
 					}
 					//Add in value_n if defined
 					if (typeof(value[service].value_2) !== 'undefined') {
 						//Check if more than value_2, iterate through if so
 						if (typeof(value[service].value_3) !== 'undefined') {
 							var i = 2;
-							while (typeof(value[service]['value_' + i]) !== 'undefined') {
-								var extraValue = dropdown_interpretValue(value[service]['value_' + i]);
+							while (typeof(value[service]['value_' + i]) !==
+								'undefined') {
+								var extraValue = dropdown_interpretValue(
+									value[service]['value_' + i]);
 								if (extraValue !== false) {
 									if (i === 2) {
 										toAdd += '(' + extraValue + ')';
@@ -857,8 +886,11 @@ var app = (function() {
 										toAdd += ', ' + extraValue;
 									}
 									//Append to last
-									if (typeof(value[service]['value_' + (i + 1).toString()]) === 'undefined') {
-										if (typeof(value[service].append) !== 'undefined') {
+									if (typeof(value[service]['value_' + (i + 1)
+											.toString()
+										]) === 'undefined') {
+										if (typeof(value[service]
+												.append) !== 'undefined') {
 											toAdd += value[service].append;
 										}
 									}
@@ -867,10 +899,12 @@ var app = (function() {
 							}
 							//just value_2
 						} else {
-							var extraValue2 = dropdown_interpretValue(value[service].value_2);
+							var extraValue2 = dropdown_interpretValue(
+								value[service].value_2);
 							if (extraValue2 !== false) {
 								toAdd += ', ' + extraValue2;
-								if (typeof(value[service].append) !== 'undefined') {
+								if (typeof(value[service]
+										.append) !== 'undefined') {
 									toAdd += value[service].append;
 								}
 							}
@@ -965,7 +999,8 @@ var app = (function() {
 		 */
 		self.marker = ko.observable(new google.maps.Marker({
 			map: currentViewModel.mainMap,
-			opacity: (self.isListed() === false ? currentViewModel.lowMarkerOpacity() : appConfigObject.highMarkerOpacity),
+			opacity: (self.isListed() === false ?
+				currentViewModel.lowMarkerOpacity() : appConfigObject.highMarkerOpacity),
 			icon: currentViewModel.markerImageCreator(),
 			shape: appConfigObject.defaultMarkerShape
 		}));
@@ -975,7 +1010,8 @@ var app = (function() {
 		 * and to push itself to the favoriteArray for localStorage saving
 		 */
 		self.disposableArray.push(self.isFavorite.subscribe(function(newValue) {
-			self.marker().setIcon(currentViewModel.markerImageCreator(newValue, self.google_priceLevel()));
+			self.marker().setIcon(currentViewModel
+				.markerImageCreator(newValue, self.google_priceLevel()));
 			self.marker(self.marker());
 			currentViewModel.changeFavoriteArray(newValue, self);
 		}));
@@ -1006,7 +1042,8 @@ var app = (function() {
 		 * Subscribe to google_priceLevel to update marker image if it changes
 		 */
 		self.disposableArray.push(self.google_priceLevel.subscribe(function(newValue) {
-			self.marker().setIcon(currentViewModel.markerImageCreator(self.isFavorite(), newValue));
+			self.marker().setIcon(currentViewModel
+				.markerImageCreator(self.isFavorite(), newValue));
 			self.marker(self.marker());
 		}));
 
@@ -1050,8 +1087,10 @@ var app = (function() {
 		/**
 		 * Infowindow listeners, functions on viewModel to minimize model size
 		 */
-		self.listenerStorage.push(self.infoWindow.addListener('closeclick', currentViewModel.markerCloseClick));
-		self.listenerStorage.push(self.infoWindow.addListener('domready', currentViewModel.markerDomReady));
+		self.listenerStorage.push(self.infoWindow.addListener(
+			'closeclick', currentViewModel.markerCloseClick));
+		self.listenerStorage.push(self.infoWindow.addListener(
+			'domready', currentViewModel.markerDomReady));
 
 		/**
 		 * Infowindow click listener, sets the markerList to scroll to this model,
@@ -1121,9 +1160,12 @@ var app = (function() {
 		self.APIConfiguredSearchTypes = appConfigObject.configuredSearchTypes;
 		// Set default marker image object based on config object
 		self.defaultMarkerImage = {
-			size: new google.maps.Size(appConfigObject.markerImageSize[0], appConfigObject.markerImageSize[1]),
-			origin: new google.maps.Point(appConfigObject.markerImageOrigin[0], appConfigObject.markerImageOrigin[1]),
-			anchor: new google.maps.Point(appConfigObject.markerImageAnchor[0], appConfigObject.markerImageAnchor[1])
+			size: new google.maps.Size(appConfigObject.markerImageSize[0],
+				appConfigObject.markerImageSize[1]),
+			origin: new google.maps.Point(appConfigObject.markerImageOrigin[0],
+				appConfigObject.markerImageOrigin[1]),
+			anchor: new google.maps.Point(appConfigObject.markerImageAnchor[0],
+				appConfigObject.markerImageAnchor[1])
 		};
 
 		// Array of models
@@ -1164,7 +1206,8 @@ var app = (function() {
 		 * up template for infoWindow
 		 * @type {String}
 		 */
-		self.infoWindowHTMLTemplate = '<div class = "info-window-template" data-bind = "infoWindowTemplate: true"></div>';
+		self.infoWindowHTMLTemplate = '<div class = "info-window-template" ' +
+			'data-bind = "infoWindowTemplate: true"></div>';
 
 		/**
 		 * Subscribe to lowMarkerOpacity user set variable to set all markers to
@@ -1235,7 +1278,8 @@ var app = (function() {
 				'nearby': []
 			};
 			ko.utils.arrayMap(self.markedLocations(), function(item) {
-				if ((item.googleSearchType() === 'Nearby') || (item.googleSearchType() === 'Places')) {
+				if ((item.googleSearchType() === 'Nearby') ||
+					(item.googleSearchType() === 'Places')) {
 					returnArray.nearby.push(item.google_placeId);
 				}
 				returnArray.all.push(item.google_placeId);
@@ -1245,7 +1289,8 @@ var app = (function() {
 
 		// Computed check if priceButtonFilter has changed
 		self.priceButtonFilterHasChanged = ko.pureComputed(function() {
-			return !allValuesSameInTwoArray(self.priceButtonFilter(), [true, true, true, true, true]);
+			return !allValuesSameInTwoArray(
+				self.priceButtonFilter(), [true, true, true, true, true]);
 		});
 
 		/**
@@ -1317,8 +1362,10 @@ var app = (function() {
 						var y1 = left.google_geometry().location.lng();
 						var y2 = right.google_geometry().location.lng();
 						var y3 = self.mainMapCenter().lng();
-						var dist1 = appConfigObject.distanceBetweenTwoPointsInMeters(x1, y1, x3, y3);
-						var dist2 = appConfigObject.distanceBetweenTwoPointsInMeters(x2, y2, x3, y3);
+						var dist1 = appConfigObject
+							.distanceBetweenTwoPointsInMeters(x1, y1, x3, y3);
+						var dist2 = appConfigObject
+							.distanceBetweenTwoPointsInMeters(x2, y2, x3, y3);
 						return (dist1 === dist2 ? 0 : (dist1 < dist2 ? -1 : 1));
 					});
 			}
@@ -1358,7 +1405,8 @@ var app = (function() {
 			 */
 			self.currentDetailedAPIInfoBeingFetched.pushID = function(service, type, ID) {
 				this[service][type].push(ID);
-				this[service][type][this[service][type].length - 1][service + 'IsLoading'](true);
+				this[service][type][this[service][type].length - 1]
+					[service + 'IsLoading'](true);
 			};
 			/**
 			 * Remove model from array after particular service/method call is
@@ -1377,7 +1425,8 @@ var app = (function() {
 				}
 				for (var i = 0; i < this.intercept.length; i++) {
 					if (this.intercept[i].ID === ID) {
-						self.getDetailedAPIData(this.intercept[i].service, this.intercept[i].ID);
+						self.getDetailedAPIData(
+							this.intercept[i].service, this.intercept[i].ID);
 						this.intercept.splice(i, 1);
 					}
 				}
@@ -1392,18 +1441,19 @@ var app = (function() {
 			 * @param  {object} ID      model to call
 			 * @return {}               returns if call is already in place
 			 */
-			self.currentDetailedAPIInfoBeingFetched.interceptIDPush = function(service, type, ID) {
-				for (var i = 0; i < this.intercept.length; i++) {
-					if (this.intercept.ID === ID) {
-						return;
+			self.currentDetailedAPIInfoBeingFetched.interceptIDPush =
+				function(service, type, ID) {
+					for (var i = 0; i < this.intercept.length; i++) {
+						if (this.intercept.ID === ID) {
+							return;
+						}
 					}
-				}
-				this.intercept.push({
-					'ID': ID,
-					'type': type,
-					'service': service
-				});
-			};
+					this.intercept.push({
+						'ID': ID,
+						'type': type,
+						'service': service
+					});
+				};
 			/**
 			 * Remove call from intercept array (for a failed previous call)
 			 * @param  {object} ID      model to remove
@@ -1417,10 +1467,12 @@ var app = (function() {
 			};
 			// Setup arrays for basic and detailed calls for all services
 			for (var i = 0; i < self.APIConfiguredSearchTypes.length; i++) {
-				self.currentDetailedAPIInfoBeingFetched[self.APIConfiguredSearchTypes[i]] = {
-					'basic': [],
-					'detailed': []
-				};
+				self
+					.currentDetailedAPIInfoBeingFetched[self
+						.APIConfiguredSearchTypes[i]] = {
+						'basic': [],
+						'detailed': []
+					};
 			}
 			self.currentDetailedAPIInfoBeingFetched.google = {
 				'detailed': []
@@ -1468,7 +1520,8 @@ var app = (function() {
 		 */
 		self.markerDomReady = function() {
 			if (!self.currentlySelectedLocation().hasBeenOpened) {
-				ko.applyBindings(self, self.currentlySelectedLocation().infoWindow.getContent());
+				ko.applyBindings(self, self.currentlySelectedLocation()
+					.infoWindow.getContent());
 				self.currentlySelectedLocation().hasBeenOpened = true;
 			}
 		};
@@ -1544,7 +1597,8 @@ var app = (function() {
 		 */
 		self.getNavWithCallback = function() {
 			if (navigator.geolocation) {
-				return navigator.geolocation.getCurrentPosition(self.mapPanFromNavigation);
+				return navigator.geolocation.getCurrentPosition(
+					self.mapPanFromNavigation);
 			} else {
 				return false;
 			}
@@ -1599,9 +1653,11 @@ var app = (function() {
 				var currentType = self.APIMappingsForModel[prop];
 				for (var i = 0; i < currentType.length; i++) {
 					if (currentType[i].oType === 0) {
-						returnModel[currentType[i].model] = model[currentType[i].model];
+						returnModel[currentType[i]
+							.model] = model[currentType[i].model];
 					} else {
-						returnModel[currentType[i].model] = model[currentType[i].model]();
+						returnModel[currentType[i]
+							.model] = model[currentType[i].model]();
 					}
 				}
 			}
@@ -1639,7 +1695,8 @@ var app = (function() {
 			for (var prop in self.APIMappingsForModel) {
 				var currentType = self.APIMappingsForModel[prop];
 				for (var i = 0; i < currentType.length; i++) {
-					if ((currentType[i].oType !== 0) && (currentType[i].model !== 'google_geometry')) {
+					if ((currentType[i].oType !== 0) &&
+						(currentType[i].model !== 'google_geometry')) {
 						model[currentType[i].model](blueprint[currentType[i].model]);
 					} else if (currentType[i].model === 'google_geometry') {
 						var geometryBlueprint = blueprint[currentType[i].model];
@@ -1659,8 +1716,10 @@ var app = (function() {
 		 */
 		self.modelSearchTypeConstructor = function(model) {
 			for (var i = 0; i < self.APIConfiguredSearchTypes.length; i++) {
-				model[self.APIConfiguredSearchTypes[i].toLowerCase() + 'SearchType'] = ko.observable('None');
-				model[self.APIConfiguredSearchTypes[i].toLowerCase() + 'IsLoading'] = ko.observable(false);
+				model[self.APIConfiguredSearchTypes[i]
+					.toLowerCase() + 'SearchType'] = ko.observable('None');
+				model[self.APIConfiguredSearchTypes[i]
+					.toLowerCase() + 'IsLoading'] = ko.observable(false);
 			}
 		};
 
@@ -1675,7 +1734,8 @@ var app = (function() {
 			var j = 0;
 			//Push favorite to front
 			self.markedLocations.sort(function(left, right) {
-				return (left.isFavorite() === true ? 1 : (left.modelNumber < right.modelNumber ? -1 : 1));
+				return (left.isFavorite() === true ? 1 :
+					(left.modelNumber < right.modelNumber ? -1 : 1));
 			});
 			for (var i = 0; i < appConfigObject.markerLimitRemoveBulkAmount; i++) {
 				newValue[i].dispose();
@@ -1797,7 +1857,8 @@ var app = (function() {
 		 * the marker list
 		 */
 		self.scrollToItem = function() {
-			if ((typeof(self.currentlySelectedLocation()) !== 'undefined') && (self.shouldScroll() === true)) {
+			if ((typeof(self.currentlySelectedLocation()) !== 'undefined') &&
+				(self.shouldScroll() === true)) {
 				self.scrolledItem(self.currentlySelectedLocation());
 			}
 		};
@@ -1858,7 +1919,9 @@ var app = (function() {
 		 *                                        being called and is defined
 		 *                                        in the config object
 		 */
-		self.successAPIFunction = function(results, selectedPlace, setResultSearchType, service, clonedMarkedLocations, initialPoint, workerHandler) {
+		self.successAPIFunction = function(results, selectedPlace,
+			setResultSearchType, service, clonedMarkedLocations,
+			initialPoint, workerHandler) {
 			var type;
 			if (typeof(clonedMarkedLocations) !== 'undefined') {
 				type = 'basic';
@@ -1875,7 +1938,8 @@ var app = (function() {
 					results.splice(match, 1);
 				} else {
 					setResultSearchType(selectedPlace, 'Not Found');
-					self.failAPIFunction((service.toProperCase() + ' Search Problem'), 'No Match Found', undefined, true);
+					self.failAPIFunction((service.toProperCase() +
+						' Search Problem'), 'No Match Found', undefined, true);
 				}
 				// Call worker irregardless of match
 				var workerArray = {
@@ -1928,13 +1992,17 @@ var app = (function() {
 		 */
 		self.getDetailedAPIData = function(service, selectedPlace) {
 			if (selectedPlace.searchType(service)() === 'None') {
-				if (self.currentDetailedAPIInfoBeingFetched.findID(service, 'basic', selectedPlace) === -1) {
+				if (self.currentDetailedAPIInfoBeingFetched.findID(service,
+						'basic', selectedPlace) === -1) {
 					self.callBasicAPIData(service, selectedPlace);
 				}
-				self.currentDetailedAPIInfoBeingFetched.interceptIDPush(service, 'detailed', selectedPlace);
+				self.currentDetailedAPIInfoBeingFetched.interceptIDPush(service,
+					'detailed', selectedPlace);
 			} else if (selectedPlace.searchType(service)() === 'Basic') {
-				if (self.currentDetailedAPIInfoBeingFetched.findID(service, 'detailed', selectedPlace) === -1) {
-					self.currentDetailedAPIInfoBeingFetched.pushID(service, 'detailed', selectedPlace);
+				if (self.currentDetailedAPIInfoBeingFetched.findID(service,
+						'detailed', selectedPlace) === -1) {
+					self.currentDetailedAPIInfoBeingFetched.pushID(service,
+						'detailed', selectedPlace);
 					self.callAPIInfo('detailed', service, selectedPlace);
 				}
 			}
@@ -1952,8 +2020,10 @@ var app = (function() {
 			for (var i = 0; i < self.APIConfiguredSearchTypes.length; i++) {
 				var currentServiceType = self.APIConfiguredSearchTypes[i];
 				if (currentLoc.searchType(currentServiceType)() === 'None') {
-					if (self.currentDetailedAPIInfoBeingFetched.findID(currentServiceType, 'basic', currentLoc) === -1) {
-						self.callBasicAPIData(currentServiceType, currentLoc, clonedMarkedLocations);
+					if (self.currentDetailedAPIInfoBeingFetched
+						.findID(currentServiceType, 'basic', currentLoc) === -1) {
+						self.callBasicAPIData(currentServiceType, currentLoc,
+							clonedMarkedLocations);
 					}
 				}
 			}
@@ -2011,14 +2081,16 @@ var app = (function() {
 						// If marker doesn't exist, create new
 						if (self.idArray().all.indexOf(results[i].place_id) === -1) {
 							var newLoc = new LocationModel(self, 'Nearby');
-							self.successAPIFunction(results[i], newLoc, function() {}, 'google');
+							self.successAPIFunction(results[i], newLoc,
+								function() {}, 'google');
 							markerList.push(newLoc);
 						} else {
 							// Marker exists as radar, simply update
 							var matchedLocation = self.compareIDs(results[i].place_id);
 							if (matchedLocation) {
 								self.successAPIFunction(results[i],
-									matchedLocation, self.setAPIResultSearchType('Nearby', 'google').setSearchType, 'google');
+									matchedLocation, self.setAPIResultSearchType(
+										'Nearby', 'google').setSearchType, 'google');
 							}
 						}
 						if (results[i].html_attributions.length !== 0) {
@@ -2029,7 +2101,9 @@ var app = (function() {
 				self.markedLocations.push.apply(self.markedLocations, markerList);
 				if (pagination && pagination.hasNextPage) {
 					setTimeout(function() {
-						if (self.getRestaurantsFromGoogleMapsAPICallArray[callArrayIndex] === true) {
+						if (self
+							.getRestaurantsFromGoogleMapsAPICallArray[callArrayIndex] ===
+							true) {
 							pagination.nextPage();
 						}
 					}, 2000);
@@ -2103,18 +2177,23 @@ var app = (function() {
 		 *                                  against for the other APIs.
 		 */
 		self.getDetailedGooglePlacesAPIInfo = function(selectedPlace, callback) {
-			if (self.currentDetailedAPIInfoBeingFetched.findID('google', 'detailed', selectedPlace) === -1) {
-				self.currentDetailedAPIInfoBeingFetched.pushID('google', 'detailed', selectedPlace);
+			if (self.currentDetailedAPIInfoBeingFetched.findID('google',
+					'detailed', selectedPlace) === -1) {
+				self.currentDetailedAPIInfoBeingFetched.pushID('google',
+					'detailed', selectedPlace);
 
 				self.service.getDetails({
 					'placeId': selectedPlace.google_placeId
 				}, function(result, status) {
-					self.currentDetailedAPIInfoBeingFetched.removeID('google', 'detailed', selectedPlace);
+					self.currentDetailedAPIInfoBeingFetched.removeID('google',
+						'detailed', selectedPlace);
 					if (status !== google.maps.places.PlacesServiceStatus.OK) {
 						self.failAPIFunction('Google Places Search Error', status);
 						return;
 					}
-					self.successAPIFunction(result, selectedPlace, self.setAPIResultSearchType('Places', 'google').setSearchType, 'google');
+					self.successAPIFunction(result, selectedPlace,
+						self.setAPIResultSearchType('Places', 'google')
+						.setSearchType, 'google');
 					callback(selectedPlace);
 				});
 			}
@@ -2166,7 +2245,8 @@ var app = (function() {
 		 *                                          called when the initial call
 		 *                                          is sent out
 		 */
-		self.callAPIInfo = function(APIType, service, selectedPlace, clonedMarkedLocations, callback) {
+		self.callAPIInfo = function(APIType, service, selectedPlace,
+			clonedMarkedLocations, callback) {
 			/**
 			 * Object with the following properties:
 			 * settings 			settings for jQuery ajax call
@@ -2206,16 +2286,20 @@ var app = (function() {
 					'lng': lng
 				};
 				for (var name2 in configObject.basicExtraParameters) {
-					if (typeof(configObject.basicExtraParameters[name2]) === 'function') {
-						settings.data[name2] = configObject.basicExtraParameters[name2](lat, lng);
+					if (typeof(configObject
+							.basicExtraParameters[name2]) === 'function') {
+						settings.data[name2] =
+							configObject.basicExtraParameters[name2](lat, lng);
 					} else {
-						settings.data[name2] = configObject.basicExtraParameters[name2];
+						settings.data[name2] =
+							configObject.basicExtraParameters[name2];
 					}
 				}
 			}
 			// For oauth
 			for (var name1 in configObject.allExtraParameters) {
-				settings.data[name1] = configObject.allExtraParameters[name1](settings.url, settings.data);
+				settings.data[name1] = configObject
+					.allExtraParameters[name1](settings.url, settings.data);
 			}
 
 			/**
@@ -2238,11 +2322,17 @@ var app = (function() {
 				}
 				//Success/fail in finding array of result objects
 				if (typeof(theResult) !== 'undefined') {
-					self.successAPIFunction(theResult, selectedPlace, self.setAPIResultSearchType(APIType, service).setSearchType, service, clonedMarkedLocations, initialPoint, configObject.workerHandler);
+					self.successAPIFunction(theResult, selectedPlace,
+						self.setAPIResultSearchType(APIType, service)
+						.setSearchType, service, clonedMarkedLocations,
+						initialPoint, configObject.workerHandler);
 				} else {
-					self.currentDetailedAPIInfoBeingFetched.interceptIDRemove(selectedPlace);
+					self.currentDetailedAPIInfoBeingFetched
+						.interceptIDRemove(selectedPlace);
 					console.debug(results);
-					self.failAPIFunction(service.toProperCase() + ' ' + APIType.toProperCase() + ' Search Error', 'Could not interpret results');
+					self.failAPIFunction(service.toProperCase() + ' ' +
+						APIType.toProperCase() +
+						' Search Error', 'Could not interpret results');
 				}
 			};
 
@@ -2254,8 +2344,10 @@ var app = (function() {
 			 * @param  {object} errorThrown error object from jQuery
 			 */
 			settings.error = function(jqXHR, textStatus, errorThrown) {
-				self.currentDetailedAPIInfoBeingFetched.interceptIDRemove(selectedPlace);
-				self.failAPIFunction(service.toProperCase() + ' ' + APIType.toProperCase() + ' Search Error', textStatus, errorThrown);
+				self.currentDetailedAPIInfoBeingFetched
+					.interceptIDRemove(selectedPlace);
+				self.failAPIFunction(service.toProperCase() + ' ' +
+					APIType.toProperCase() + ' Search Error', textStatus, errorThrown);
 			};
 
 			/**
@@ -2265,7 +2357,8 @@ var app = (function() {
 			 * @param  {string} textStatus textStatus string from jQuery
 			 */
 			settings.complete = function(jqXHR, textStatus) {
-				self.currentDetailedAPIInfoBeingFetched.removeID(service, APIType, selectedPlace);
+				self.currentDetailedAPIInfoBeingFetched.removeID(service,
+					APIType, selectedPlace);
 			};
 
 			$.ajax(settings);
@@ -2314,9 +2407,11 @@ var app = (function() {
 				worker.onmessage = function(e) {
 					returnObject = e.data;
 					for (var i = 0; i < returnObject.length; i++) {
-						var matchedLocation = self.compareIDs(returnObject[i].google_placeId);
+						var matchedLocation = self.compareIDs(returnObject[i]
+							.google_placeId);
 						resultFunction(matchedLocation);
-						self.modelUpdater(matchedLocation, service, returnObject[i]);
+						self.modelUpdater(matchedLocation, service,
+							returnObject[i]);
 					}
 					// Worker should kill itself but make sure
 					self.avoidMemeoryLeaksDueToEventListeners(worker);
@@ -2332,7 +2427,8 @@ var app = (function() {
 		self.getLocalStorage = function() {
 			if (self.storageAvailable === true) {
 				if (localStorage.getItem('favoritesArray')) {
-					var favArray = JSON.parse(localStorage.getItem('favoritesArray'));
+					var favArray = JSON.parse(localStorage
+						.getItem('favoritesArray'));
 					if (favArray !== null) {
 						// Push all the favorites at once
 						var markerList = [];
@@ -2354,9 +2450,12 @@ var app = (function() {
 				}
 				if (localStorage.getItem('mapCenter')) {
 					var mapCenter = JSON.parse(localStorage.getItem('mapCenter'));
-					if ((mapCenter !== null) && (typeof(mapCenter.lat) !== 'undefined') && (mapCenter.lat !== null)) {
+					if ((mapCenter !== null) &&
+						(typeof(mapCenter.lat) !== 'undefined') &&
+						(mapCenter.lat !== null)) {
 						self.mapPan(mapCenter.lat, mapCenter.lng);
-						if ((mapCenter.zoom !== null) && (typeof(mapCenter.zoom) === 'number')) {
+						if ((mapCenter.zoom !== null) &&
+							(typeof(mapCenter.zoom) === 'number')) {
 							self.mainMap.setZoom(mapCenter.zoom);
 						}
 					}
@@ -2370,10 +2469,17 @@ var app = (function() {
 		 */
 		self.singleErrorMessages = function() {
 			if (self.storageAvailable !== true) {
-				self.failAPIFunction('Local Storage Problem', 'Local Storage support is not available. Favorites will not save after page reload.');
+				self.failAPIFunction('Local Storage Problem',
+					'Local Storage support is not available. ' +
+					'Favorites will not save after page reload.');
 			}
 			if (self.workersAvailable !== true) {
-				self.failAPIFunction('Web Workers Problem', 'Web Workers support is not available. App will function normally but average data retrieval wait times will increase. \n Web workers do not work when loading this application from older browsers or directly from the local file system.');
+				self.failAPIFunction('Web Workers Problem',
+					'Web Workers support is not available. App will function ' +
+					'normally but average data retrieval wait times will ' +
+					'increase. \n Web workers do not work when loading this ' +
+					'application from older browsers or directly from the ' +
+					'local file system.');
 			}
 		};
 
@@ -2417,7 +2523,10 @@ var app = (function() {
 		};
 		WebFont.load(WebFontConfig);
 
-		preload(['img/marker-1.png', 'img/marker-2.png', 'img/marker-3.png', 'img/marker-4.png', 'img/marker-empty.png', 'img/marker-heart.png'], function() {
+		preload(['img/marker-1.png', 'img/marker-2.png', 'img/marker-3.png',
+			'img/marker-4.png', 'img/marker-empty.png',
+			'img/marker-heart.png'
+		], function() {
 			imagesPreloaded = true;
 		});
 		waitUntilEverythingLoaded();
@@ -2467,7 +2576,8 @@ var app = (function() {
 			googleFailedToLoad();
 		} else {
 			// Setup default options from config object
-			var defaultLatLng = new google.maps.LatLng(appConfigObject.defaultLat, appConfigObject.defaultLng),
+			var defaultLatLng = new google.maps.LatLng(
+					appConfigObject.defaultLat, appConfigObject.defaultLng),
 				defaultZoom = appConfigObject.defaultZoom,
 				mapElement = document.getElementById('mapDiv'),
 				defaultStyle = appConfigObject.mapStyle;
@@ -2529,8 +2639,14 @@ var app = (function() {
 			 * Throttled to avoid over-query errors.
 			 */
 			var callAPIs = throttle(function() {
-				if (typeof(viewModel1.getRestaurantsFromGoogleMapsAPICallArray[viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1]) !== 'undefined') {
-					viewModel1.getRestaurantsFromGoogleMapsAPICallArray[viewModel1.getRestaurantsFromGoogleMapsAPICallArray.length - 1] = false;
+				if (typeof(viewModel1
+						.getRestaurantsFromGoogleMapsAPICallArray[viewModel1
+							.getRestaurantsFromGoogleMapsAPICallArray
+							.length - 1]) !== 'undefined') {
+					viewModel1
+						.getRestaurantsFromGoogleMapsAPICallArray[viewModel1
+							.getRestaurantsFromGoogleMapsAPICallArray
+							.length - 1] = false;
 				}
 				viewModel1.getRestaurantsFromGoogleMapsAPICallArray.push(true);
 				viewModel1.getRestaurantsFromGoogleMapsAPI(viewModel1

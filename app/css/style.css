@@ -1,24 +1,20 @@
 /*
 Table of Contents
-1. Font definitions
-2. Whole page CSS
-3. Map related
-4. Navbar
-5. Marker List
-6. Info Window
-7. Errors
-8. Modal
-9. Settings
-10. Loading Screen
-11. Media Queries
-12. Slidebars CSS
+1. Whole page CSS
+2. Map related
+3. Navbar
+4. Marker List
+5. Info Window
+6. Errors
+7. Modal
+8. Settings
+9. Loading Screen
+10. Media Queries
+11. Slidebars CSS
 */
 
 
-/* 1. Font definitions */
-
-
-/* 2. Whole page CSS */
+/* 1. Whole page CSS */
 
 body {
     margin: 100px 0 0 0;
@@ -56,7 +52,7 @@ a:focus {
 }
 
 
-/* 3. Map related */
+/* 2. Map related */
 
 .pac-container {
     z-index: 9999;
@@ -71,7 +67,7 @@ a:focus {
 }
 
 
-/* 4. Navbar */
+/* 3. Navbar */
 
 .navbar-custom,
 .mobile-nav {
@@ -375,7 +371,7 @@ div.bigstars button.rateit-reset:active {
 }
 
 
-/* 5. Marker List */
+/* 4. Marker List */
 
 .marker-list {
     background: #212121;
@@ -549,7 +545,7 @@ div.bigstars button.rateit-reset:active {
 }
 
 
-/* 6. Info Window */
+/* 5. Info Window */
 
 .custom-info-window .custom-info-window-background {
     background: #212121;
@@ -670,7 +666,7 @@ div.bigstars button.rateit-reset:active {
 }
 
 
-/* 7. Errors */
+/* 6. Errors */
 
 .error-container .panel {
     border-radius: 0;
@@ -714,7 +710,7 @@ div.bigstars button.rateit-reset:active {
 }
 
 
-/* 8. Modal */
+/* 7. Modal */
 
 .modal-content {
     border-radius: 0;
@@ -729,7 +725,7 @@ div.bigstars button.rateit-reset:active {
 }
 
 
-/* 9. Settings */
+/* 8. Settings */
 
 .settings-description {
     text-align: left;
@@ -746,7 +742,7 @@ div.bigstars button.rateit-reset:active {
 }
 
 
-/* 10. Loading Screen */
+/* 9. Loading Screen */
 
 #loading {
     background-color: #212121;
@@ -899,7 +895,7 @@ div.bigstars button.rateit-reset:active {
 }
 
 
-/* 11. Media Queries */
+/* 10. Media Queries */
 
 @media(max-width:1440px) {
     .search-box {
@@ -996,7 +992,7 @@ div.bigstars button.rateit-reset:active {
         height: 78%;
         background: #212121;
         margin: 0 0 106px 0;
-        bottom: 0%;
+        bottom: 0;
         left: initial;
     }
     .navbar-header {
@@ -1010,7 +1006,7 @@ div.bigstars button.rateit-reset:active {
     }
     .marker-list {
         top: inherit;
-        bottom: 0%;
+        bottom: 0;
         margin: 0 0 106px 0;
         height: 78%;
         left: 4%;
@@ -1018,7 +1014,8 @@ div.bigstars button.rateit-reset:active {
     }
     .mobile-nav {
         width: 92%;
-        bottom: 0%;
+        left: 4%;
+        bottom: 0;
         margin: 0 0 27px 0;
     }
     .filter-button-multi-container {
@@ -1040,10 +1037,10 @@ div.bigstars button.rateit-reset:active {
 @media(max-width: 991px) {
     .marker-list {
         top: inherit;
-        bottom: 0%;
+        bottom: 0;
         margin: 0 0 -1px 0;
         height: 83%;
-        left: 0%;
+        left: 0;
     }
     .info-window-template {
         max-height: none;
@@ -1058,13 +1055,14 @@ div.bigstars button.rateit-reset:active {
         width: 100%;
         margin: 0;
         height: 80px;
+        left: 0;
     }
     .navbar-custom.navbar-header {
-        bottom: 0%;
+        bottom: 0;
         margin: 0 0 79px 0;
         height: 83%;
         top: inherit;
-        right: 0%;
+        right: 0;
     }
     .page-wrapper {
         position: absolute;
@@ -1092,7 +1090,7 @@ div.bigstars button.rateit-reset:active {
 }
 
 
-/* 12. Slidebars CSS */
+/* 11. Slidebars CSS */
 
 
 /* -----------------------------------
