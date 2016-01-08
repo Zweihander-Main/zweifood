@@ -6,7 +6,9 @@
   "scripts": {},
   "main": "index.html",
   "dependencies": {
-    "imagemin-mozjpeg": "^5.1.0"
+    "gulp-filter": "^3.0.1",
+    "imagemin-mozjpeg": "^5.1.0",
+    "stackup": "^1.0.1"
   },
   "devDependencies": {
     "browser-sync": "^2.8.2",

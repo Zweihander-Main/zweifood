@@ -6,7 +6,6 @@ var gulp = require('gulp'),
     fs = require('fs'),
     path = require('path'),
     del = require('del'),
-    swPrecache = require('sw-precache'),
     gulpLoadPlugins = require('gulp-load-plugins'),
     pkg = require('./package.json'),
     portVal = 3020,
@@ -15,6 +14,10 @@ var gulp = require('gulp'),
     inlinesource = require('gulp-inline-source'),
     reload = browserSync.reload;
 
+
+gulp.on('err', function(e) {
+  console.log(e.err.stack);
+});
 
 gulp.task('ngrok-url', function(cb) {
   return ngrok.connect(portVal, function (err, url) {
@@ -64,7 +67,7 @@ gulp.task('psi:no-kill', ['psi-seq'], function() {
 
 // Lint JavaScript
 gulp.task('jshint', function() {
-  gulp.src(['app/**/*.js'])
+  gulp.src(['app/js/**/*.js'])
     .pipe(reload({stream: true, once: true}))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
@@ -73,11 +76,11 @@ gulp.task('jshint', function() {
 
 // Optimize images
 gulp.task('images', function() {
-  gulp.src(['app/**/*.png', 'app/**/*.jpg', 'app/**/*.gif'])
-    .pipe($.cache($.imagemin({
+  gulp.src(['app/**/*.{gif,jpg,png}'])
+    .pipe($.imagemin({
       progressive: true,
       interlaced: true,
-    })))
+    }))
     .pipe(gulp.dest('dist'))
     .pipe($.size({title: 'images'}));
 });
@@ -86,6 +89,8 @@ gulp.task('images', function() {
 gulp.task('copy', function() {
   gulp.src([
     'app/*',
+    //copy all fonts
+    'app/**/*.{otf,eot,svg,ttf,woff,woff2}',
     '!app/*.html',
   ], {
     dot: true
@@ -135,10 +140,12 @@ gulp.task('html', function() {
   var assets = $.useref.assets({searchPath: '{.tmp,app}'});
 
   return gulp.src(['app/**/*.html'])
+
     .pipe(assets)
     // Concatenate and minify styles
     // In case you are still using useref build blocks
     .pipe($.if('*.css', $.minifyCss()))
+    .pipe($.if('*.js',$.uglify({preserveComments: false})))
     .pipe(assets.restore())
     .pipe($.useref())
 
@@ -187,33 +194,6 @@ gulp.task('default', ['clean'], function (cb) {
   sequence(
     'styles',
     ['jshint', 'html', 'scripts', 'images', 'copy'],
-    'generate-service-worker',
     cb
   );
-});
-
-// See http://www.html5rocks.com/en/tutorials/service-worker/introduction/ for
-// an in-depth explanation of what service workers are and why you should care.
-// Generate a service worker file that will provide offline functionality for
-// local resources. This should only be done for the 'dist' directory, to allow
-// live reload to work as expected when serving from the 'app' directory.
-gulp.task('generate-service-worker', function (cb) {
-  var rootDir = 'dist';
-  var config = {
-    // Used to avoid cache conflicts when serving on localhost.
-    cacheId: pkg.name || 'udacity-p4',
-    staticFileGlobs: [
-      // Add/remove glob patterns to match your directory setup.
-      '${rootDir}/**/*.{html,json,js,css,jpg,png,gif}',
-    ],
-    // Translates a static file path to the relative URL that it's served from.
-    stripPrefix: path.join(rootDir, path.sep)
-  };
-  swPrecache.write(path.join(rootDir, 'service-worker.js'), config, function(err, swFileContents) {
-    if (err) {
-      cb(err);
-      return;
-    }
-    cb();
-  });
 });
