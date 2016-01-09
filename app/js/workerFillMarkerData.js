@@ -42,7 +42,7 @@ function matchBasedOnNameForWorker(setToMatch, nameToMatch, minFuzzyMatch) {
 
 self.addEventListener('message', function(e) {
 	var resultsArray;
-	var fuzzySetOfResultsNames = FuzzySet([]);
+	var fuzzySetOfResultsNames = new FuzzySet([]);
 	var returnObject = [];
 
 	/**

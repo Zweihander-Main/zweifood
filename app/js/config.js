@@ -32,6 +32,10 @@ Object.defineProperties(appConfigObject, {
 		value: 15,
 		enumberable: true
 	},
+	defaultMobileZoom: {
+		value: 12,
+		enumberable: true
+	},
 	markerLimitRemoveBulkAmount: {
 		value: 1000,
 		enumberable: true

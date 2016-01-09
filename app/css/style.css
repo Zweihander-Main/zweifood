@@ -593,6 +593,10 @@ div.bigstars button.rateit-reset:active {
     display: block;
 }
 
+.dropdown a {
+    text-shadow: 0px 0px 0.1px #686868;
+}
+
 .info-window-title-header {
     line-height: 42px;
     letter-spacing: 0.8px;
@@ -744,7 +748,7 @@ div.bigstars button.rateit-reset:active {
 
 /* 9. Loading Screen */
 
-#loading {
+.loading-screen {
     background-color: #212121;
     height: 100%;
     width: 100%;
@@ -754,13 +758,13 @@ div.bigstars button.rateit-reset:active {
     top: 0;
 }
 
-#loading-center {
+.loading-screen-center {
     width: 100%;
     height: 100%;
     position: relative;
 }
 
-#loading-center-absolute {
+.loading-screen-center-absolute {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -781,22 +785,22 @@ div.bigstars button.rateit-reset:active {
     float: left;
 }
 
-#object_one {
+.object-one {
     -webkit-animation: object_one 1.5s infinite;
     animation: object_one 1.5s infinite;
 }
 
-#object_two {
+.object-two {
     -webkit-animation: object_two 1.5s infinite;
     animation: object_two 1.5s infinite;
 }
 
-#object_three {
+.object-three {
     -webkit-animation: object_three 1.5s infinite;
     animation: object_three 1.5s infinite;
 }
 
-#object_four {
+.object-four {
     -webkit-animation: object_four 1.5s infinite;
     animation: object_four 1.5s infinite;
 }
@@ -1032,6 +1036,9 @@ div.bigstars button.rateit-reset:active {
     .text-right {
         text-align: left;
     }
+    .info-window-template {
+        max-height: 65vh;
+    }
 }
 
 @media(max-width: 991px) {
@@ -1043,7 +1050,7 @@ div.bigstars button.rateit-reset:active {
         left: 0;
     }
     .info-window-template {
-        max-height: none;
+        max-height: 50vh;
     }
     .navbar-custom.navbar-header {
         height: 83%;
@@ -1068,6 +1075,12 @@ div.bigstars button.rateit-reset:active {
         position: absolute;
         bottom: 80px;
         height: 100%;
+    }
+    .error-container {
+        margin: 0 -7px 66px 0;
+    }
+    .info-window-title-header {
+        line-height: 42px;
     }
 }
 

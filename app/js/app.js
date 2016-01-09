@@ -13,6 +13,7 @@
  * Section V  : Map Init/Fail Functions
  */
 var app = (function() {
+	'use strict';
 	//////////////////////////////////
 	// Section I: Utility Functions //
 	//////////////////////////////////
@@ -35,7 +36,7 @@ var app = (function() {
 	 */
 	function preload(sources, callback) {
 		var images = [];
-		for (i = 0, length = sources.length; i < length; ++i) {
+		for (var i = 0, length = sources.length; i < length; ++i) {
 			images[i] = new Image();
 			images[i].src = sources[i];
 		}
@@ -53,7 +54,7 @@ var app = (function() {
 	 */
 	function checkNested(obj) {
 		var args = Array.prototype.slice.call(arguments, 1);
-		for (var i = 0; i < args.length; i++) {
+		for (var i = 0, len = args.length; i < len; i++) {
 			if (!obj || !obj.hasOwnProperty(args[i])) {
 				return false;
 			}
@@ -66,7 +67,7 @@ var app = (function() {
 	 * Gets current time - direct from underscore.js library for debounce function
 	 * @return {number} Current Date().getTime()
 	 */
-	_now = Date.now || function() {
+	var _now = Date.now || function() {
 		return new Date().getTime();
 	};
 
@@ -165,8 +166,8 @@ var app = (function() {
 		if (typeof(nameOfName) === 'undefined') {
 			nameOfName = 'name';
 		}
-		var setToMatch = FuzzySet([]);
-		for (var i = 0; i < arrayOfResults.length; i++) {
+		var setToMatch = new FuzzySet([]);
+		for (var i = 0, len = arrayOfResults.length; i < len; i++) {
 			setToMatch.add(arrayOfResults[i][nameOfName]);
 		}
 		var match = setToMatch.get(nameToMatch);
@@ -185,7 +186,7 @@ var app = (function() {
 	 * @return {boolean}     return boolean if array's match or not
 	 */
 	function allValuesSameInTwoArray(a1, a2) {
-		for (var i = 0; i < a1.length; i++) {
+		for (var i = 0, len = a1.length; i < len; i++) {
 			if (a1[i] !== a2[i]) {
 				return false;
 			}
@@ -259,9 +260,9 @@ var app = (function() {
 			// Array will likely be a checkNested object
 			if (input.constructor === Array) {
 				if (typeof(input[0]) !== 'undefined') {
-					if (checkNested.apply(this, input) === true) {
+					if (checkNested.apply(undefined, input) === true) {
 						var returnValue = input[0];
-						for (var i = 1; i < input.length; i++) {
+						for (var i = 1, len = input.length; i < len; i++) {
 							returnValue = returnValue[input[i]];
 						}
 						input = returnValue;
@@ -280,6 +281,28 @@ var app = (function() {
 				allBindings, viewModel, bindingContext, true);
 		}
 		return input;
+	}
+
+	/**
+	 * Function to change position of map relative to center/marker by a given
+	 * number of pixels.
+	 * @param {object} map     Google map object
+	 * @param {object} latlng  Optional google LatLng object of center point,
+	 *                         will default to center of map otherwise
+	 * @param {number} offsetx X pixels to offset by
+	 * @param {number} offsety Y pixels to offset by
+	 */
+	function setResizeListener_mapRecenter(map, latlng, offsetx, offsety) {
+		var point1 = map.getProjection().fromLatLngToPoint(
+			(latlng instanceof google.maps.LatLng) ? latlng : map.getCenter()
+		);
+		var point2 = new google.maps.Point(
+			((typeof(offsetx) == 'number' ? offsetx : 0) / Math.pow(2, map.getZoom())) || 0, ((typeof(offsety) == 'number' ? offsety : 0) / Math.pow(2, map.getZoom())) || 0
+		);
+		map.setCenter(map.getProjection().fromPointToLatLng(new google.maps.Point(
+			point1.x - point2.x,
+			point1.y + point2.y
+		)));
 	}
 
 	/**
@@ -369,8 +392,7 @@ var app = (function() {
 		 * bindingContext.
 		 */
 		init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-			var value = valueAccessor(),
-				allBindings = allBindingsAccessor(),
+			var allBindings = allBindingsAccessor(),
 				map = bindingContext.$data.mainMap;
 
 			var options = {
@@ -392,7 +414,10 @@ var app = (function() {
 					map.fitBounds(place.geometry.viewport);
 				} else {
 					map.setCenter(place.geometry.location);
-					map.setZoom(appConfigObject.defaultZoom);
+					var defaultZoom = (window.innerWidth < 992 ?
+						appConfigObject.defaultMobileZoom :
+						appConfigObject.defaultZoom);
+					map.setZoom(defaultZoom);
 				}
 			});
 		},
@@ -493,7 +518,7 @@ var app = (function() {
 				.addClass('custom-info-window-subcontainer');
 			var containerSiblings = subContainer.siblings();
 			var containerSubSiblings, backgroundContainer;
-			for (var i = 0; i < containerSiblings.length; i++) {
+			for (var i = 0, len = containerSiblings.length; i < len; i++) {
 				if ($(containerSiblings[i]).css('top') === '0px') {
 					containerSubSiblings = $(containerSiblings[i])
 						.addClass('custom-info-window-background-container')
@@ -502,7 +527,7 @@ var app = (function() {
 				}
 			}
 			if (containerSubSiblings) {
-				for (var j = 0; j < containerSubSiblings.length; j++) {
+				for (var j = 0, jlen = containerSubSiblings.length; j < jlen; j++) {
 					if ($(containerSubSiblings[j])
 						.css('background-color') === 'rgb(255, 255, 255)') {
 						backgroundContainer = $(containerSubSiblings[j])
@@ -511,13 +536,68 @@ var app = (function() {
 					}
 				}
 				if (backgroundContainer) {
-					var container = subContainer.parent().parent().parent()
-						.addClass('custom-info-window');
+					subContainer.parent().parent()
+						.parent().addClass('custom-info-window');
 					backgroundContainer.css({
 						'background-color': '',
 						'border-radius': ''
 					});
 				}
+			}
+		}
+	};
+
+	/**
+	 * Centers the infoWindow into view if out of view and attempts to keep it
+	 * centered when new content is created via AJAX. Uses update as the
+	 * ResizeSensor binder doesn't stay on the infoWindow when it changes.
+	 * @type {Object}
+	 */
+	ko.bindingHandlers.setResizeListener = {
+		/**
+		 * Value should be currentlySelectedElement so that this is called only
+		 * when a new infoWindow is opened. Element should be the most root
+		 * level info-window element that is user-defined.
+		 */
+		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			var model = ko.unwrap(valueAccessor());
+			// Remove previous infoWindow calls if present
+			if (element.resizeSensor) {
+				delete element.resizeSensor;
+				delete element.resizedAttached;
+			}
+			//CurrentlySelectedElement could be undefined
+			if (typeof(model) !== "undefined") {
+				var theElement = $(element);
+				/**
+				 * Call .open when infoWindow is resized to have
+				 * Google check if it's still in view
+				 */
+				new ResizeSensor(element, function() {
+					model.infoWindow.open(model.marker().map, model.marker());
+				});
+				//When marker list is detached, make sure it doesn't cover
+				if (window.innerWidth > 1199) {
+					//Push code back in event queue
+					setTimeout(function() {
+						var markerList = $('#marker-list');
+						if (theElement.offset().left <
+							(markerList.width() + markerList.offset().left)) {
+							setResizeListener_mapRecenter(model.marker().map,
+								undefined, (((markerList.width() +
+										markerList.offset().left) -
+									theElement.offset().left) + 20), 0);
+						}
+					}, 0);
+
+				}
+				//Mostly for mobile - check it's centered after google panning
+				setTimeout(function() {
+					if (theElement.offset().top < 0) {
+						setResizeListener_mapRecenter(model.marker().map,
+							undefined, 0, theElement.offset().top - 15);
+					}
+				}, 600);
 			}
 		}
 	};
@@ -644,6 +724,43 @@ var app = (function() {
 	};
 
 	/**
+	 * For use primarily by dropdown. Converts a passed in URL to a link with
+	 * the URL as the value for both the href and the text.
+	 * @type {Object}
+	 */
+	ko.bindingHandlers.obToLink = {
+		/**
+		 * Value should be a string URL. Creates link element for innerHTML of
+		 * element.
+		 * @param  {boolean} internal       Returns the innerHtml of generated
+		 *                                  image as a string instead of setting
+		 *                                  it to the element. Useful for use
+		 *                                  in other bindingHandlers.
+		 */
+		update: function(element, valueAccessor, allBindings,
+			viewModel, bindingContext, internal) {
+			var value;
+			if (typeof(valueAccessor) === 'function') {
+				value = ko.unwrap(valueAccessor());
+			} else {
+				value = valueAccessor;
+			}
+			var toAppend = '';
+			if (typeof(value) !== 'undefined') {
+				toAppend += '<a target="_blank" href="' + value + '">' +
+					value + '</a>';
+			}
+			if (toAppend !== '') {
+				if (internal !== true) {
+					$(element).html(toAppend);
+				} else {
+					return toAppend;
+				}
+			}
+		}
+	};
+
+	/**
 	 * Binding handler to generate dollar icons based on price level.
 	 * @type {Object}
 	 */
@@ -758,6 +875,7 @@ var app = (function() {
 				var verbose = valueAccessor().verbose();
 				var isVerbose = error.verbose;
 				if ((verbose === true) || (isVerbose === false)) {
+					var killOnMarkers = error.killOnMarkers;
 					var customMessage = error.customMessage;
 					var textStatus = error.textStatus;
 					var toAdd = '<div class="panel ';
@@ -776,6 +894,21 @@ var app = (function() {
 							errorsHandler_killPanel(added, 200);
 						}, 3000);
 					}
+					/**
+					 * If killOnMarkers is set, check if listableEntries has any
+					 * entries. When they do, kill the affected panels.
+					 */
+					if (killOnMarkers === true) {
+						$.doWhen({
+								when: function() {
+									return (bindingContext.$data
+										.listableEntries().entries.length > 0);
+								}
+							})
+							.done(function() {
+								errorsHandler_killPanel(added, 200);
+							});
+					}
 				}
 			}
 		}
@@ -792,7 +925,7 @@ var app = (function() {
 			if ((typeof(value) !== 'undefined') &&
 				(checkNested(value, 'weekday_text', '0') !== false)) {
 				var toAdd = '';
-				for (var i = 0; i < value.weekday_text.length; i++) {
+				for (var i = 0, len = value.weekday_text.length; i < len; i++) {
 					toAdd += '<div>' + value.weekday_text[i] + '</div>';
 				}
 				element.innerHTML = toAdd;
@@ -852,7 +985,7 @@ var app = (function() {
 			var toAdd = starter;
 
 			for (var service in value) {
-				var binding, theValue;
+				var theValue;
 				//Interpret the value and send them to binding handler if needed
 				if (typeof(value[service].value_binding) !== 'undefined') {
 					theValue = dropdown_interpretValue(value[service].value,
@@ -1423,7 +1556,7 @@ var app = (function() {
 					this[service][type][index][service + 'IsLoading'](false);
 					this[service][type].splice(index, 1);
 				}
-				for (var i = 0; i < this.intercept.length; i++) {
+				for (var i = 0, len = this.intercept.length; i < len; i++) {
 					if (this.intercept[i].ID === ID) {
 						self.getDetailedAPIData(
 							this.intercept[i].service, this.intercept[i].ID);
@@ -1443,7 +1576,7 @@ var app = (function() {
 			 */
 			self.currentDetailedAPIInfoBeingFetched.interceptIDPush =
 				function(service, type, ID) {
-					for (var i = 0; i < this.intercept.length; i++) {
+					for (var i = 0, len = this.intercept.length; i < len; i++) {
 						if (this.intercept.ID === ID) {
 							return;
 						}
@@ -1459,14 +1592,14 @@ var app = (function() {
 			 * @param  {object} ID      model to remove
 			 */
 			self.currentDetailedAPIInfoBeingFetched.interceptIDRemove = function(ID) {
-				for (var i = 0; i < this.intercept.length; i++) {
+				for (var i = 0, len = this.intercept.length; i < len; i++) {
 					if (this.intercept.ID === ID) {
 						this.intercept.splice(i, 1);
 					}
 				}
 			};
 			// Setup arrays for basic and detailed calls for all services
-			for (var i = 0; i < self.APIConfiguredSearchTypes.length; i++) {
+			for (var i = 0, len = self.APIConfiguredSearchTypes.length; i < len; i++) {
 				self
 					.currentDetailedAPIInfoBeingFetched[self
 						.APIConfiguredSearchTypes[i]] = {
@@ -1629,7 +1762,7 @@ var app = (function() {
 		self.modelConstructor = function(model) {
 			for (var prop in self.APIMappingsForModel) {
 				var currentType = self.APIMappingsForModel[prop];
-				for (var i = 0; i < currentType.length; i++) {
+				for (var i = 0, len = currentType.length; i < len; i++) {
 					if (currentType[i].oType === 1) {
 						model[currentType[i].model] = ko.observable();
 					} else if (currentType[i].oType === 2) {
@@ -1651,7 +1784,7 @@ var app = (function() {
 			var returnModel = {};
 			for (var prop in self.APIMappingsForModel) {
 				var currentType = self.APIMappingsForModel[prop];
-				for (var i = 0; i < currentType.length; i++) {
+				for (var i = 0, len = currentType.length; i < len; i++) {
 					if (currentType[i].oType === 0) {
 						returnModel[currentType[i]
 							.model] = model[currentType[i].model];
@@ -1672,8 +1805,8 @@ var app = (function() {
 		 * @param  {object} result result from server, mapped using config object
 		 */
 		self.modelUpdater = function(model, type, result) {
-			currentType = self.APIMappingsForModel[type];
-			for (var i = 0; i < currentType.length; i++) {
+			var currentType = self.APIMappingsForModel[type];
+			for (var i = 0, len = currentType.length; i < len; i++) {
 				if (typeof(result[currentType[i].server]) !== 'undefined') {
 					if (currentType[i].oType !== 0) {
 						model[currentType[i].model](result[currentType[i].server]);
@@ -1694,7 +1827,7 @@ var app = (function() {
 		self.modelRebuilder = function(model, blueprint, location) {
 			for (var prop in self.APIMappingsForModel) {
 				var currentType = self.APIMappingsForModel[prop];
-				for (var i = 0; i < currentType.length; i++) {
+				for (var i = 0, len = currentType.length; i < len; i++) {
 					if ((currentType[i].oType !== 0) &&
 						(currentType[i].model !== 'google_geometry')) {
 						model[currentType[i].model](blueprint[currentType[i].model]);
@@ -1715,7 +1848,7 @@ var app = (function() {
 		 * @param  {object} model model to add observables to
 		 */
 		self.modelSearchTypeConstructor = function(model) {
-			for (var i = 0; i < self.APIConfiguredSearchTypes.length; i++) {
+			for (var i = 0, len = self.APIConfiguredSearchTypes.length; i < len; i++) {
 				model[self.APIConfiguredSearchTypes[i]
 					.toLowerCase() + 'SearchType'] = ko.observable('None');
 				model[self.APIConfiguredSearchTypes[i]
@@ -1730,8 +1863,6 @@ var app = (function() {
 		 * @param  {Array}  newValue       newValue of markedLocations array
 		 */
 		self.removeMultipleLocations = throttle(function(newValue) {
-			var toRemove = [];
-			var j = 0;
 			//Push favorite to front
 			self.markedLocations.sort(function(left, right) {
 				return (left.isFavorite() === true ? 1 :
@@ -1961,7 +2092,8 @@ var app = (function() {
 
 		/**
 		 * Creates an error that is shown to the user (or not if verbose and
-		 * verbose is turned off)
+		 * verbose is turned off). Converts some Google errors into more
+		 * readable and useful information.
 		 * @param  {string} customMessage Custom message to accompany error
 		 * @param  {string} textStatus    Text of the error
 		 * @param  {object} errorThrown   Error object thrown - optional
@@ -1971,10 +2103,28 @@ var app = (function() {
 			if (typeof(verbose) === 'undefined') {
 				verbose = false;
 			}
+			var customTextStatus, killOnMarkers;
+			switch (textStatus) {
+				case 'ZERO_RESULTS':
+					customTextStatus = 'No results found from Google. ' +
+						'Try zooming out?';
+					killOnMarkers = true;
+					break;
+				case 'OVER_QUERY_LIMIT':
+					customTextStatus = 'Requests are being throttled by Google. ' +
+						'Usually caused by panning the map too quickly. ' +
+						'Give it 10-20 seconds';
+					killOnMarkers = false;
+					break;
+				default:
+					customTextStatus = textStatus;
+					killOnMarkers = false;
+			}
 			var errorObject = {};
 			errorObject.customMessage = customMessage;
-			errorObject.textStatus = textStatus;
+			errorObject.textStatus = customTextStatus;
 			errorObject.verbose = verbose;
+			errorObject.killOnMarkers = killOnMarkers;
 			self.errors(errorObject);
 			if (errorThrown) {
 				console.warn(errorThrown);
@@ -2017,7 +2167,7 @@ var app = (function() {
 		 */
 		self.callSearchAPIs = function(currentLoc) {
 			var clonedMarkedLocations = ko.toJS(self.locationArrayForWorkers());
-			for (var i = 0; i < self.APIConfiguredSearchTypes.length; i++) {
+			for (var i = 0, len = self.APIConfiguredSearchTypes.length; i < len; i++) {
 				var currentServiceType = self.APIConfiguredSearchTypes[i];
 				if (currentLoc.searchType(currentServiceType)() === 'None') {
 					if (self.currentDetailedAPIInfoBeingFetched
@@ -2051,7 +2201,7 @@ var app = (function() {
 		 */
 		self.checkAndAddFullAttributions = function(attributionsArray) {
 			var attributionsToPush = [];
-			for (var z = 0; z < attributionsArray.length; z++) {
+			for (var z = 0, len = attributionsArray.length; z < len; z++) {
 				if (self.attributionsArray.indexOf(attributionsArray[z]) === -1) {
 					attributionsToPush.push(attributionsArray[z]);
 				}
@@ -2075,7 +2225,7 @@ var app = (function() {
 			} else {
 				// Add all markers and push at once into markedLocations for performance
 				var markerList = [];
-				for (var i = 0; i < results.length; i++) {
+				for (var i = 0, len = results.length; i < len; i++) {
 					// If marker as nearby or places searchType doesn't exist
 					if (self.idArray().nearby.indexOf(results[i].place_id) === -1) {
 						// If marker doesn't exist, create new
@@ -2124,7 +2274,7 @@ var app = (function() {
 			} else {
 				// Add all markers and push at once into markedLocations for performance
 				var markerList = [];
-				for (var i = 0; i < results.length; i++) {
+				for (var i = 0, len = results.length; i < len; i++) {
 					// If marker doesn't exist yet, create
 					if (self.idArray().all.indexOf(results[i].place_id) === -1) {
 						var newLoc = new LocationModel(self, 'Radar');
@@ -2312,7 +2462,7 @@ var app = (function() {
 				var theResult = results;
 				// Parse through the results until the array of result objects is found
 				if (typeof(configObject[APIType + '_returnType']) === 'object') {
-					for (var i = 0; i < configObject[APIType + '_returnType'].length; i++) {
+					for (var i = 0, len = configObject[APIType + '_returnType'].length; i < len; i++) {
 						theResult = theResult[configObject[APIType + '_returnType'][i]];
 					}
 				} else if (typeof(configObject[APIType + '_returnType']) !== 'undefined') {
@@ -2405,8 +2555,8 @@ var app = (function() {
 			if (self.workersAvailable === true) {
 				var worker = new Worker('/js/workerFillMarkerData.js');
 				worker.onmessage = function(e) {
-					returnObject = e.data;
-					for (var i = 0; i < returnObject.length; i++) {
+					var returnObject = e.data;
+					for (var i = 0, len = returnObject.length; i < len; i++) {
 						var matchedLocation = self.compareIDs(returnObject[i]
 							.google_placeId);
 						resultFunction(matchedLocation);
@@ -2432,7 +2582,7 @@ var app = (function() {
 					if (favArray !== null) {
 						// Push all the favorites at once
 						var markerList = [];
-						for (var i = 0; i < favArray.length; i++) {
+						for (var i = 0, len = favArray.length; i < len; i++) {
 							// Nearby will force it to refresh when clicked
 							var newLoc = new LocationModel(self, 'Nearby');
 							var lat = Number(favArray[i].google_geometry.location.lat);
@@ -2518,7 +2668,8 @@ var app = (function() {
 			},
 			// Fails to load, proceed anyway
 			inactive: function() {
-				fontPreloaded = true;
+				fontsPreloaded = true;
+				console.warn('Fonts were not loaded.');
 			}
 		};
 		WebFont.load(WebFontConfig);
@@ -2578,7 +2729,9 @@ var app = (function() {
 			// Setup default options from config object
 			var defaultLatLng = new google.maps.LatLng(
 					appConfigObject.defaultLat, appConfigObject.defaultLng),
-				defaultZoom = appConfigObject.defaultZoom,
+				defaultZoom = (window.innerWidth < 992 ?
+					appConfigObject.defaultMobileZoom :
+					appConfigObject.defaultZoom),
 				mapElement = document.getElementById('mapDiv'),
 				defaultStyle = appConfigObject.mapStyle;
 
@@ -2610,7 +2763,7 @@ var app = (function() {
 			ko.applyBindings(viewModel1, document.body);
 
 			// Setup and add center reticle
-			reticleMarker = new google.maps.Marker({
+			var reticleMarker = new google.maps.Marker({
 				position: mainGoogleMap.getCenter(),
 				map: mainGoogleMap,
 				icon: reticleImage,
@@ -2685,7 +2838,7 @@ var app = (function() {
 			 * location.
 			 */
 			if (viewModel1.storageAvailable === true) {
-				mapCenter = JSON.parse(localStorage.getItem('mapCenter'));
+				var mapCenter = JSON.parse(localStorage.getItem('mapCenter'));
 				if (!localStorage.getItem('mapCenter') ||
 					(typeof(mapCenter.lat) === 'undefined') ||
 					(mapCenter.lat === null)) {
