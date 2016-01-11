@@ -9,7 +9,9 @@ var appConfigObject = {};
 
 Object.defineProperties(appConfigObject, {
 	lowMarkerOpacity: {
-		value: 0.35,
+		get: function() {
+			return 0.35;
+		},
 		enumberable: true
 	},
 	highMarkerOpacity: {
@@ -17,15 +19,21 @@ Object.defineProperties(appConfigObject, {
 		enumberable: true
 	},
 	maxMarkerLimit: {
-		value: 4000,
+		get: function() {
+			return 4000;
+		},
 		enumberable: true
 	},
 	defaultLat: {
-		value: 41.699,
+		get: function() {
+			return 41.699;
+		},
 		enumberable: true
 	},
 	defaultLng: {
-		value: -73.925,
+		get: function() {
+			return -73.925;
+		},
 		enumberable: true
 	},
 	defaultZoom: {
@@ -552,6 +560,30 @@ Object.defineProperties(appConfigObject, {
 		value: 60000,
 		enumberable: true
 	},
+	defaultPriceButtonFilter: {
+		get: function() {
+			return [true, true, true, true, true];
+		},
+		enumberable: true
+	},
+	defaultMinRatingButtonFilter: {
+		get: function() {
+			return 0;
+		},
+		enumberable: true
+	},
+	defaultOpenButtonFilter: {
+		get: function() {
+			return false;
+		},
+		enumberable: true
+	},
+	defaultFavoriteButtonFilter: {
+		get: function() {
+			return false;
+		},
+		enumberable: true
+	},
 	// Should be on a server in an ideal world
 	searchAPIInfo: {
 		value: {
@@ -636,7 +668,7 @@ Object.defineProperties(appConfigObject, {
 
 			var workerHandler = {
 				'lat': ['location', 'coordinate', 'latitude'],
-				'lng': ['location', 'coordinate', 'longitude'],
+				'lng': ['location', 'coordinate', 'longitude']
 			};
 
 			returnObject.settings = settings;
@@ -677,7 +709,7 @@ Object.defineProperties(appConfigObject, {
 			};
 
 			var workerHandler = {
-				'lng': ['long'],
+				'lng': ['long']
 			};
 
 			returnObject.settings = settings;
@@ -727,7 +759,7 @@ Object.defineProperties(appConfigObject, {
 
 			var workerHandler = {
 				'lat': ['location', 'lat'],
-				'lng': ['location', 'lng'],
+				'lng': ['location', 'lng']
 			};
 
 			returnObject.settings = settings;

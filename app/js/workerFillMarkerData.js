@@ -54,8 +54,11 @@ self.addEventListener('message', function(e) {
 	resultsArray = e.data.resultsArray.map(function(item) {
 		var newItem = item;
 		for (var name in e.data.workerHandler) {
-			for (var i = 0; i < e.data.workerHandler[name].length; i++) {
-				newItem[name] = newItem[e.data.workerHandler[name][i]];
+			if (e.data.workerHandler.hasOwnProperty(name)) {
+				for (var i = 0, len =
+						e.data.workerHandler[name].length; i < len; i++) {
+					newItem[name] = newItem[e.data.workerHandler[name][i]];
+				}
 			}
 		}
 		fuzzySetOfResultsNames.add(item.name);
@@ -69,6 +72,7 @@ self.addEventListener('message', function(e) {
 		return checkIfMarkerIsWithinBounds(e.data.initialPoint.lat,
 			e.data.initialPoint.lng, item.lat, item.lng, e.data.maxDistance);
 	});
+
 
 	/**
 	 * Scroll through narrowedDownLocations and match each one.

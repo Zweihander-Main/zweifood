@@ -9,8 +9,8 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Food App</title>
-    <meta name="description" content="Food App">
+    <title>P5 Food App</title>
+    <meta name="description" content="P5 Food App">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="shortcut icon" href="img/favicon.ico">
@@ -32,6 +32,7 @@
     <!-- Loading Screen -->
     <div class = "loading-screen" id="loading">
         <div class = "loading-screen-center" id="loading-center">
+            <div class = "loading-text">P5 Food App</div>
             <div class = "loading-screen-center-absolute" id="loading-center-absolute">
                 <div class="object object-one" id="object_one"></div>
                 <div class="object object-two" id="object_two"></div>
@@ -65,7 +66,7 @@
     <div class="sb-slidebar sb-right sb-style-overlay sb-width-custom" data-sb-width="300px">
         <div class="sb-close logo-button"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span></div>
         <h5 class="settings-description">Search for location</h5>
-        <input type="search" id="place-search" class="place-search" data-bind="addressAutocomplete: true">
+        <input type="search" id="place-search" class="place-search" data-bind="addressAutocomplete: optionsToggled">
         <span class="settings-divider"></span>
         <h5 class="settings-description">Get Current Browser Location</h5>
         <span class="filter-button filter-button-single" data-bind="click: getNavWithCallback">Get Current Location</span>
@@ -91,7 +92,7 @@
                 <!-- Marker List -->
                 <div class="marker-list-container">
                     <ul id="marker-list" class="marker-list" data-bind="foreach: {data: sortedEntries}, scrollToItem: sortedEntries, hoverToggle: true, ko_perfectScrollbar: sortedEntries">
-                        <li data-bind="css: { listingIsClosed: isItOpenRightNow() === 'Closed', listingSelected: isSelected }, click: listWasClicked, scrollTo: $root.scrolledItem() == $data">
+                        <li data-bind="css: { listingIsClosed: isItOpenRightNow() === 'Closed', listingSelected: isSelected }, click: function(data, event) {listWasClicked(data, event, window.innerWidth)}, scrollTo: $root.scrolledItem() == $data">
                             <h4 class="listing-title" data-bind="text: google_name"></h4>
                             <span class="listing-vicinity" data-bind="text: google_vicinity"></span>
                             <div class="listing-rating" data-bind="visible: google_rating() > 0">
@@ -113,11 +114,11 @@
         <nav class="navbar navbar-custom mobile-nav" role="navigation">
             <div class="nav-block nav-block-locations">
                 <h5 class="nav-description">Results</h5>
-                <div class="logo-button" data-bind="menuToggle: 'marker-list'"><span class="glyphicon glyphicon-list" aria-hidden="true"></span></div>
+                <div class="logo-button" data-bind="menuToggle: {menu: 'marker-list', toggledObservable: markerToggled, toggled: markerToggled()}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span></div>
             </div>
             <div class="nav-block nav-block-options">
                 <h5 class="nav-description">Options</h5>
-                <div class="logo-button" data-bind="menuToggle: 'navbar-header'"><span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span></div>
+                <div class="logo-button" data-bind="menuToggle: {menu: 'navbar-header', toggledObservable: optionsToggled, toggled: optionsToggled()}"><span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span></div>
             </div>
         </nav>
         <!-- Filter/Credits/Settings Nav -->
@@ -126,7 +127,7 @@
             <div class="nav-block nav-block-search">
                 <h5 class="nav-description">Search</h5>
                 <div class="search-wrapper">
-                    <input class="search-box" type="text" id="name-search" data-bind="textInput: searchQuery, ko_autocomplete: { source: listableEntries().allNames, position: {collision: 'flip'} }" autocomplete="off" placeholder="Filter current results">
+                    <input class="search-box" type="text" id="name-search" data-bind="textInput: searchQuery, textInputForAutocomplete: searchQuery(), ko_autocomplete: { source: listableEntries().allNames, position: {collision: 'flip'} }, focusBox: true" autocomplete="off" placeholder="Filter current results">
                     <i class="fa fa-filter search-filter-icon"></i>
                 </div>
             </div>
@@ -161,7 +162,8 @@
                     <div class="filter-button filter-button-multi filter-button-multi-last" data-bind="css: { 'filter-button-pressed': priceButtonFilter()[4] }, click: function() {var temp = priceButtonFilter();temp[4] = !temp[4]; priceButtonFilter(temp)}">$$$$</div>
                 </div>
                 <input type="range" min="0" max="5" value="0" step="0.5" id="stars-backing" data-bind="value: minRatingButtonFilter">
-                <div class="rateit bigstars rateit-filter" data-rateit-backingfld="#stars-backing" data-bind="css: { 'filter-button-pressed': minRatingButtonFilter() > 0 }, ko_rateit: {value: minRatingButtonFilter}" data-rateit-starwidth="16" data-rateit-starheight="16"></div>
+                <div class="rateit bigstars rateit-filter" data-rateit-backingfld="#stars-backing" data-bind="css: { 'filter-button-pressed': minRatingButtonFilter() > 0 }, ko_rateit: {value: minRatingButtonFilter(), observable: minRatingButtonFilter}" data-rateit-starwidth="16" data-rateit-starheight="16"></div>
+                <div class="logo-button mobile-only filter-button-button" data-bind="click: resetFilters" data-toggle="tooltip" data-placement="top" title="Clear Filters"><i class="fa fa-times"></i></div>
             </div>
             <span class="nav-divider"></span>
             <!-- Credits and Settings Buttons -->

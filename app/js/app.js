@@ -291,6 +291,7 @@ var app = (function() {
 	 *                         will default to center of map otherwise
 	 * @param {number} offsetx X pixels to offset by
 	 * @param {number} offsety Y pixels to offset by
+	 * TODO
 	 */
 	function setResizeListener_mapRecenter(map, latlng, offsetx, offsety) {
 		var point1 = map.getProjection().fromLatLngToPoint(
@@ -303,6 +304,45 @@ var app = (function() {
 			point1.x - point2.x,
 			point1.y + point2.y
 		)));
+	}
+
+	//TODO
+	function setResizeListener_killListenerAndCallback(item, callback) {
+		google.maps.event.removeListener(item);
+		if (typeof(callback) === "function") {
+			callback();
+		}
+	}
+
+	// TODO
+	function setResizeListener_centerWindow(theElement, model, x, y, time, xModifier) {
+		setTimeout(function() {
+			var xAmount = 0;
+			var yAmount = 0;
+			if (x === true) {
+				var markerList = $('#marker-list');
+				var extraXSpace = 10;
+				if ((window.innerWidth > 1199) || (markerList.hasClass('panel-visible') === true)) {
+					if ((markerList.width() + markerList.offset().left + theElement.width() + xModifier + (2 * extraXSpace) /*+ 50*/ ) < window.innerWidth) {
+						if (theElement.offset().left <
+							(markerList.width() + markerList.offset().left + extraXSpace)) {
+							xAmount = ((markerList.width() +
+									markerList.offset().left) -
+								theElement.offset().left) + extraXSpace;
+						}
+					}
+				}
+			}
+			if (y === true) {
+				if (theElement.offset().top < 0) {
+					yAmount = theElement.offset().top - 15;
+				}
+			}
+			if ((xAmount !== 0) || (yAmount !== 0)) {
+				setResizeListener_mapRecenter(model.marker().map,
+					undefined, xAmount, yAmount);
+			}
+		}, (typeof(time) !== "undefined" ? time : 0));
 	}
 
 	/**
@@ -344,6 +384,24 @@ var app = (function() {
 		$(element).unbind('mouseenter', perfectScrollbar_hoverHandler);
 	}
 
+	// TODO
+	function menuToggle_toggleMenu(element, menu, toggledObservable) {
+		$(element).toggleClass('mobile-button-pressed');
+		var theMenu = $('#' + menu);
+		$(element).trigger('mouseleave');
+		if (theMenu.hasClass('panel-visible')) {
+			theMenu.removeClass('panel-visible');
+			if (toggledObservable() !== false) {
+				toggledObservable(false);
+			}
+		} else {
+			theMenu.addClass('panel-visible');
+			if (toggledObservable() !== true) {
+				toggledObservable(true);
+			}
+		}
+	}
+
 	/////////////////////////////////////////////
 	//Section II: Binding Handlers & Extenders //
 	/////////////////////////////////////////////
@@ -381,6 +439,35 @@ var app = (function() {
 		}
 	};
 
+	//TODO
+	ko.bindingHandlers.textInputForAutocomplete = {
+		update: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+			var value = ko.unwrap(valueAccessor());
+			if (value === "") {
+				$(element).trigger('change');
+			}
+		}
+	};
+
+	//TODO
+	ko.bindingHandlers.focusBox = {
+		init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+			$(element).on('input change autocompletechange', function() {
+				var value = $(this).val();
+				var theElement = $(this);
+				if ((theElement).hasClass('search-box-focused')) {
+					if ((typeof(value) === "undefined") || (value === '')) {
+						theElement.removeClass('search-box-focused');
+					}
+				} else {
+					if ((typeof(value) !== "undefined") && (value !== '')) {
+						theElement.addClass('search-box-focused');
+					}
+				}
+			});
+		}
+	};
+
 	/**
 	 * Binding handler for Google Maps API address autocomplete - used
 	 * in settings menu.
@@ -389,11 +476,13 @@ var app = (function() {
 	ko.bindingHandlers.addressAutocomplete = {
 		/**
 		 * Initialize google places autocomplete on element. Gets map from
-		 * bindingContext.
+		 * bindingContext. //TODO
 		 */
 		init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			var allBindings = allBindingsAccessor(),
-				map = bindingContext.$data.mainMap;
+				map = bindingContext.$data.mainMap,
+				value = valueAccessor(),
+				markerCloseClick = bindingContext.$data.markerCloseClick;
 
 			var options = {
 				types: ['geocode']
@@ -405,6 +494,9 @@ var app = (function() {
 			autocomplete.bindTo('bounds', map);
 
 			autocomplete.addListener('place_changed', function() {
+				markerCloseClick();
+				value(false);
+				$.slidebars.close();
 				var place = autocomplete.getPlace();
 				if (!place.geometry) {
 					return;
@@ -490,13 +582,20 @@ var app = (function() {
 
 	/**
 	 * Listens for rateIt plugin reset to reset binded value
-	 * @type {Object}
+	 * @type {Object} //TODO
 	 */
 	ko.bindingHandlers.ko_rateit = {
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			var observable = ko.unwrap(valueAccessor()).observable;
 			$(element).bind('reset', function() {
-				valueAccessor().value(0);
+				observable(0);
 			});
+		},
+		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			var value = ko.unwrap(valueAccessor()).value;
+			if (value === -1) {
+				$(element).rateit('reset');
+			}
 		}
 	};
 
@@ -531,7 +630,8 @@ var app = (function() {
 					if ($(containerSubSiblings[j])
 						.css('background-color') === 'rgb(255, 255, 255)') {
 						backgroundContainer = $(containerSubSiblings[j])
-							.addClass('custom-info-window-background');
+							.addClass('custom-info-window-background')
+							.attr('id', 'custom-info-window-background');
 						break;
 					}
 				}
@@ -551,7 +651,7 @@ var app = (function() {
 	 * Centers the infoWindow into view if out of view and attempts to keep it
 	 * centered when new content is created via AJAX. Uses update as the
 	 * ResizeSensor binder doesn't stay on the infoWindow when it changes.
-	 * @type {Object}
+	 * @type {Object} //TODO
 	 */
 	ko.bindingHandlers.setResizeListener = {
 		/**
@@ -569,35 +669,35 @@ var app = (function() {
 			//CurrentlySelectedElement could be undefined
 			if (typeof(model) !== "undefined") {
 				var theElement = $(element);
+				var infoWindow = $('#custom-info-window-background');
+				var xModifier = 0;
+				if (typeof(infoWindow.get(0)) === "undefined") {
+					infoWindow = theElement;
+					xModifier = 50;
+				}
+
+				clearTimeout(bindingContext.$data.currentInfoWindowCheck);
+
 				/**
 				 * Call .open when infoWindow is resized to have
 				 * Google check if it's still in view
 				 */
 				new ResizeSensor(element, function() {
+					bindingContext.$data.regularInfoWindowPan(true);
 					model.infoWindow.open(model.marker().map, model.marker());
 				});
-				//When marker list is detached, make sure it doesn't cover
-				if (window.innerWidth > 1199) {
-					//Push code back in event queue
-					setTimeout(function() {
-						var markerList = $('#marker-list');
-						if (theElement.offset().left <
-							(markerList.width() + markerList.offset().left)) {
-							setResizeListener_mapRecenter(model.marker().map,
-								undefined, (((markerList.width() +
-										markerList.offset().left) -
-									theElement.offset().left) + 20), 0);
-						}
-					}, 0);
 
-				}
-				//Mostly for mobile - check it's centered after google panning
+
 				setTimeout(function() {
-					if (theElement.offset().top < 0) {
-						setResizeListener_mapRecenter(model.marker().map,
-							undefined, 0, theElement.offset().top - 15);
-					}
-				}, 600);
+					bindingContext.$data.reCheckInfoWindowIsCentered(infoWindow, model, xModifier);
+				}, 50);
+				// var toDispose = model.marker().map.addListener('idle', function() {
+				// 	setResizeListener_killListenerAndCallback(toDispose, function() {
+				// 		setResizeListener_centerWindow(theElement, model, true, true, 0);
+
+				// 	});
+				// });
+				//Mostly for mobile - check it's centered after google panning
 			}
 		}
 	};
@@ -813,16 +913,25 @@ var app = (function() {
 	/**
 	 * Binding handler for toggling visibility classes on marker list and
 	 * options list when buttons are clicked
-	 * @type {Object}
+	 * @type {Object} //TODO
 	 */
 	ko.bindingHandlers.menuToggle = {
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
 			var value = ko.unwrap(valueAccessor());
+			var menu = value.menu;
+			var toggledObservable = value.toggledObservable;
 			ko.utils.registerEventHandler(element, 'click', function() {
-				$(element).toggleClass('mobile-button-pressed');
-				$('#' + value).toggleClass('panel-visible');
-				$(element).trigger('mouseleave');
+				menuToggle_toggleMenu(element, menu, toggledObservable);
 			});
+		},
+		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+			var value = ko.unwrap(valueAccessor());
+			var menu = value.menu;
+			var toggledObservable = value.toggledObservable;
+			var toggled = value.toggled;
+			if ($('#' + menu).hasClass('panel-visible') && (toggled === false)) {
+				$(element).click();
+			}
 		}
 	};
 
@@ -1238,9 +1347,12 @@ var app = (function() {
 		 * Triggers click event and pans to marker when location is selected from
 		 * marker list
 		 */
-		self.listWasClicked = function() {
+		self.listWasClicked = function(data, event, width) {
 			new google.maps.event.trigger(self.marker(), 'click');
 			self.marker().map.panTo(self.google_geometry().location);
+			if (width < 1200) {
+				currentViewModel.markerToggled(false);
+			}
 		};
 
 		/**
@@ -1325,14 +1437,21 @@ var app = (function() {
 		self.verboseErrors = ko.observable(false);
 		//Bring the checkNested function into the viewModel
 		self.checkNested = checkNested;
+		//TODO
+		self.markerToggled = ko.observable(false);
+		self.optionsToggled = ko.observable(false);
 
 		// Variables for sort types and filter types
 		self.sortType = ko.observable('count');
 		self.searchQuery = ko.observable();
-		self.priceButtonFilter = ko.observableArray([true, true, true, true, true]);
-		self.minRatingButtonFilter = ko.observable(0);
-		self.openButtonFilter = ko.observable(false);
-		self.favoriteButtonFilter = ko.observable(false);
+		self.priceButtonFilter = ko.observableArray(appConfigObject
+			.defaultPriceButtonFilter);
+		self.minRatingButtonFilter = ko.observable(appConfigObject
+			.defaultMinRatingButtonFilter);
+		self.openButtonFilter = ko.observable(appConfigObject
+			.defaultOpenButtonFilter);
+		self.favoriteButtonFilter = ko.observable(appConfigObject
+			.defaultFavoriteButtonFilter);
 
 		/**
 		 * Initial HTML that gets parsed through knockout applyBindings and sets
@@ -1398,9 +1517,11 @@ var app = (function() {
 		});
 
 		// Subscribe to currentlySelectedLocation and call scrollToItem on change
+		// // TODO
 		self.currentlySelectedLocation.subscribe(debounce(function(newValue) {
 			if (typeof(newValue) !== 'undefined') {
 				self.scrollToItem();
+				self.userDrag(false);
 			}
 		}, 5));
 
@@ -1906,7 +2027,7 @@ var app = (function() {
 		 * @return {array} array of limited-info models
 		 */
 		self.locationArrayForWorkers = function() {
-			return ko.utils.arrayMap(self.listableEntries(), function(item) {
+			return ko.utils.arrayMap(self.listableEntries().entries, function(item) {
 				return {
 					'lat': item.google_geometry().location.lat(),
 					'lng': item.google_geometry().location.lng(),
@@ -2636,6 +2757,39 @@ var app = (function() {
 		self.initializeCurrentDetailedAPIInfoBeingFetched();
 		self.singleErrorMessages();
 		self.getLocalStorage();
+		// TODO
+		self.regularInfoWindowPan = ko.observable(false);
+		self.userDrag = ko.observable(false);
+		self.currentInfoWindowCheck = undefined;
+		//TODO
+		self.reCheckInfoWindowIsCentered = function(theElement, model, xModifier) {
+			var time = 100;
+			if (self.regularInfoWindowPan() === true) {
+				time = 600;
+				self.regularInfoWindowPan(false);
+			}
+			if ((self.userDrag() === true) || (typeof(self.currentlySelectedLocation()) === "undefined") || (self.currentlySelectedLocation() !== model)) {
+				time = false;
+			}
+			if (time !== false) {
+				setResizeListener_centerWindow(theElement, model, true, true, 0, xModifier);
+				self.currentInfoWindowCheck = setTimeout(function() {
+					self.reCheckInfoWindowIsCentered(theElement, model, xModifier);
+				}, time);
+			}
+		};
+
+		//TODO
+		self.resetFilters = function() {
+			self.searchQuery('');
+			self.priceButtonFilter(appConfigObject
+				.defaultPriceButtonFilter);
+			self.minRatingButtonFilter(-1);
+			self.openButtonFilter(appConfigObject
+				.defaultOpenButtonFilter);
+			self.favoriteButtonFilter(appConfigObject
+				.defaultFavoriteButtonFilter);
+		};
 	}
 
 	///////////////////////////////////////
@@ -2713,7 +2867,7 @@ var app = (function() {
 			})
 			.done(function() {
 				createMap();
-				$('#loading').fadeOut(500);
+				//$('#loading').fadeOut(500);
 			});
 	}
 
@@ -2830,6 +2984,11 @@ var app = (function() {
 				var center = mainGoogleMap.getCenter();
 				boundsChange(center);
 				centerReticle(center);
+			});
+
+			//TODO
+			google.maps.event.addListener(mainGoogleMap, 'dragstart', function() {
+				viewModel1.userDrag(true);
 			});
 
 			/**

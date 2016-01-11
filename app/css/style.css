@@ -134,7 +134,9 @@ a:focus {
 }
 
 .search-box:focus,
-.search-box-active {
+.search-box-active,
+.search-box-focused,
+.search-box-focused:hover {
     outline: none !important;
     border-color: #c1b9a2;
 }
@@ -323,6 +325,11 @@ a:focus {
     cursor: pointer;
 }
 
+.filter-button-button {
+    margin: 0px 10px 0 0;
+    padding: 6px 10px 10px 13px;
+}
+
 .logo-button:hover {
     background: #c0baa2;
     box-shadow: 0 0 1px rgba(255, 255, 255, 0.12), 0 1px 1px rgba(255, 255, 255, 0.2);
@@ -370,6 +377,9 @@ div.bigstars button.rateit-reset:active {
     background: url(../img/star-reset-active.png);
 }
 
+.mobile-only {
+    display: none;
+}
 
 /* 4. Marker List */
 
@@ -598,9 +608,9 @@ div.bigstars button.rateit-reset:active {
 }
 
 .info-window-title-header {
-    line-height: 42px;
     letter-spacing: 0.8px;
     font: 700 42px "Scheherazade", Georgia, Times, "Times New Roman", serif;
+    line-height: 42px;
     display: inline-block;
 }
 
@@ -915,7 +925,8 @@ div.bigstars button.rateit-reset:active {
         width: 42px;
     }
     .search-box:active,
-    .search-box:focus {
+    .search-box:focus,
+    .search-box-focused {
         width: 296px;
     }
     .search-filter-icon {
@@ -927,7 +938,8 @@ div.bigstars button.rateit-reset:active {
         pointer-events: none;
     }
     .search-box:active + .search-filter-icon,
-    .search-box:focus + .search-filter-icon {
+    .search-box:focus + .search-filter-icon,
+    .search-box-focused + .search-filter-icon {
         position: absolute;
         top: inherit;
         bottom: 15px;
@@ -950,22 +962,26 @@ div.bigstars button.rateit-reset:active {
         color: #212121;
     }
     .search-box:active::-webkit-input-placeholder,
-    .search-box:focus::-webkit-input-placeholder {
+    .search-box:focus::-webkit-input-placeholder,
+    .search-box-focused::-webkit-input-placeholder {
         /* WebKit, Blink, Edge */
         color: #585858;
     }
     .search-box:active:-moz-placeholder,
-    .search-box:focus:-moz-placeholder {
+    .search-box:focus:-moz-placeholder,
+    .search-box-focused:-moz-input-placeholder {
         /* Mozilla Firefox 4 to 18 */
         color: #585858;
     }
     .search-box:active::-moz-placeholder,
-    .search-box:focus::-moz-placeholder {
+    .search-box:focus::-moz-placeholder,
+    .search-box-focused::-moz-input-placeholder {
         /* Mozilla Firefox 19+ */
         color: #585858;
     }
     .search-box:active:-ms-input-placeholder,
-    .search-box:focus:-ms-input-placeholder {
+    .search-box:focus:-ms-input-placeholder,
+    .search-box-focused:-ms-input-placeholder {
         /* Internet Explorer 10-11 */
         color: #585858;
     }
@@ -1039,6 +1055,9 @@ div.bigstars button.rateit-reset:active {
     .info-window-template {
         max-height: 65vh;
     }
+    .mobile-only {
+        display: inline-block;
+    }
 }
 
 @media(max-width: 991px) {
@@ -1078,9 +1097,6 @@ div.bigstars button.rateit-reset:active {
     }
     .error-container {
         margin: 0 -7px 66px 0;
-    }
-    .info-window-title-header {
-        line-height: 42px;
     }
 }
 
