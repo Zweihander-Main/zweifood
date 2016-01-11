@@ -216,7 +216,8 @@ var app = (function() {
 	 * @return {boolean} Boolean on if web workers are available
 	 */
 	function workersAvailable() {
-		if ((typeof(Worker) !== 'undefined') && (window.location.protocol !== 'file:')) {
+		if ((typeof(Worker) !== 'undefined') && (window.location.protocol !==
+				'file:')) {
 			return true;
 		} else {
 			return false;
@@ -291,14 +292,15 @@ var app = (function() {
 	 *                         will default to center of map otherwise
 	 * @param {number} offsetx X pixels to offset by
 	 * @param {number} offsety Y pixels to offset by
-	 * TODO
 	 */
 	function setResizeListener_mapRecenter(map, latlng, offsetx, offsety) {
 		var point1 = map.getProjection().fromLatLngToPoint(
 			(latlng instanceof google.maps.LatLng) ? latlng : map.getCenter()
 		);
 		var point2 = new google.maps.Point(
-			((typeof(offsetx) == 'number' ? offsetx : 0) / Math.pow(2, map.getZoom())) || 0, ((typeof(offsety) == 'number' ? offsety : 0) / Math.pow(2, map.getZoom())) || 0
+			((typeof(offsetx) == 'number' ? offsetx : 0) /
+				Math.pow(2, map.getZoom())) || 0, ((typeof(offsety) ==
+				'number' ? offsety : 0) / Math.pow(2, map.getZoom())) || 0
 		);
 		map.setCenter(map.getProjection().fromPointToLatLng(new google.maps.Point(
 			point1.x - point2.x,
@@ -306,7 +308,20 @@ var app = (function() {
 		)));
 	}
 
-	// TODO
+	/**
+	 * Function to determine if the map needs to be moved to fit in the
+	 * infoWindow (along with the markerList if it's visible). Calls the
+	 * mapRecenter function if it needs to be moved.
+	 * @param {object} theElement jQuery selector of the infoWindow
+	 * @param {object} model      currently selected location
+	 * @param {boolean} x         should x be adjusted?
+	 * @param {boolean} y         should y be adjusted?
+	 * @param {number} time       setTimeout - defaults to 0 to put the function
+	 *                            into the event queue correctly
+	 * @param {number} xModifier  number of pixels to add in case the infoWindow
+	 *                            selector is the inner infoWindow rather than
+	 *                            the outer one
+	 */
 	function setResizeListener_centerWindow(theElement, model, x, y, time, xModifier) {
 		setTimeout(function() {
 			var xAmount = 0;
@@ -314,10 +329,14 @@ var app = (function() {
 			if (x === true) {
 				var markerList = $('#marker-list');
 				var extraXSpace = 10;
-				if ((window.innerWidth > 1199) || (markerList.hasClass('panel-visible') === true)) {
-					if ((markerList.width() + markerList.offset().left + theElement.width() + xModifier + (2 * extraXSpace) /*+ 50*/ ) < window.innerWidth) {
+				if ((window.innerWidth > 1199) ||
+					(markerList.hasClass('panel-visible') === true)) {
+					if ((markerList.width() + markerList.offset().left +
+							theElement.width() + xModifier +
+							(2 * extraXSpace) /*+ 50*/ ) < window.innerWidth) {
 						if (theElement.offset().left <
-							(markerList.width() + markerList.offset().left + extraXSpace)) {
+							(markerList.width() + markerList.offset().left +
+								extraXSpace)) {
 							xAmount = ((markerList.width() +
 									markerList.offset().left) -
 								theElement.offset().left) + extraXSpace;
@@ -376,7 +395,14 @@ var app = (function() {
 		$(element).unbind('mouseenter', perfectScrollbar_hoverHandler);
 	}
 
-	// TODO
+	/**
+	 * Function to toggle a menu while mobile UI is enabled and to change the
+	 * associated observable with that menu state.
+	 * @param  {object} element           element from bindinghandler
+	 * @param  {string} menu              string id of the menu to toggle
+	 * @param  {object} toggledObservable observable associated with the menu
+	 *                                    state
+	 */
 	function menuToggle_toggleMenu(element, menu, toggledObservable) {
 		$(element).toggleClass('mobile-button-pressed');
 		var theMenu = $('#' + menu);
@@ -431,7 +457,13 @@ var app = (function() {
 		}
 	};
 
-	//TODO
+	/**
+	 * Binding handler to ensure that clearing the input field (through the
+	 * clear filters button) will actually clear the field so that the active
+	 * class will remove itself. Input should be the value associated with the
+	 * input.
+	 * @type {Object}
+	 */
 	ko.bindingHandlers.textInputForAutocomplete = {
 		update: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			var value = ko.unwrap(valueAccessor());
@@ -441,7 +473,12 @@ var app = (function() {
 		}
 	};
 
-	//TODO
+	/**
+	 * Add class to filter search box to keep it fully open when it has a value
+	 * inputted while it's in mobile/midsize UI. Value should be input value
+	 * associated with the input.
+	 * @type {Object}
+	 */
 	ko.bindingHandlers.focusBox = {
 		init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			$(element).on('input change autocompletechange', function() {
@@ -468,7 +505,8 @@ var app = (function() {
 	ko.bindingHandlers.addressAutocomplete = {
 		/**
 		 * Initialize google places autocomplete on element. Gets map from
-		 * bindingContext. //TODO
+		 * bindingContext. Calls close click on infoWindow and closes options
+		 * and settings menu. Value should be observable of options menu state.
 		 */
 		init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			var allBindings = allBindingsAccessor(),
@@ -574,15 +612,26 @@ var app = (function() {
 
 	/**
 	 * Listens for rateIt plugin reset to reset binded value
-	 * @type {Object} //TODO
+	 * @type {Object}
 	 */
 	ko.bindingHandlers.ko_rateit = {
+		/**
+		 * Value should be object with observable property corresponding to
+		 * value binded to rateit plugin. Resets that value when the rateit
+		 * reset event is called (after the reset button is clicked or when
+		 * all filters are cleared).
+		 */
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
 			var observable = ko.unwrap(valueAccessor()).observable;
 			$(element).bind('reset', function() {
 				observable(0);
 			});
 		},
+		/**
+		 * Value should be object with value property corresponding to the value
+		 * binded to the rateit plugin. Calls to reset the state of the stars
+		 * if the value is -1 (as it would be when all filters are cleared).
+		 */
 		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
 			var value = ko.unwrap(valueAccessor()).value;
 			if (value === -1) {
@@ -643,7 +692,7 @@ var app = (function() {
 	 * Centers the infoWindow into view if out of view and attempts to keep it
 	 * centered when new content is created via AJAX. Uses update as the
 	 * ResizeSensor binder doesn't stay on the infoWindow when it changes.
-	 * @type {Object} //TODO
+	 * @type {Object}
 	 */
 	ko.bindingHandlers.setResizeListener = {
 		/**
@@ -661,15 +710,16 @@ var app = (function() {
 			//CurrentlySelectedElement could be undefined
 			if (typeof(model) !== 'undefined') {
 				var theElement = $(element);
+				// Select the outer infowindow ideally
 				var infoWindow = $('#custom-info-window-background');
 				var xModifier = 0;
 				if (typeof(infoWindow.get(0)) === 'undefined') {
 					infoWindow = theElement;
+					// Difference between inner and outer
 					xModifier = 50;
 				}
-
+				// Clear previous listener if it isn't already
 				clearTimeout(bindingContext.$data.currentInfoWindowCheck);
-
 				/**
 				 * Call .open when infoWindow is resized to have
 				 * Google check if it's still in view
@@ -678,18 +728,15 @@ var app = (function() {
 					bindingContext.$data.regularInfoWindowPan(true);
 					model.infoWindow.open(model.marker().map, model.marker());
 				});
-
-
+				/**
+				 * Wait 75ms before starting listener on infoWindow that checks
+				 * if it needs to be centered. This allows the native google
+				 * method of adjusting the map to stop the check from being
+				 * called for a bit.
+				 */
 				setTimeout(function() {
 					bindingContext.$data.reCheckInfoWindowIsCentered(infoWindow, model, xModifier);
-				}, 50);
-				// var toDispose = model.marker().map.addListener('idle', function() {
-				// 	setResizeListener_killListenerAndCallback(toDispose, function() {
-				// 		setResizeListener_centerWindow(theElement, model, true, true, 0);
-
-				// 	});
-				// });
-				//Mostly for mobile - check it's centered after google panning
+				}, 75);
 			}
 		}
 	};
@@ -904,10 +951,14 @@ var app = (function() {
 
 	/**
 	 * Binding handler for toggling visibility classes on marker list and
-	 * options list when buttons are clicked
-	 * @type {Object} //TODO
+	 * options list when buttons are clicked. Value should be a string
+	 * corresponding to the id of the menu being toggled.
+	 * @type {Object}
 	 */
 	ko.bindingHandlers.menuToggle = {
+		/**
+		 * Creates click listener.
+		 */
 		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
 			var value = ko.unwrap(valueAccessor());
 			var menu = value.menu;
@@ -916,6 +967,9 @@ var app = (function() {
 				menuToggle_toggleMenu(element, menu, toggledObservable);
 			});
 		},
+		/**
+		 * Kills the menu if a location has been selected and the menu is open.
+		 */
 		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
 			var value = ko.unwrap(valueAccessor());
 			var menu = value.menu;
@@ -1427,11 +1481,17 @@ var app = (function() {
 		self.errors = ko.observable(false);
 		// User set variable to show more verbose errors
 		self.verboseErrors = ko.observable(false);
-		//Bring the checkNested function into the viewModel
+		// Bring the checkNested function into the viewModel
 		self.checkNested = checkNested;
-		//TODO
+		// Track the states of the menus in mobile UI mode
 		self.markerToggled = ko.observable(false);
 		self.optionsToggled = ko.observable(false);
+		// Stop the infoWindow move checker for the native Google method
+		self.regularInfoWindowPan = ko.observable(false);
+		// Stop the infoWindow move checker if the user drags
+		self.userDrag = ko.observable(false);
+		// Track the status of the infoWindow move checker
+		self.currentInfoWindowCheck = undefined;
 
 		// Variables for sort types and filter types
 		self.sortType = ko.observable('count');
@@ -1508,8 +1568,10 @@ var app = (function() {
 			rateLimit: 2000
 		});
 
-		// Subscribe to currentlySelectedLocation and call scrollToItem on change
-		// // TODO
+		/**
+		 * Subscribe to currentlySelectedLocation and call scrollToItem on
+		 * change. Stop the infoWindow move listener.
+		 */
 		self.currentlySelectedLocation.subscribe(debounce(function(newValue) {
 			if (typeof(newValue) !== 'undefined') {
 				self.scrollToItem();
@@ -1757,7 +1819,9 @@ var app = (function() {
 		 * event - sets the currentlySelectedLocation to not selected
 		 */
 		self.markerCloseClick = function() {
-			self.currentlySelectedLocation().isSelected(false);
+			if (typeof(self.currentlySelectedLocation()) !== "undefined") {
+				self.currentlySelectedLocation().isSelected(false);
+			}
 		};
 
 		/**
@@ -1851,11 +1915,14 @@ var app = (function() {
 		};
 
 		/**
-		 * Pan to given position from browser navigation
+		 * Pan to given position from browser navigation. Close infoWindow
+		 * and options window.
 		 * @param  {object} position browser position coordinates
 		 */
 		self.mapPanFromNavigation = function(position) {
 			self.mapPan(position.coords.latitude, position.coords.longitude);
+			self.markerCloseClick();
+			self.optionsToggled(false);
 		};
 
 		/**
@@ -2385,20 +2452,30 @@ var app = (function() {
 				self.failAPIFunction('Google Maps Radar Search Error', status);
 				return;
 			} else {
-				// Add all markers and push at once into markedLocations for performance
+				/**
+				 * Add all markers and push at once into markedLocations
+				 *  for performance
+				 */
 				var markerList = [];
 				for (var i = 0, len = results.length; i < len; i++) {
 					// If marker doesn't exist yet, create
 					if (self.idArray().all.indexOf(results[i].place_id) === -1) {
 						var newLoc = new LocationModel(self, 'Radar');
-						self.successAPIFunction(results[i], newLoc, function() {}, 'google');
+						self.successAPIFunction(results[i], newLoc,
+							function() {}, 'google');
 						markerList.push(newLoc);
-					} //not going to update for performance and because no info to update
+					}
+					/**
+					 * not going to update for performance and because no
+					 * info to update
+					 */
 					if (results[i].html_attributions.length !== 0) {
-						self.checkAndAddFullAttributions(results[i].html_attributions);
+						self.checkAndAddFullAttributions(results[i]
+							.html_attributions);
 					}
 				}
-				self.markedLocations.push.apply(self.markedLocations, markerList);
+				self.markedLocations.push.apply(self.markedLocations,
+					markerList);
 			}
 		};
 
@@ -2422,9 +2499,11 @@ var app = (function() {
 
 			// Call radar and nearby search
 			self.service.radarSearch(request, self.processRadarResults);
-			self.service.nearbySearch(request, function(results, status, pagination) {
-				self.processNearbyResults(results, status, pagination, callArrayIndex);
-			});
+			self.service.nearbySearch(request,
+				function(results, status, pagination) {
+					self.processNearbyResults(results, status, pagination,
+						callArrayIndex);
+				});
 		};
 
 		/**
@@ -2573,13 +2652,21 @@ var app = (function() {
 			 */
 			settings.success = function(results) {
 				var theResult = results;
-				// Parse through the results until the array of result objects is found
-				if (typeof(configObject[APIType + '_returnType']) === 'object') {
-					for (var i = 0, len = configObject[APIType + '_returnType'].length; i < len; i++) {
-						theResult = theResult[configObject[APIType + '_returnType'][i]];
+				/**
+				 * Parse through the results until the array of result objects
+				 *  is found
+				 */
+				if (typeof(configObject[APIType + '_returnType']) ===
+					'object') {
+					for (var i = 0, len = configObject[APIType + '_returnType']
+							.length; i < len; i++) {
+						theResult =
+							theResult[configObject[APIType + '_returnType'][i]];
 					}
-				} else if (typeof(configObject[APIType + '_returnType']) !== 'undefined') {
-					theResult = theResult[configObject[APIType + '_returnType']];
+				} else if (typeof(configObject[APIType + '_returnType']) !==
+					'undefined') {
+					theResult =
+						theResult[configObject[APIType + '_returnType']];
 				} else {
 					theResult = results;
 				}
@@ -2610,7 +2697,8 @@ var app = (function() {
 				self.currentDetailedAPIInfoBeingFetched
 					.interceptIDRemove(selectedPlace);
 				self.failAPIFunction(service.toProperCase() + ' ' +
-					APIType.toProperCase() + ' Search Error', textStatus, errorThrown);
+					APIType.toProperCase() + ' Search Error', textStatus,
+					errorThrown);
 			};
 
 			/**
@@ -2698,21 +2786,27 @@ var app = (function() {
 						for (var i = 0, len = favArray.length; i < len; i++) {
 							// Nearby will force it to refresh when clicked
 							var newLoc = new LocationModel(self, 'Nearby');
-							var lat = Number(favArray[i].google_geometry.location.lat);
-							var lng = Number(favArray[i].google_geometry.location.lng);
-							var passedGeometry = new google.maps.LatLng(lat, lng);
-							self.modelRebuilder(newLoc, favArray[i], passedGeometry);
+							var lat = Number(favArray[i]
+								.google_geometry.location.lat);
+							var lng = Number(favArray[i]
+								.google_geometry.location.lng);
+							var passedGeometry = new google.maps
+								.LatLng(lat, lng);
+							self.modelRebuilder(newLoc, favArray[i],
+								passedGeometry);
 							newLoc.google_geometry(newLoc.google_geometry());
 							newLoc.isFavorite(true);
 							// Reset open/closed computed
 							newLoc.google_openingHoursObject(undefined);
 							markerList.push(newLoc);
 						}
-						self.markedLocations.push.apply(self.markedLocations, markerList);
+						self.markedLocations.push.apply(self.markedLocations,
+							markerList);
 					}
 				}
 				if (localStorage.getItem('mapCenter')) {
-					var mapCenter = JSON.parse(localStorage.getItem('mapCenter'));
+					var mapCenter = JSON.parse(localStorage
+						.getItem('mapCenter'));
 					if ((mapCenter !== null) &&
 						(typeof(mapCenter.lat) !== 'undefined') &&
 						(mapCenter.lat !== null)) {
@@ -2746,32 +2840,44 @@ var app = (function() {
 			}
 		};
 
-		self.initializeCurrentDetailedAPIInfoBeingFetched();
-		self.singleErrorMessages();
-		self.getLocalStorage();
-		// TODO
-		self.regularInfoWindowPan = ko.observable(false);
-		self.userDrag = ko.observable(false);
-		self.currentInfoWindowCheck = undefined;
-		//TODO
-		self.reCheckInfoWindowIsCentered = function(theElement, model, xModifier) {
+		/**
+		 * Checks if the infoWindow needs to be moved. Checks every 100ms
+		 * unless the native google method moves the map in which case waits
+		 * longer. If the user drags the map or the infoWindow closes, stops
+		 * the checking.
+		 * @param  {object} theElement element from binding handler - hopefully
+		 *                             outer infoWindow
+		 * @param  {object} model      currently selected location
+		 * @param  {number} xModifier  size modifier for removing operating
+		 */
+		self.reCheckInfoWindowIsCentered = function(theElement, model,
+			xModifier) {
 			var time = 100;
 			if (self.regularInfoWindowPan() === true) {
 				time = 600;
 				self.regularInfoWindowPan(false);
 			}
-			if ((self.userDrag() === true) || (typeof(self.currentlySelectedLocation()) === 'undefined') || (self.currentlySelectedLocation() !== model)) {
+			if ((self.userDrag() === true) ||
+				(typeof(self.currentlySelectedLocation()) === 'undefined') ||
+				(self.currentlySelectedLocation() !== model)) {
 				time = false;
 			}
 			if (time !== false) {
-				setResizeListener_centerWindow(theElement, model, true, true, 0, xModifier);
+				setResizeListener_centerWindow(theElement, model,
+					true, true, 0, xModifier);
 				self.currentInfoWindowCheck = setTimeout(function() {
-					self.reCheckInfoWindowIsCentered(theElement, model, xModifier);
+					self.reCheckInfoWindowIsCentered(theElement,
+						model, xModifier);
 				}, time);
 			}
 		};
 
-		//TODO
+		/**
+		 * Resets the filters when the reset filter button is clicked (on
+		 * mobile UI); Sets minRatingButtonFilter at -1 to get around jQuery
+		 * UI autocomplete bug (it's set to 0 by the binding handler);
+		 * @return {[type]} [description]
+		 */
 		self.resetFilters = function() {
 			self.searchQuery('');
 			self.priceButtonFilter(appConfigObject
@@ -2782,6 +2888,10 @@ var app = (function() {
 			self.favoriteButtonFilter(appConfigObject
 				.defaultFavoriteButtonFilter);
 		};
+
+		self.initializeCurrentDetailedAPIInfoBeingFetched();
+		self.singleErrorMessages();
+		self.getLocalStorage();
 	}
 
 	///////////////////////////////////////
@@ -2972,16 +3082,21 @@ var app = (function() {
 			 * Event listener for map panning/bounds changing. Calls the bounds
 			 * changed function and also updates center reticle coordinates.
 			 */
-			google.maps.event.addListener(mainGoogleMap, 'bounds_changed', function() {
-				var center = mainGoogleMap.getCenter();
-				boundsChange(center);
-				centerReticle(center);
-			});
+			google.maps.event.addListener(mainGoogleMap, 'bounds_changed',
+				function() {
+					var center = mainGoogleMap.getCenter();
+					boundsChange(center);
+					centerReticle(center);
+				});
 
-			//TODO
-			google.maps.event.addListener(mainGoogleMap, 'dragstart', function() {
-				viewModel1.userDrag(true);
-			});
+			/**
+			 * If the user starts dragging, set userDrag to true to stop the
+			 * infoWindow from moving.
+			 */
+			google.maps.event.addListener(mainGoogleMap, 'dragstart',
+				function() {
+					viewModel1.userDrag(true);
+				});
 
 			/**
 			 * Check localStorage, if mapCenter is preset, sets map to that

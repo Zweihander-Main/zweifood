@@ -19,6 +19,14 @@
    * ```gulp psi:no-kill```: same as above, doesn't exit at the end
 
 ### Changes since previous submission:
+* InfoWindows now move around marker list when there's space
+* InfoWindows continue to check they're in view until user drags map
+* Marker list closes on smaller UI when a location is selected
+* Search Filter stays open when value is entered
+* Clear filters button added on mobile UI
+* Various Small UI improvements
+
+###### Previous
 * InfoWindow now ensures that it is within view on click, even when the content changes
 * InfoWindow avoids getting convered by the marker list on larger monitors
 * Dropdown for various API sources of location website information now links the websites
@@ -205,6 +213,8 @@ https://stackoverflow.com/questions/3473367/how-to-offset-the-center-of-a-google
 https://stackoverflow.com/questions/16429004/auto-pan-map-to-fit-infowindow-after-loading-with-content-from-ajax Help with auto-panning
 
 https://stackoverflow.com/questions/172821/detecting-when-a-divs-height-changes-using-jquery Listening for height change help
+
+https://stackoverflow.com/questions/6458840/on-input-change-event Input/change event help
 
 
 ###### Udacity:

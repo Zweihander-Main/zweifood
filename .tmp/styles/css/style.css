@@ -433,10 +433,14 @@ div.bigstars button.rateit-reset:active {
 .listing-openStatus {
     display: block;
     float: right;
+    position: absolute;
+    right: 5px;
+    bottom: 3px;
 }
 
 .listing-vicinity {
     display: block;
+    padding: 0 50px 0 0;
 }
 
 .listing-priceLevel {
