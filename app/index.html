@@ -32,7 +32,7 @@
     <!-- Loading Screen -->
     <div class = "loading-screen" id="loading">
         <div class = "loading-screen-center" id="loading-center">
-            <div class = "loading-text">P5 Food App</div>
+            <div id = "loading-text" class = "loading-text">P5 Food App</div>
             <div class = "loading-screen-center-absolute" id="loading-center-absolute">
                 <div class="object object-one" id="object_one"></div>
                 <div class="object object-two" id="object_two"></div>
@@ -281,7 +281,7 @@
                                 <!-- ko if:typeof(yelp_reviews()) !== "undefined" && yelp_reviews().length > 0 -->
                                 <h4>Yelp Reviews</h4>
                                 <div data-bind="foreach: yelp_reviews">
-                                    <div>Excerpt: <span data-bind="text: excerpt"></span> - <span data-bind="text: $data.user.name"></span><img data-bind="attr: {src: $data.rating_image_url}" alt="Rating"><a target="_blank" data-bind="attr: {href: $parent.yelp_URL}">&nbsp;Read More</a></div>
+                                    <div>Excerpt: <span data-bind="text: excerpt"></span> - <span data-bind="text: $data.user.name"></span>&nbsp;&nbsp;<img data-bind="attr: {src: $data.rating_image_url}" alt="Rating"><a target="_blank" data-bind="attr: {href: $parent.yelp_URL}">&nbsp;Read More</a></div>
                                 </div>
                                 <!-- /ko -->
                                 <p style="color:white" data-bind="visible: yelpIsLoading">LOADING</p>

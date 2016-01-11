@@ -797,6 +797,29 @@ div.bigstars button.rateit-reset:active {
     animation: loading-center-absolute 1.5s infinite;
 }
 
+.loading-text {
+    font: 400 42px "Arial Narrow", Arial, Helvetica, sans-serif;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0 0 320px 0;
+    color: #d1c9b2;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 12px;
+}
+
 .object {
     width: 25px;
     height: 25px;

@@ -306,14 +306,6 @@ var app = (function() {
 		)));
 	}
 
-	//TODO
-	function setResizeListener_killListenerAndCallback(item, callback) {
-		google.maps.event.removeListener(item);
-		if (typeof(callback) === "function") {
-			callback();
-		}
-	}
-
 	// TODO
 	function setResizeListener_centerWindow(theElement, model, x, y, time, xModifier) {
 		setTimeout(function() {
@@ -342,7 +334,7 @@ var app = (function() {
 				setResizeListener_mapRecenter(model.marker().map,
 					undefined, xAmount, yAmount);
 			}
-		}, (typeof(time) !== "undefined" ? time : 0));
+		}, (typeof(time) !== 'undefined' ? time : 0));
 	}
 
 	/**
@@ -443,7 +435,7 @@ var app = (function() {
 	ko.bindingHandlers.textInputForAutocomplete = {
 		update: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
 			var value = ko.unwrap(valueAccessor());
-			if (value === "") {
+			if (value === '') {
 				$(element).trigger('change');
 			}
 		}
@@ -456,11 +448,11 @@ var app = (function() {
 				var value = $(this).val();
 				var theElement = $(this);
 				if ((theElement).hasClass('search-box-focused')) {
-					if ((typeof(value) === "undefined") || (value === '')) {
+					if ((typeof(value) === 'undefined') || (value === '')) {
 						theElement.removeClass('search-box-focused');
 					}
 				} else {
-					if ((typeof(value) !== "undefined") && (value !== '')) {
+					if ((typeof(value) !== 'undefined') && (value !== '')) {
 						theElement.addClass('search-box-focused');
 					}
 				}
@@ -667,11 +659,11 @@ var app = (function() {
 				delete element.resizedAttached;
 			}
 			//CurrentlySelectedElement could be undefined
-			if (typeof(model) !== "undefined") {
+			if (typeof(model) !== 'undefined') {
 				var theElement = $(element);
 				var infoWindow = $('#custom-info-window-background');
 				var xModifier = 0;
-				if (typeof(infoWindow.get(0)) === "undefined") {
+				if (typeof(infoWindow.get(0)) === 'undefined') {
 					infoWindow = theElement;
 					xModifier = 50;
 				}
@@ -2768,7 +2760,7 @@ var app = (function() {
 				time = 600;
 				self.regularInfoWindowPan(false);
 			}
-			if ((self.userDrag() === true) || (typeof(self.currentlySelectedLocation()) === "undefined") || (self.currentlySelectedLocation() !== model)) {
+			if ((self.userDrag() === true) || (typeof(self.currentlySelectedLocation()) === 'undefined') || (self.currentlySelectedLocation() !== model)) {
 				time = false;
 			}
 			if (time !== false) {
@@ -2867,7 +2859,7 @@ var app = (function() {
 			})
 			.done(function() {
 				createMap();
-				//$('#loading').fadeOut(500);
+				$('#loading').fadeOut(500);
 			});
 	}
 
