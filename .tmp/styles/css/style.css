@@ -90,16 +90,12 @@ a:focus {
 }
 
 .navbar-custom.navbar-header {
-    display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
     -webkit-flex-direction: row;
         -ms-flex-direction: row;
             flex-direction: row;
-    -webkit-box-pack: justify;
     -webkit-justify-content: space-between;
         -ms-flex-pack: justify;
             justify-content: space-between;
@@ -135,8 +131,7 @@ a:focus {
     text-transform: uppercase;
     color: white;
     padding: 0 0 0 15px;
-    -webkit-transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
-            transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+    transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
     letter-spacing: 0.6px;
 }
 
@@ -222,8 +217,7 @@ a:focus {
     border: 1px solid #686868;
     width: 30px;
     height: 30px;
-    -webkit-transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
-            transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+    transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
 }
 
 .diamond-outer:hover {
@@ -257,8 +251,7 @@ a:focus {
     font-size: 13px;
     height: 42px;
     cursor: pointer;
-    -webkit-transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
-            transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+    transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
 }
 
 .filter-button:hover {
@@ -356,8 +349,7 @@ a:focus {
 }
 
 .bigstars {
-    -webkit-transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
-            transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+    transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
 }
 
 .bigstars div.rateit-range {
@@ -803,15 +795,12 @@ div.bigstars button.rateit-reset:active {
 
 .loading-text {
     font: 400 42px "Arial Narrow", Arial, Helvetica, sans-serif;
-    display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -webkit-box-pack: center;
     -webkit-justify-content: center;
         -ms-flex-pack: center;
             justify-content: center;
-    -webkit-box-align: center;
     -webkit-align-items: center;
         -ms-flex-align: center;
             align-items: center;
@@ -966,8 +955,7 @@ div.bigstars button.rateit-reset:active {
         width: 296px;
     }
     .search-filter-icon {
-        -webkit-transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
-                transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
+        transition: all 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940);
         position: absolute;
         top: inherit;
         bottom: 15px;
@@ -1042,8 +1030,6 @@ div.bigstars button.rateit-reset:active {
     }
     .navbar-custom.navbar-header {
         position: absolute;
-        -webkit-box-orient: vertical;
-        -webkit-box-direction: normal;
         -webkit-flex-direction: column;
             -ms-flex-direction: column;
                 flex-direction: column;
@@ -1154,6 +1140,12 @@ div.bigstars button.rateit-reset:active {
     .filter-button-multi-container {
         display: inline;
     }
+    .dropdown {
+        display: none;
+    }
+}
+
+@media(max-width:600px) {
     .dropdown {
         display: none;
     }
@@ -1409,8 +1401,9 @@ html.sb-static .sb-slidebar,
 .sb-slidebar {
     -webkit-transform: translate( 0);
     transform: translate( 0);
-    -webkit-transition: -webkit-transform 400ms ease;
+    transition: -webkit-transform 400ms ease;
     transition: transform 400ms ease;
+    transition: transform 400ms ease, -webkit-transform 400ms ease;
     -webkit-transition-property: -webkit-transform, left, right;
     /* Add left/right for Android < 4.4. */
     -webkit-backface-visibility: hidden;

@@ -1,3 +1,4 @@
+/* global appConfigObject, FuzzySet, ko, google, $, ResizeSensor, WebFont */
 /**
  * App contains utility functions, the view model, model definitions, and
  * success/fail functions for google maps (that create the map and viewmodel).
@@ -238,7 +239,6 @@ var app = (function() {
 		});
 
 	/**
-	 * /**
 	 * Used in dropdown bindingHandler to check all input values - neccessary
 	 * to check for deeply nested objects
 	 * @param  {string/object/array} input     Input to check from dropdown
@@ -436,14 +436,13 @@ var app = (function() {
 		/**
 		 * Bind jQuery UI autocomplete to element
 		 */
-		init: function(element, valueAccessor, allBindingsAccessor,
-			viewModel, bindingContext) {
+		init: function(element, valueAccessor) {
 			$(element).autocomplete(valueAccessor());
 		},
 		/**
 		 * Sync updated source or input data to autocomplete widget
 		 */
-		update: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+		update: function(element, valueAccessor, allBindingsAccessor) {
 			$(element).autocomplete({
 				source: function(request, response) {
 					var results = $.ui.autocomplete.filter(valueAccessor()
@@ -465,7 +464,7 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.textInputForAutocomplete = {
-		update: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+		update: function(element, valueAccessor) {
 			var value = ko.unwrap(valueAccessor());
 			if (value === '') {
 				$(element).trigger('change');
@@ -480,7 +479,7 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.focusBox = {
-		init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+		init: function(element) {
 			$(element).on('input change autocompletechange', function() {
 				var value = $(this).val();
 				var theElement = $(this);
@@ -546,7 +545,7 @@ var app = (function() {
 		/**
 		 * Make sure input elements value is bound
 		 */
-		update: function(element, valueAccessor, allBindingsAccessor) {
+		update: function(element, valueAccessor) {
 			ko.bindingHandlers.value.update(element, valueAccessor());
 		}
 	};
@@ -554,7 +553,7 @@ var app = (function() {
 
 	/** @type {Object} Bind jQuery Sliderbars plugin to element */
 	ko.bindingHandlers.ko_slideOutMenu = {
-		init: function(element, valueAccessor) {
+		init: function() {
 			$.slidebars();
 		}
 	};
@@ -566,7 +565,7 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.scrollTo = {
-		update: function(element, valueAccessor, allBindings) {
+		update: function(element, valueAccessor) {
 			var _value = valueAccessor();
 			var _valueUnwrapped = ko.unwrap(_value);
 			if (_valueUnwrapped) {
@@ -621,7 +620,7 @@ var app = (function() {
 		 * reset event is called (after the reset button is clicked or when
 		 * all filters are cleared).
 		 */
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		init: function(element, valueAccessor) {
 			var observable = ko.unwrap(valueAccessor()).observable;
 			$(element).bind('reset', function() {
 				observable(0);
@@ -632,7 +631,7 @@ var app = (function() {
 		 * binded to the rateit plugin. Calls to reset the state of the stars
 		 * if the value is -1 (as it would be when all filters are cleared).
 		 */
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		update: function(element, valueAccessor) {
 			var value = ko.unwrap(valueAccessor()).value;
 			if (value === -1) {
 				$(element).rateit('reset');
@@ -653,7 +652,7 @@ var app = (function() {
 		 * infoWindow elements that style it, and those elements. Resets some
 		 * element inline styling that can't be overriden by CSS.
 		 */
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		init: function(element) {
 			var subContainer = $(element).parent().parent()
 				.addClass('custom-info-window-subcontainer');
 			var containerSiblings = subContainer.siblings();
@@ -726,7 +725,11 @@ var app = (function() {
 				 */
 				new ResizeSensor(element, function() {
 					bindingContext.$data.regularInfoWindowPan(true);
-					model.infoWindow.open(model.marker().map, model.marker());
+					// Could previously use this but stopped working with API 3.23
+					// model.infoWindow.open(window.map, model.marker());
+					$(model.infoWindow.content).height($(model.infoWindow.content).height());
+					// Alternate method, not neccessary probably
+					// model.infoWindow.setContent($(model.infoWindow.content).get(0));
 				});
 				/**
 				 * Wait 75ms before starting listener on infoWindow that checks
@@ -748,7 +751,7 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.ko_bootstrapTooltip = {
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		init: function() {
 			$('[data-toggle="tooltip"]').tooltip({
 				container: 'body'
 			});
@@ -766,7 +769,7 @@ var app = (function() {
 		 * to update the scrollbar when the marker list is first created and
 		 * populated by knockout.
 		 */
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		init: function(element) {
 			$(element).perfectScrollbar();
 			$(element).bind('mouseenter', function(event) {
 				perfectScrollbar_hoverHandler(event, element);
@@ -777,9 +780,10 @@ var app = (function() {
 		 * smooth usage with rapidly updating marker list as the plugin
 		 * struggles to autoupdate 100% of the time otherwise.
 		 */
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-			var data = ko.utils.unwrapObservable(valueAccessor());
+		update: function(element, valueAccessor) {
+			ko.utils.unwrapObservable(valueAccessor());
 			perfectScrollbar_updatePerfectScrollbar($(element));
+
 		}
 	};
 
@@ -941,7 +945,7 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.ko_modal = {
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		init: function(element, valueAccessor) {
 			var value = ko.unwrap(valueAccessor());
 			ko.utils.registerEventHandler(element, 'click', function() {
 				$(value).modal();
@@ -959,7 +963,7 @@ var app = (function() {
 		/**
 		 * Creates click listener.
 		 */
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		init: function(element, valueAccessor) {
 			var value = ko.unwrap(valueAccessor());
 			var menu = value.menu;
 			var toggledObservable = value.toggledObservable;
@@ -970,10 +974,9 @@ var app = (function() {
 		/**
 		 * Kills the menu if a location has been selected and the menu is open.
 		 */
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		update: function(element, valueAccessor) {
 			var value = ko.unwrap(valueAccessor());
 			var menu = value.menu;
-			var toggledObservable = value.toggledObservable;
 			var toggled = value.toggled;
 			if ($('#' + menu).hasClass('panel-visible') && (toggled === false)) {
 				$(element).click();
@@ -991,7 +994,7 @@ var app = (function() {
 	 */
 	ko.bindingHandlers.scrollToItem = {
 		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-			var data = ko.utils.unwrapObservable(valueAccessor());
+			ko.utils.unwrapObservable(valueAccessor());
 			bindingContext.$data.scrollToItem();
 		}
 	};
@@ -1055,14 +1058,14 @@ var app = (function() {
 					 */
 					if (killOnMarkers === true) {
 						$.doWhen({
-								when: function() {
-									return (bindingContext.$data
-										.listableEntries().entries.length > 0);
-								}
-							})
-							.done(function() {
-								errorsHandler_killPanel(added, 200);
-							});
+							when: function() {
+								return (bindingContext.$data
+									.listableEntries().entries.length > 0);
+							}
+						})
+						.done(function() {
+							errorsHandler_killPanel(added, 200);
+						});
 					}
 				}
 			}
@@ -1075,7 +1078,7 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.listOutOpeningHours = {
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		update: function(element, valueAccessor) {
 			var value = ko.unwrap(valueAccessor());
 			if ((typeof(value) !== 'undefined') &&
 				(checkNested(value, 'weekday_text', '0') !== false)) {
@@ -1099,7 +1102,7 @@ var app = (function() {
 		 * the purpose of using jQuery UI's collision detection to flip the
 		 * dropdown when neccessary.
 		 */
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		init: function(element) {
 			$(element).on('shown.bs.dropdown', function() {
 				var menu = $(this).find('.dropdown-menu');
 				if ((menu !== null) && (menu.length === 1)) {
@@ -1256,7 +1259,7 @@ var app = (function() {
 		self.isListed = ko.observable(false);
 		// Reflects if marker has been selected in marker list or on map
 		self.isSelected = ko.observable(false);
-		// Reflects if marker has ever been selected for infoWindow construction
+		// Reflects if marker likely has infoWindow constructed
 		self.hasBeenOpened = false;
 		// Current model number for use in order recieved sorting
 		self.modelNumber = currentViewModel.getLocationModelNumber();
@@ -1713,8 +1716,7 @@ var app = (function() {
 			 */
 			self.currentDetailedAPIInfoBeingFetched.pushID = function(service, type, ID) {
 				this[service][type].push(ID);
-				this[service][type][this[service][type].length - 1]
-					[service + 'IsLoading'](true);
+				this[service][type][this[service][type].length - 1][service + 'IsLoading'](true);
 			};
 			/**
 			 * Remove model from array after particular service/method call is
@@ -1778,9 +1780,9 @@ var app = (function() {
 				self
 					.currentDetailedAPIInfoBeingFetched[self
 						.APIConfiguredSearchTypes[i]] = {
-						'basic': [],
-						'detailed': []
-					};
+							'basic': [],
+							'detailed': []
+						};
 			}
 			self.currentDetailedAPIInfoBeingFetched.google = {
 				'detailed': []
@@ -1819,14 +1821,17 @@ var app = (function() {
 		 * event - sets the currentlySelectedLocation to not selected
 		 */
 		self.markerCloseClick = function() {
-			if (typeof(self.currentlySelectedLocation()) !== "undefined") {
+			if (typeof(self.currentlySelectedLocation()) !== 'undefined') {
+				self.currentlySelectedLocation().hasBeenOpened = false;
 				self.currentlySelectedLocation().isSelected(false);
 			}
 		};
 
 		/**
 		 * Function called when an infoWindow handles a domReady event - sets
-		 * up infoWindow with content if it doesn't have @interface
+		 * up infoWindow with content if it doesn't have it already.
+		 * Called every time the marker is clicked as of API 3.23 as window
+		 * needs to be re-rendered
 		 */
 		self.markerDomReady = function() {
 			if (!self.currentlySelectedLocation().hasBeenOpened) {
@@ -1844,6 +1849,11 @@ var app = (function() {
 		 * @param  {object} model model that contains infowindow
 		 */
 		self.markerClick = function(model) {
+			/* Change in API as of 3.23: infoWindow needs to be forced to
+			re-render if marker is re-clicked */
+			if (model.hasBeenOpened === true) {
+				model.hasBeenOpened = false;
+			}
 			self.shouldScroll(true);
 			self.getDetailedGooglePlacesAPIInfo(model, self.callSearchAPIs);
 			if (typeof(self.currentlySelectedLocation()) !== 'undefined') {
@@ -1898,8 +1908,6 @@ var app = (function() {
 					markerObject.url = appConfigObject.markerImageURLEmpty;
 					return markerObject;
 			}
-			markerObject.url = appConfigObject.markerImageURLEmpty;
-			return markerObject;
 		};
 
 		/**
@@ -2707,7 +2715,7 @@ var app = (function() {
 			 * @param  {object} jqXHR      jqXHR object from jQuery
 			 * @param  {string} textStatus textStatus string from jQuery
 			 */
-			settings.complete = function(jqXHR, textStatus) {
+			settings.complete = function() {
 				self.currentDetailedAPIInfoBeingFetched.removeID(service,
 					APIType, selectedPlace);
 			};
@@ -2741,6 +2749,7 @@ var app = (function() {
 		 */
 		self.avoidMemeoryLeaksDueToEventListeners = function(toClear) {
 			toClear = undefined;
+			return toClear;
 		};
 
 		/**
@@ -2961,16 +2970,16 @@ var app = (function() {
 	 */
 	function waitUntilEverythingLoaded() {
 		$.doWhen({
-				when: function() {
-					return (imagesPreloaded === true) &&
-						(fontsPreloaded === true) &&
-						(googlePreloaded === true);
-				}
-			})
-			.done(function() {
-				createMap();
-				$('#loading').fadeOut(500);
-			});
+			when: function() {
+				return (imagesPreloaded === true) &&
+					(fontsPreloaded === true) &&
+					(googlePreloaded === true);
+			}
+		})
+		.done(function() {
+			createMap();
+			$('#loading').fadeOut(500);
+		});
 	}
 
 	/**
@@ -3126,3 +3135,5 @@ var app = (function() {
 	};
 
 }());
+
+/* exported app */

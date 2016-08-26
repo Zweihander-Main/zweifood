@@ -114,7 +114,7 @@
                     el.addEventListener(name, cb);
                 }
             };
-            
+
             var onScroll = function() {
               if (element.offsetWidth != lastWidth || element.offsetHeight != lastHeight) {
                   changed();

@@ -1,3 +1,4 @@
+/* global importScripts, FuzzySet */
 /**
  * Worker - can only be run when using a server and not from local filesystem.
  * Parses result data using fuzzySet plugin to find matches based on name of

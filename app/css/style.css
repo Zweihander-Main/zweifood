@@ -1136,6 +1136,12 @@ div.bigstars button.rateit-reset:active {
     }
 }
 
+@media(max-width:600px) {
+    .dropdown {
+        display: none;
+    }
+}
+
 
 /* 11. Slidebars CSS */
 

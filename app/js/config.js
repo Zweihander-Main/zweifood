@@ -1,3 +1,4 @@
+/* global oauthSignature */
 /**
  * Config object which defines a lot of developer settings, map styles, and API
  * information. API information was chose to be listed here to make it easy to
