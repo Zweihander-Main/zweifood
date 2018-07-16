@@ -101,7 +101,7 @@
 			],
 			[
 				"for",
-				"for	for (…) {…}"
+				"for\tfor (…) {…}"
 			],
 			[
 				"searchType",
@@ -153,7 +153,7 @@
 			],
 			[
 				"div",
-				"div	Tag"
+				"div\tTag"
 			],
 			[
 				"de",
@@ -301,7 +301,7 @@
 			],
 			[
 				"cl",
-				"cl	console.log"
+				"cl\tconsole.log"
 			],
 			[
 				"results",
@@ -456,11 +456,11 @@
 	"buffers":
 	[
 		{
-			"file": "app/js/app.js",
+			"file": "gulpfile.js",
 			"settings":
 			{
-				"buffer_size": 106270,
-				"line_ending": "Unix"
+				"buffer_size": 4486,
+				"line_ending": "Windows"
 			}
 		}
 	],
@@ -565,13 +565,11 @@
 	},
 	"expanded_folders":
 	[
-		"/C/dev/src/udacity/p5",
-		"/C/dev/src/udacity/p5/app",
-		"/C/dev/src/udacity/p5/app/css",
-		"/C/dev/src/udacity/p5/app/js"
+		"/C/dev/src/udacity/fend/p5"
 	],
 	"file_history":
 	[
+		"/C/dev/src/udacity/fend/p5/app/js/app.js",
 		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_Hutchinson-P5-3.zip/README.md",
 		"/C/dev/src/udacity/p5/README.md",
 		"/C/dev/src/udacity/p5/app/index.html",
@@ -832,73 +830,61 @@
 			[
 				{
 					"buffer": 0,
-					"file": "app/js/app.js",
-					"semi_transient": false,
+					"file": "gulpfile.js",
+					"semi_transient": true,
 					"settings":
 					{
-						"buffer_size": 106270,
+						"buffer_size": 4486,
 						"regions":
 						{
-							"bookmarks":
-							{
-								"flags": 144,
-								"icon": "bookmark",
-								"regions":
-								[
-									[
-										20932,
-										20932
-									],
-									[
-										24338,
-										24338
-									],
-									[
-										99463,
-										99463
-									]
-								],
-								"scope": "bookmarks"
-							}
 						},
 						"selection":
 						[
 							[
-								1212,
-								1212
+								48,
+								0
 							]
 						],
 						"settings":
 						{
-							"BracketHighlighterBusy": false,
-							"auto_complete": false,
-							"bh_regions":
+							"bracket_highlighter.busy": false,
+							"bracket_highlighter.locations":
+							{
+								"close":
+								{
+								},
+								"icon":
+								{
+								},
+								"open":
+								{
+								},
+								"unmatched":
+								{
+								}
+							},
+							"bracket_highlighter.regions":
 							[
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content",
 								"bh_double_quote",
 								"bh_double_quote_center",
 								"bh_double_quote_open",
 								"bh_double_quote_close",
 								"bh_double_quote_content",
-								"bh_tag",
-								"bh_tag_center",
-								"bh_tag_open",
-								"bh_tag_close",
-								"bh_tag_content",
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_c_define_content",
 								"bh_regex",
 								"bh_regex_center",
 								"bh_regex_open",
 								"bh_regex_close",
 								"bh_regex_content",
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close",
-								"bh_single_quote_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
 								"bh_curly",
 								"bh_curly_center",
 								"bh_curly_open",
@@ -914,28 +900,33 @@
 								"bh_round_open",
 								"bh_round_close",
 								"bh_round_content",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_square_content",
 								"bh_default",
 								"bh_default_center",
 								"bh_default_open",
 								"bh_default_close",
 								"bh_default_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content",
 								"bh_unmatched",
 								"bh_unmatched_center",
 								"bh_unmatched_open",
 								"bh_unmatched_close",
-								"bh_unmatched_content"
+								"bh_unmatched_content",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_tag_content"
 							],
 							"color_scheme": "Packages/User/Color Highlighter/themes/Monokai (SL).tmTheme",
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 210.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
