@@ -14,15 +14,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="shortcut icon" href="img/favicon.ico">
-    <!-- Inline all CSS -->
-    <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css" inline>
-    <link rel="stylesheet" href="css/style.css" inline>
-    <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.css" inline>
-    <link rel="stylesheet" href="vendor/jquery-ui-1.11.4.custom/jquery-ui.min.css" inline>
-    <link rel="stylesheet" href="vendor/jquery-ui-1.11.4.custom/jquery-ui.structure.min.css" inline>
-    <link rel="stylesheet" href="vendor/jquery-ui-1.11.4.custom/jquery-ui.theme.min.css" inline>
-    <link rel="stylesheet" href="vendor/rateit/rateit.css" inline>
-    <link rel="stylesheet" href="vendor/perfect-scrollbar/css/perfect-scrollbar.min.css" inline>
+    <!-- build:css(.\app) css/combined.css inline -->
+    <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="vendor/jquery-ui-1.11.4.custom/jquery-ui.min.css">
+    <link rel="stylesheet" href="vendor/jquery-ui-1.11.4.custom/jquery-ui.structure.min.css">
+    <link rel="stylesheet" href="vendor/jquery-ui-1.11.4.custom/jquery-ui.theme.min.css">
+    <link rel="stylesheet" href="vendor/rateit/rateit.css">
+    <link rel="stylesheet" href="vendor/perfect-scrollbar/css/perfect-scrollbar.min.css">
+    <!-- endbuild -->
     <!--[if lt IE 9]>
         <script src="js/vendor/html5-3.6-respond-1.4.2.min.js"></script>
     <![endif]-->
@@ -55,6 +56,7 @@
                     <img src="https://s3-media3.fl.yelpcdn.com/assets/srv0/developer_pages/25e99875a798/assets/img/yelp_powered_btn_red@2x.png" alt="Powered by Yelp">
                     <a href="http://locu.com"><img height="25" width="155" src="https://locu.com/static/images/dev/poweredby-white@2x.png" alt="Powered by Locu"></a>
                     <img src="https://ss0.4sqi.net/img/poweredByFoursquare/poweredby-full-color-bf549c16c0ab3e1b04706ab5fcb422f1.png" alt="Powered by Foursquare">
+                    <p>Source: TODO</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -441,7 +443,7 @@
             <!-- /ko -->
         </div>
     </script>
-    <!-- build:js js/combined.min.js -->
+    <!-- build:js(.\app) js/combined.min.js -->
     <script src="vendor/jquery-1.11.3.min.js"></script>
     <script src="vendor/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>

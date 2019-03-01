@@ -1,0 +1,11 @@
+{
+	"extends": "stylelint-config-standard",
+	"rules": {
+		"indentation": "tab",
+		"max-empty-lines": 2,
+		"comment-whitespace-inside": null,
+		"declaration-block-no-shorthand-property-overrides": true,
+		"declaration-colon-newline-after": null,
+		"no-descending-specificity": null
+	}
+}

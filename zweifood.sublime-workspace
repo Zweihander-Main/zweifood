@@ -1,0 +1,982 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"unc",
+				"uncssOptions"
+			],
+			[
+				"html",
+				"htmlTmpAll〔variable〕"
+			],
+			[
+				"css",
+				"cssTmpCom"
+			],
+			[
+				"etc",
+				"etcTmpCopy〔variable〕"
+			],
+			[
+				"currentlySelec",
+				"currentlySelectedLocation"
+			],
+			[
+				"locations",
+				"locationsArray"
+			],
+			[
+				"lat",
+				"lat"
+			],
+			[
+				"value",
+				"valueAccessor"
+			],
+			[
+				"obser",
+				"observable"
+			],
+			[
+				"currently",
+				"currentlySelectedLocation"
+			],
+			[
+				"binding",
+				"bindingContext"
+			],
+			[
+				"container",
+				"containerSubSiblings〔variable〕"
+			],
+			[
+				"text-",
+				"text-decoration"
+			],
+			[
+				"yelp_revie",
+				"yelp_reviewCount"
+			],
+			[
+				"valueAcc",
+				"valueAccessor〔variable〕"
+			],
+			[
+				"photo",
+				"photoObject"
+			],
+			[
+				"view",
+				"viewModel〔variable〕"
+			],
+			[
+				"yelp",
+				"yelp_rating"
+			],
+			[
+				"ch",
+				"checkbox"
+			],
+			[
+				"error",
+				"errorObject〔variable〕"
+			],
+			[
+				"observ",
+				"observable"
+			],
+			[
+				"API",
+				"APIType"
+			],
+			[
+				"inter",
+				"interceptFunction"
+			],
+			[
+				"worker",
+				"workerHandler"
+			],
+			[
+				"basic",
+				"basicExtraParameters"
+			],
+			[
+				"ini",
+				"initialPoint"
+			],
+			[
+				"search",
+				"searchAPIInfo"
+			],
+			[
+				"currentDetailed",
+				"currentDetailedAPIInfoBeingFetched"
+			],
+			[
+				"for",
+				"for\tfor (…) {…}"
+			],
+			[
+				"searchType",
+				"searchTypeConstructor"
+			],
+			[
+				"location",
+				"locationModelNumber"
+			],
+			[
+				"defaultLat",
+				"defaultLatLng"
+			],
+			[
+				"pass",
+				"passedGeometry〔variable〕"
+			],
+			[
+				"geometry",
+				"geometryBlueprint"
+			],
+			[
+				"favorites",
+				"favoritesArray〔variable〕"
+			],
+			[
+				"google_",
+				"google_geometry"
+			],
+			[
+				"foursq",
+				"foursquareSearchType"
+			],
+			[
+				"bind",
+				"bindingContext"
+			],
+			[
+				"backgroun",
+				"backgroundContainer〔variable〕"
+			],
+			[
+				"default",
+				"defaultMarkershape〔namespace〕"
+			],
+			[
+				"center",
+				"centerReticle"
+			],
+			[
+				"div",
+				"div\tTag"
+			],
+			[
+				"de",
+				"defaultZoom〔variable〕"
+			],
+			[
+				"class",
+				"class"
+			],
+			[
+				"fav",
+				"favArray"
+			],
+			[
+				"favori",
+				"favoriteArrayPrevLength"
+			],
+			[
+				"favorite",
+				"favoriteArray"
+			],
+			[
+				"marker",
+				"markerLimitRemoveBulkAmount"
+			],
+			[
+				"favorit",
+				"favoriteArray"
+			],
+			[
+				"favo",
+				"favoriteArray"
+			],
+			[
+				"string",
+				"stringify"
+			],
+			[
+				"strin",
+				"stringify"
+			],
+			[
+				"google_p",
+				"google_priceLevel"
+			],
+			[
+				"storage",
+				"storageAvailable"
+			],
+			[
+				"long",
+				"longitude"
+			],
+			[
+				"remove",
+				"removeMultipleLocations"
+			],
+			[
+				"list",
+				"listenerStorage"
+			],
+			[
+				"debounced",
+				"debouncedCallAPIs"
+			],
+			[
+				"isi",
+				"isItOpenRightNow"
+			],
+			[
+				"listable",
+				"listableEntries"
+			],
+			[
+				"sort",
+				"sortType"
+			],
+			[
+				"loca",
+				"locationModelNumber"
+			],
+			[
+				"app",
+				"appConfigObject〔variable〕"
+			],
+			[
+				"current",
+				"currentDetailedFoursquareDataBeingFetched"
+			],
+			[
+				"currentD",
+				"currentDetailedMenuDataBeingFetched"
+			],
+			[
+				"curren",
+				"currentlySelectedLocation"
+			],
+			[
+				"currentDeta",
+				"currentDetailedReviewDataBeingFetched"
+			],
+			[
+				"menu",
+				"menu"
+			],
+			[
+				"text",
+				"textStatus〔variable〕"
+			],
+			[
+				"success",
+				"successAPIFunction"
+			],
+			[
+				"four",
+				"foursquareSearchType"
+			],
+			[
+				"radi",
+				"radiusInMeters"
+			],
+			[
+				"rad",
+				"radiusInMeters"
+			],
+			[
+				"locu",
+				"locuAccuracy"
+			],
+			[
+				"lo",
+				"long"
+			],
+			[
+				"lng",
+				"lng"
+			],
+			[
+				"name",
+				"name"
+			],
+			[
+				"fuzzy",
+				"fuzzySetOfResultsNames〔variable〕"
+			],
+			[
+				"cl",
+				"cl\tconsole.log"
+			],
+			[
+				"results",
+				"resultsArray"
+			],
+			[
+				"marke",
+				"markedLocations"
+			],
+			[
+				"googleOpe",
+				"googleOpeningHoursObject"
+			],
+			[
+				"open",
+				"open_now"
+			],
+			[
+				"model",
+				"modelUpdater"
+			],
+			[
+				"Api",
+				"APIMappingsForModel"
+			],
+			[
+				"result",
+				"result"
+			],
+			[
+				"review",
+				"review_count"
+			],
+			[
+				"google_U",
+				"google_UTCOffset"
+			],
+			[
+				"place",
+				"place_id"
+			],
+			[
+				"match",
+				"matchBasedOnName"
+			],
+			[
+				"info",
+				"infoWindowHTMLTemplate"
+			],
+			[
+				"get",
+				"getElementById〔function〕"
+			],
+			[
+				"selecte",
+				"selectedPlace"
+			],
+			[
+				"curr",
+				"currentlySelectedLocation"
+			],
+			[
+				"yel",
+				"yelpBaseURL〔variable〕"
+			],
+			[
+				"curre",
+				"currentViewModel〔variable〕"
+			],
+			[
+				"elem",
+				"elemTop"
+			],
+			[
+				"doc",
+				"docViewTop"
+			],
+			[
+				"elemtn",
+				"elementBottom"
+			],
+			[
+				"price",
+				"price_level"
+			],
+			[
+				"obs",
+				"observable"
+			],
+			[
+				"cur",
+				"currentViewModel"
+			],
+			[
+				"last",
+				"lastOpenMapMarker"
+			],
+			[
+				"newLoc",
+				"newLocOpenNow"
+			],
+			[
+				"attr",
+				"attributionsToPush"
+			],
+			[
+				"getRes",
+				"getRestaurantsFromGooglePlacesAPICallArray"
+			],
+			[
+				"call",
+				"callArrayIndex"
+			],
+			[
+				"googl",
+				"googleSearchType"
+			],
+			[
+				"goo",
+				"googleSearchType"
+			],
+			[
+				"radar",
+				"radarSearchIDArray"
+			],
+			[
+				"google",
+				"googleSearchID〔argument〕"
+			],
+			[
+				"ob",
+				"observable"
+			],
+			[
+				"fun",
+				"function (?)"
+			],
+			[
+				"fu",
+				"Function (fn/1)"
+			],
+			[
+				"add",
+				"addEventListener"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 109.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"dec",
+				"DocBlockr: Decorate line comment"
+			],
+			[
+				"docblo",
+				"DocBlockr: Decorate line comment"
+			],
+			[
+				"packages",
+				"Package Control: List Packages"
+			],
+			[
+				"todo",
+				"TodoReview: Open Files"
+			],
+			[
+				"format",
+				"Format: Javascript"
+			],
+			[
+				"html",
+				"HTMLPrettify"
+			],
+			[
+				"forma",
+				"Format: Javascript"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"package install",
+				"Package Control: Install Package"
+			],
+			[
+				"package control u",
+				"Package Control: Upgrade Package"
+			],
+			[
+				"format ",
+				"Format: Javascript"
+			],
+			[
+				"set javasc",
+				"Set Syntax: JavaScript"
+			],
+			[
+				"for",
+				"Format: Javascript"
+			],
+			[
+				"set javascrip",
+				"Set Syntax: JavaScript"
+			],
+			[
+				"remove packa",
+				"Package Control: Remove Package"
+			],
+			[
+				"",
+				"About"
+			],
+			[
+				"enable",
+				"Package Control: Enable Package"
+			],
+			[
+				"disable",
+				"Package Control: Disable Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 707.0
+	},
+	"console":
+	{
+		"height": 656.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/dev/src/sideprojects/ZweiFood",
+		"/C/dev/src/sideprojects/ZweiFood/app",
+		"/C/dev/src/sideprojects/ZweiFood/gulp"
+	],
+	"file_history":
+	[
+		"/C/dev/src/sideprojects/ZweiFood/gulp/gulpErrorLogging.js",
+		"/C/dev/src/sideprojects/ZweiFood/zweifood.sublime-project",
+		"/C/dev/src/sideprojects/ZweiFood/gulpfile.js",
+		"/C/dev/src/sideprojects/ZweiFood/app/js/app.js",
+		"/C/dev/src/sideprojects/ZweiFood/gulp/gulpConfig.js",
+		"/C/dev/src/sideprojects/ZweiFood/gulp/gulpSequences.js",
+		"/C/dev/src/sideprojects/ZweiFood/gulp/gulpFileOperations.js",
+		"/C/dev/src/sideprojects/ZweiFood/gulp/gulpPSI.js",
+		"/C/dev/src/sideprojects/ZweiFood/.gitignore",
+		"/C/dev/src/sideprojects/ZweiFood/LICENSE.md",
+		"/C/dev/src/sideprojects/ZweiFood/LICENSE",
+		"/C/dev/src/sideprojects/ZweiFood/CREDITS.md",
+		"/C/dev/src/sideprojects/ZweiFood/README.md",
+		"/C/dev/src/sideprojects/ZweiFood/app/index.html",
+		"/C/dev/src/sideprojects/ZweiFood/package.json",
+		"/C/dev/src/sideprojects/ZweiFood/.eslintrc.json",
+		"/C/dev/src/sideprojects/ZweiFood/.stylelintrc.json",
+		"/C/dev/src/zweisolutions/zweisolutionscom/.stylelintrc.json",
+		"/C/dev/src/zweisolutions/zweisolutionscom/.eslintrc.json",
+		"/C/dev/src/zweisolutions/zweisolutionscom/.gitignore",
+		"/C/dev/src/zweisolutions/zweisolutionscom/package-lock.json",
+		"/C/dev/src/sideprojects/ZweiFood/package-lock.json",
+		"/C/dev/src/zweisolutions/zweisolutionscom/gulpfile.js",
+		"/C/dev/src/zweisolutions/zweisolutionscom/package.json",
+		"/C/dev/src/zweisolutions/zweisolutionscom/zweisolutions.sublime-project",
+		"/C/dev/src/sideprojects/ZweiFood/zweifood.sublime-workspace",
+		"/C/dev/src/udacity/fend/p5/app/js/app.js",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_Hutchinson-P5-3.zip/README.md",
+		"/C/dev/src/udacity/p5/README.md",
+		"/C/dev/src/udacity/p5/app/index.html",
+		"/C/dev/src/udacity/p5/app/css/style.css",
+		"/C/dev/src/udacity/p5/app/js/config.js",
+		"/C/dev/src/udacity/p5/app/js/workerFillMarkerData.js",
+		"/C/Users/Zweihander/AppData/Local/Temp/g1dj511o.neh",
+		"/C/dev/src/udacity/p5/.gitignore",
+		"/C/dev/src/udacity/p5/app/js/app.js",
+		"/C/dev/src/udacity/p5/gulpfile.js",
+		"/C/dev/src/udacity/extra files/jasmine/ud549/spec/PlayerSpec.js",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_Hutchinson-P5-1.zip/app/js/app.js",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_Hutchinson-P5-1.zip/README.md",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_Hutchinson-P5-1.zip/package.json",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_Hutchinson-P5-1.zip/gulpfile.js",
+		"/C/dev/src/udacity/p5/dist/css/style.css",
+		"/C/dev/src/udacity/p5/package.json",
+		"/C/dev/src/udacity/p3/index.html",
+		"/C/dev/src/udacity/p4/app/index.html",
+		"/C/Users/Zweihander/Desktop/30-css-page-preload-animations/_css/main.css",
+		"/C/Windows/System32/drivers/etc/hosts",
+		"/C/Users/Zweihander/Desktop/30-css-page-preload-animations/demo8.html",
+		"/C/Users/Zweihander/Desktop/30-css-page-preload-animations/_scripts/main.js",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_30-css-page-preload-animations.zip/30-css-page-preload-animations/_css/animate.css",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_30-css-page-preload-animations.zip/30-css-page-preload-animations/_css/main.css",
+		"/C/dev/src/udacity/p5/app/vendor/font-awesome.custom/css/font-awesome.custom.css",
+		"/C/dev/src/udacity/p5/app/vendor/font-awesome.custom/css/font-awesome.css",
+		"/C/dev/src/udacity/p5/app/vendor/sidebarEffects.js",
+		"/C/dev/src/udacity/p5/app/vendor/modernizr.custom.js",
+		"/C/dev/src/udacity/p5/app/css/jquery-ui.theme.custom.css",
+		"/C/dev/src/udacity/p5/app/js/vendor/jquery-ui/index.html",
+		"/C/Users/Zweihander/Desktop/Trillian-zweihander-December.18.2015-03.02.44.log",
+		"/C/Program Files (x86)/Trillian/ca-bundle.crt",
+		"/C/Users/Zweihander/AppData/Roaming/Trillian/users/zweihander/logs/GOOGLE/Query/3vnt0beyjlcub2wvpxfittf7bf@public.talk.google.com.xml",
+		"/C/dev/src/udacity/p5/app/index (2).html",
+		"/C/dev/src/udacity/p5/app/js/jquery.scrollintoview.custom.js",
+		"/C/dev/src/rhap-steak/assets/css/theme.css",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_jquery-ui-1.11.4.custom.zip/jquery-ui-1.11.4.custom/jquery-ui.theme.css",
+		"/C/dev/src/udacity/p5/app/js/vendor/jquery-ui/jquery-ui.theme.css",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_malihu-custom-scrollbar-plugin-master.zip/malihu-custom-scrollbar-plugin-master/js/minified/jquery.mousewheel.min.js",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_malihu-custom-scrollbar-plugin-master.zip/malihu-custom-scrollbar-plugin-master/js/minified/jquery.mousewheel-3.0.6.min.js",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_ScrollbarVisibility.zip/css/jquery.jscrollpane.codrops1.css",
+		"/C/dev/src/udacity/p5/app/css/vendor/font-awesome.min.css",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_SidebarTransitions.zip/SidebarTransitions/css/component.css",
+		"/C/dev/src/udacity/p5/app/css/vendor/component.css",
+		"/C/dev/src/udacity/p5/app/js/vendor/sidebarEffects.js",
+		"/C/dev/src/udacity/p2/css/style.css",
+		"/C/dev/src/udacity/p5/app/js/vendor/modernizr.custom.js",
+		"/C/dev/src/udacity/p2/js/sidebarEffects.js",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_SidebarTransitions.zip/SidebarTransitions/css/normalize.css",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_SidebarTransitions.zip/SidebarTransitions/css/icons.css",
+		"/C/Users/Zweihander/AppData/Local/Temp/Temp1_SidebarTransitions.zip/SidebarTransitions/css/demo.css",
+		"/C/dev/src/udacity/p5/app/js/vendor/jquery-ui-1.11.4/external/jquery/jquery.js",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/User/JavaScript.sublime-settings",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/User/JSON.sublime-settings",
+		"/C/dev/src/udacity/p4/package.json",
+		"/C/Users/Zweihander/Desktop/snazzy-maps-example-neutral-blue-style.html",
+		"/C/dev/src/udacity/extra files/kocatclicker/index.html",
+		"/C/dev/src/udacity/extra files/kocatclicker/js/app.js",
+		"/C/dev/src/udacity/p5/app/css/main.css",
+		"/C/dev/src/udacity/p5/app/blank-page.html",
+		"/C/dev/src/udacity/p5/app/browserconfig.xml",
+		"/C/dev/src/udacity/extra files/todoapp/index.html",
+		"/C/dev/src/udacity/extra files/todoapp/js/views/todo-view.js",
+		"/C/dev/src/udacity/extra files/todoapp/js/models/todo.js",
+		"/C/dev/src/udacity/extra files/cat clicker/index.html",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/User/SublimeLinter.sublime-settings",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/User/HTML.sublime-settings",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/User/Tern.sublime-settings",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/User/SublimeCodeIntel.sublime-settings",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/SublimeCodeIntel/SublimeCodeIntel.sublime-settings",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/SublimeLinter/SublimeLinter.sublime-settings",
+		"/C/Users/Zweihander/AppData/Roaming/Sublime Text 3/Packages/tern_for_sublime/Tern.sublime-settings",
+		"/C/dev/src/udacity/extra files/cat clicker/app.js"
+	],
+	"find":
+	{
+		"height": 40.0
+	},
+	"find_in_files":
+	{
+		"height": 120.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"uncssop",
+			"src.",
+			"cssall",
+			"logPluginError",
+			"paths.",
+			"udacity",
+			"fend",
+			"udacity",
+			"php",
+			"uncss",
+			"src.htmltmpall",
+			"logprefix",
+			"lock",
+			"postcss",
+			"postcssReporter({ clearReportedMessages: true })",
+			"postcss",
+			"imagemin",
+			"sourcema",
+			"$.cache",
+			"BUILD_PRODUCTION_READY_FILES",
+			"\n($",
+			"ngrok",
+			"html",
+			"src.",
+			"attributions",
+			"\"",
+			"todo",
+			"infoWindow resize",
+			"regularinfowindowpan",
+			"debounce",
+			"todo",
+			".open",
+			"resizelistener",
+			"todo",
+			"markercloseclick",
+			"'",
+			"markercloseclick",
+			"p5 food app",
+			"\"",
+			"”",
+			"“",
+			"'",
+			"\"",
+			"font:",
+			"loading scr",
+			"listableentries",
+			"console.",
+			"listableEntries",
+			"locationArrayForWorkers",
+			"console.",
+			"callbasicapidata",
+			"callapiinfo",
+			"successapifunction",
+			"workerhand",
+			"locationsarray",
+			"console.",
+			" in ",
+			"webworkers",
+			"console.log",
+			"ko.bindingHandlers.value.update",
+			"update",
+			"allbindingsaccessor()",
+			"allbindingsaccessor",
+			"console.log",
+			".on",
+			"defaultPriceButtonFilter",
+			"defaultMinRatingButtonFilter",
+			"defaultFavoriteButtonFilter",
+			"search-box",
+			"search-box-focused",
+			".search-box",
+			"element",
+			"setresizelistener",
+			"theelement",
+			"infowindowtemplate",
+			"recheckinfowindowiscen",
+			"reCheckInfoWindowIsCentered",
+			"setResizeListener_centerWindow",
+			"setResizeListener_killListenerAndCallback",
+			"resizelistener",
+			"resize",
+			"markerCloseClick",
+			"closeclick",
+			"panel-visible",
+			"'",
+			"panel-visible",
+			"+",
+			"$('#' + menu)",
+			"menuToggle_toggleMenu",
+			"menutoggle",
+			"resizelistener",
+			"listwas",
+			"listwasclicked",
+			"menutoggle",
+			"markerToggled",
+			"markertoggled",
+			"togglemenu",
+			"console.log",
+			"bounds_changed",
+			"slide",
+			"sb",
+			"resizelistener",
+			"togglemenu",
+			"menutoggle",
+			"toggled",
+			"self.markertogg",
+			"console.log",
+			"toggled",
+			"markertoggled",
+			"markerToggled",
+			"observables",
+			"markerToggled",
+			"markertoggled",
+			"width",
+			"window.innerWidth > 1199",
+			"innerwidth",
+			"window.innerWidth < 992",
+			"menutoggle",
+			"info-window-title-header",
+			"header",
+			"regularInfoWindowPan",
+			"reCheckInfoWindowIsCentered",
+			"addlistener",
+			"reCheckInfoWindowIsCentered",
+			"userdrag",
+			"currentlyselectedlocation.sub",
+			"setresizelistener",
+			"setResizeListener_centerWindow"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"error.logPluginError",
+			"config.paths.",
+			"ZWEIFOOD",
+			"\"",
+			" 0",
+			"'",
+			"\"Scheherazade\", Georgia, Times, \"Times New Roman\", serif",
+			"\"Lato\", \"Arial\", \"Helvetica\", \"Lucida Grande\", \"Gill Sans\", \"Verdana\", sans-serif",
+			"\"",
+			"../fonts",
+			"../vendor/font-awesome.custom/fonts",
+			"error: ",
+			"/img/jquery-ui",
+			"appConfigObject",
+			"latLngAccuracy",
+			"\"></span></p>' +",
+			"",
+			"lastOpenMapInfoWindow",
+			"getRestaurantsFromGoogleMapsAPI"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 30.0
+	},
+	"input":
+	{
+		"height": 42.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.SublimeLinter":
+	{
+		"height": 144.0
+	},
+	"output.SublimeLinter Messages":
+	{
+		"height": 144.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "zweifood.sublime-project",
+	"replace":
+	{
+		"height": 72.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"app\\js\\app.js"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 675.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"C:\\dev\\src\\courses\\udacity\\fend\\p7\\p7.sublime-project"
+			]
+		],
+		"width": 479.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 188.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
