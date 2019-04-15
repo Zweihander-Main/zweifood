@@ -1,14 +1,107 @@
 {
-    "name": "ZweiFood",
-    "version": "1.0.0",
-    "description": "ZweiFood",
-    "author": "Zwei",
-    "scripts": {},
-    "main": "index.html",
-    "dependencies": {},
-    "devDependencies": {
-        "gulp-guru": "file:../Gulp-Guru"
-    },
-    "private": true,
-    "license": "AGPL-3.0-or-later"
+	"name": "ZweiFood",
+	"version": "1.0.0",
+	"description": "ZweiFood",
+	"author": "Zweihänder",
+	"scripts": {},
+	"main": "index.html",
+	"private": true,
+	"license": "MIT",
+	"babel": {
+		"presets": [
+			"@babel/preset-env"
+		]
+	},
+	"eslintConfig": {
+		"env": {
+			"browser": true,
+			"es6": true
+		},
+		"parserOptions": {
+			"ecmaVersion": 2019,
+			"sourceType": "module"
+		},
+		"extends": [
+			"eslint:recommended",
+			"plugin:prettier/recommended"
+		],
+		"rules": {
+			"quotes": [
+				"error",
+				"single"
+			],
+			"semi": [
+				"error",
+				"always"
+			],
+			"no-console": [
+				"error",
+				{
+					"allow": [
+						"warn",
+						"error",
+						"debug"
+					]
+				}
+			],
+			"no-mixed-spaces-and-tabs": [
+				"error",
+				"smart-tabs"
+			]
+		}
+	},
+	"jshintConfig": {
+		"esversion": 9,
+		"node": true,
+		"globals": {
+			"afterAll": false,
+			"afterEach": false,
+			"beforeAll": false,
+			"beforeEach": false,
+			"describe": false,
+			"expect": false,
+			"fit": false,
+			"it": false,
+			"jasmine": false,
+			"jest": false,
+			"pending": false,
+			"pit": false,
+			"require": false,
+			"test": false,
+			"xdescribe": false,
+			"xit": false,
+			"xtest": false
+		},
+		"laxbreak": true
+	},
+	"prettier": {
+		"singleQuote": true,
+		"trailingComma": "es5",
+		"tabWidth": 4,
+		"useTabs": true,
+		"arrowParens": "always"
+	},
+	"stylelint": {
+		"extends": "stylelint-config-standard",
+		"rules": {
+			"indentation": "tab",
+			"max-empty-lines": 2,
+			"comment-whitespace-inside": null,
+			"declaration-block-no-shorthand-property-overrides": true,
+			"declaration-colon-newline-after": null,
+			"no-descending-specificity": null
+		}
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"gulp": "^4.0.0",
+		"gulp-guru": "file:../Gulp-Guru",
+		"@babel/core": "^7.4.0",
+		"@babel/preset-env": "^7.4.0",
+		"@babel/register": "^7.4.0",
+		"eslint": "^5.15.3",
+		"eslint-config-prettier": "^4.1.0",
+		"eslint-plugin-prettier": "^3.0.1",
+		"prettier": "^1.16.4"
+	}
 }

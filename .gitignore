@@ -66,7 +66,11 @@ build/Release
 node_modules
 
 #Don't import .tmp or dist folders
-.tmp dist
+.tmp
+app
+dist
+dist
+build
 
 #SublimeText
 *.tmlanguage.cache
@@ -84,3 +88,6 @@ Package Control.user-ca-bundle
 oscrypto-ca-bundle.crt
 bh_unicode_properties.cache
 GitHub.sublime-settings
+
+# Environment variables
+.env

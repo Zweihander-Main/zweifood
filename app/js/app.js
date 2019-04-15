@@ -1,4 +1,5 @@
 /* global appConfigObject, FuzzySet, ko, google, $, ResizeSensor, WebFont */
+'use strict';
 /**
  * App contains utility functions, the view model, model definitions, and
  * success/fail functions for google maps (that create the map and viewmodel).
@@ -14,7 +15,6 @@
  * Section V  : Map Init/Fail Functions
  */
 var app = (function() {
-	'use strict';
 	//////////////////////////////////
 	// Section I: Utility Functions //
 	//////////////////////////////////
@@ -41,7 +41,7 @@ var app = (function() {
 			images[i] = new Image();
 			images[i].src = sources[i];
 		}
-		if (typeof(callback) === 'function') {
+		if (typeof callback === 'function') {
 			callback();
 		}
 	}
@@ -68,9 +68,11 @@ var app = (function() {
 	 * Gets current time - direct from underscore.js library for debounce function
 	 * @return {number} Current Date().getTime()
 	 */
-	var _now = Date.now || function() {
-		return new Date().getTime();
-	};
+	var _now =
+		Date.now ||
+		function() {
+			return new Date().getTime();
+		};
 
 	/**
 	 * Based on underscore.js library
@@ -164,7 +166,7 @@ var app = (function() {
 	 *                                 match has been made
 	 */
 	function matchBasedOnName(arrayOfResults, nameToMatch, nameOfName) {
-		if (typeof(nameOfName) === 'undefined') {
+		if (typeof nameOfName === 'undefined') {
 			nameOfName = 'name';
 		}
 		var setToMatch = new FuzzySet([]);
@@ -173,7 +175,7 @@ var app = (function() {
 		}
 		var match = setToMatch.get(nameToMatch);
 		// If there was a match, it'll be at match[0][1], confidence at match[0][0]
-		if ((match !== null) && (match[0][0] > appConfigObject.minFuzzyMatch)) {
+		if (match !== null && match[0][0] > appConfigObject.minFuzzyMatch) {
 			return setToMatch.values().indexOf(match[0][1]);
 		} else {
 			return false;
@@ -217,8 +219,10 @@ var app = (function() {
 	 * @return {boolean} Boolean on if web workers are available
 	 */
 	function workersAvailable() {
-		if ((typeof(Worker) !== 'undefined') && (window.location.protocol !==
-				'file:')) {
+		if (
+			typeof Worker !== 'undefined' &&
+			window.location.protocol !== 'file:'
+		) {
 			return true;
 		} else {
 			return false;
@@ -231,12 +235,15 @@ var app = (function() {
 	 * @param {object} jQueryObject   jQuery object that perfectscrollbar is
 	 *                                attached to
 	 */
-	var perfectScrollbar_updatePerfectScrollbar =
-		throttle(function(jqueryObject) {
+	var perfectScrollbar_updatePerfectScrollbar = throttle(
+		function(jqueryObject) {
 			jqueryObject.perfectScrollbar('update');
-		}, 16, {
-			'leading': false
-		});
+		},
+		16,
+		{
+			leading: false,
+		}
+	);
 
 	/**
 	 * Used in dropdown bindingHandler to check all input values - neccessary
@@ -255,12 +262,18 @@ var app = (function() {
 	 *                                         bindinghandler
 	 * @return {string/boolean}         	   String of parsed input or false
 	 */
-	function dropdown_interpretValue(input, binding, element,
-		allBindings, viewModel, bindingContext) {
-		if ((typeof(input) !== 'undefined') && (input !== null)) {
+	function dropdown_interpretValue(
+		input,
+		binding,
+		element,
+		allBindings,
+		viewModel,
+		bindingContext
+	) {
+		if (typeof input !== 'undefined' && input !== null) {
 			// Array will likely be a checkNested object
 			if (input.constructor === Array) {
-				if (typeof(input[0]) !== 'undefined') {
+				if (typeof input[0] !== 'undefined') {
 					if (checkNested.apply(undefined, input) === true) {
 						var returnValue = input[0];
 						for (var i = 1, len = input.length; i < len; i++) {
@@ -277,9 +290,15 @@ var app = (function() {
 		} else {
 			return false;
 		}
-		if (typeof(binding) !== 'undefined') {
-			input = ko.bindingHandlers[binding].update(element, input,
-				allBindings, viewModel, bindingContext, true);
+		if (typeof binding !== 'undefined') {
+			input = ko.bindingHandlers[binding].update(
+				element,
+				input,
+				allBindings,
+				viewModel,
+				bindingContext,
+				true
+			);
 		}
 		return input;
 	}
@@ -294,18 +313,27 @@ var app = (function() {
 	 * @param {number} offsety Y pixels to offset by
 	 */
 	function setResizeListener_mapRecenter(map, latlng, offsetx, offsety) {
-		var point1 = map.getProjection().fromLatLngToPoint(
-			(latlng instanceof google.maps.LatLng) ? latlng : map.getCenter()
-		);
+		var point1 = map
+			.getProjection()
+			.fromLatLngToPoint(
+				latlng instanceof google.maps.LatLng ? latlng : map.getCenter()
+			);
 		var point2 = new google.maps.Point(
-			((typeof(offsetx) == 'number' ? offsetx : 0) /
-				Math.pow(2, map.getZoom())) || 0, ((typeof(offsety) ==
-				'number' ? offsety : 0) / Math.pow(2, map.getZoom())) || 0
+			(typeof offsetx == 'number' ? offsetx : 0) /
+				Math.pow(2, map.getZoom()) || 0,
+			(typeof offsety == 'number' ? offsety : 0) /
+				Math.pow(2, map.getZoom()) || 0
 		);
-		map.setCenter(map.getProjection().fromPointToLatLng(new google.maps.Point(
-			point1.x - point2.x,
-			point1.y + point2.y
-		)));
+		map.setCenter(
+			map
+				.getProjection()
+				.fromPointToLatLng(
+					new google.maps.Point(
+						point1.x - point2.x,
+						point1.y + point2.y
+					)
+				)
+		);
 	}
 
 	/**
@@ -322,38 +350,64 @@ var app = (function() {
 	 *                            selector is the inner infoWindow rather than
 	 *                            the outer one
 	 */
-	function setResizeListener_centerWindow(theElement, model, x, y, time, xModifier) {
-		setTimeout(function() {
-			var xAmount = 0;
-			var yAmount = 0;
-			if (x === true) {
-				var markerList = $('#marker-list');
-				var extraXSpace = 10;
-				if ((window.innerWidth > 1199) ||
-					(markerList.hasClass('panel-visible') === true)) {
-					if ((markerList.width() + markerList.offset().left +
-							theElement.width() + xModifier +
-							(2 * extraXSpace) /*+ 50*/ ) < window.innerWidth) {
-						if (theElement.offset().left <
-							(markerList.width() + markerList.offset().left +
-								extraXSpace)) {
-							xAmount = ((markerList.width() +
-									markerList.offset().left) -
-								theElement.offset().left) + extraXSpace;
+	function setResizeListener_centerWindow(
+		theElement,
+		model,
+		x,
+		y,
+		time,
+		xModifier
+	) {
+		setTimeout(
+			function() {
+				var xAmount = 0;
+				var yAmount = 0;
+				if (x === true) {
+					var markerList = $('#marker-list');
+					var extraXSpace = 10;
+					if (
+						window.innerWidth > 1199 ||
+						markerList.hasClass('panel-visible') === true
+					) {
+						if (
+							markerList.width() +
+								markerList.offset().left +
+								theElement.width() +
+								xModifier +
+								2 * extraXSpace /*+ 50*/ <
+							window.innerWidth
+						) {
+							if (
+								theElement.offset().left <
+								markerList.width() +
+									markerList.offset().left +
+									extraXSpace
+							) {
+								xAmount =
+									markerList.width() +
+									markerList.offset().left -
+									theElement.offset().left +
+									extraXSpace;
+							}
 						}
 					}
 				}
-			}
-			if (y === true) {
-				if (theElement.offset().top < 0) {
-					yAmount = theElement.offset().top - 15;
+				if (y === true) {
+					if (theElement.offset().top < 0) {
+						yAmount = theElement.offset().top - 15;
+					}
 				}
-			}
-			if ((xAmount !== 0) || (yAmount !== 0)) {
-				setResizeListener_mapRecenter(model.marker().map,
-					undefined, xAmount, yAmount);
-			}
-		}, (typeof(time) !== 'undefined' ? time : 0));
+				if (xAmount !== 0 || yAmount !== 0) {
+					setResizeListener_mapRecenter(
+						model.marker().map,
+						undefined,
+						xAmount,
+						yAmount
+					);
+				}
+			},
+			typeof time !== 'undefined' ? time : 0
+		);
 	}
 
 	/**
@@ -445,15 +499,17 @@ var app = (function() {
 		update: function(element, valueAccessor, allBindingsAccessor) {
 			$(element).autocomplete({
 				source: function(request, response) {
-					var results = $.ui.autocomplete.filter(valueAccessor()
-						.source, request.term);
+					var results = $.ui.autocomplete.filter(
+						valueAccessor().source,
+						request.term
+					);
 					response(results.slice(0, 6));
 				},
 				select: function(event, ui) {
 					allBindingsAccessor().textInput(ui.item.value);
-				}
+				},
 			});
-		}
+		},
 	};
 
 	/**
@@ -469,7 +525,7 @@ var app = (function() {
 			if (value === '') {
 				$(element).trigger('change');
 			}
-		}
+		},
 	};
 
 	/**
@@ -483,17 +539,17 @@ var app = (function() {
 			$(element).on('input change autocompletechange', function() {
 				var value = $(this).val();
 				var theElement = $(this);
-				if ((theElement).hasClass('search-box-focused')) {
-					if ((typeof(value) === 'undefined') || (value === '')) {
+				if (theElement.hasClass('search-box-focused')) {
+					if (typeof value === 'undefined' || value === '') {
 						theElement.removeClass('search-box-focused');
 					}
 				} else {
-					if ((typeof(value) !== 'undefined') && (value !== '')) {
+					if (typeof value !== 'undefined' && value !== '') {
 						theElement.addClass('search-box-focused');
 					}
 				}
 			});
-		}
+		},
 	};
 
 	/**
@@ -507,19 +563,27 @@ var app = (function() {
 		 * bindingContext. Calls close click on infoWindow and closes options
 		 * and settings menu. Value should be observable of options menu state.
 		 */
-		init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+		init: function(
+			element,
+			valueAccessor,
+			allBindingsAccessor,
+			viewModel,
+			bindingContext
+		) {
 			var allBindings = allBindingsAccessor(),
 				map = bindingContext.$data.mainMap,
 				value = valueAccessor(),
 				markerCloseClick = bindingContext.$data.markerCloseClick;
 
 			var options = {
-				types: ['geocode']
+				types: ['geocode'],
 			};
 			ko.utils.extend(options, allBindings.autocompleteOptions);
 
-			var autocomplete = new google.maps.places.
-			Autocomplete(element, options);
+			var autocomplete = new google.maps.places.Autocomplete(
+				element,
+				options
+			);
 			autocomplete.bindTo('bounds', map);
 
 			autocomplete.addListener('place_changed', function() {
@@ -535,9 +599,10 @@ var app = (function() {
 					map.fitBounds(place.geometry.viewport);
 				} else {
 					map.setCenter(place.geometry.location);
-					var defaultZoom = (window.innerWidth < 992 ?
-						appConfigObject.defaultMobileZoom :
-						appConfigObject.defaultZoom);
+					var defaultZoom =
+						window.innerWidth < 992
+							? appConfigObject.defaultMobileZoom
+							: appConfigObject.defaultZoom;
 					map.setZoom(defaultZoom);
 				}
 			});
@@ -547,15 +612,14 @@ var app = (function() {
 		 */
 		update: function(element, valueAccessor) {
 			ko.bindingHandlers.value.update(element, valueAccessor());
-		}
+		},
 	};
-
 
 	/** @type {Object} Bind jQuery Sliderbars plugin to element */
 	ko.bindingHandlers.ko_slideOutMenu = {
 		init: function() {
 			$.slidebars();
-		}
+		},
 	};
 
 	/**
@@ -571,12 +635,12 @@ var app = (function() {
 			if (_valueUnwrapped) {
 				var scrollItemIntoView = throttle(function() {
 					$(element).scrollintoview({
-						duration: 100
+						duration: 100,
 					});
 				}, 50);
 				scrollItemIntoView();
 			}
-		}
+		},
 	};
 
 	/**
@@ -585,12 +649,18 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.hoverToggle = {
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		init: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext
+		) {
 			ko.utils.registerEventHandler(element, 'mouseover', function() {
 				bindingContext.$data.shouldScroll(false);
 				$(element).stop(false, true);
 			});
-		}
+		},
 	};
 
 	/**
@@ -598,15 +668,28 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.ko_slider = {
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-			ko.bindingHandlers.value.init(element, valueAccessor,
-				allBindings, viewModel, bindingContext);
+		init: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext
+		) {
+			ko.bindingHandlers.value.init(
+				element,
+				valueAccessor,
+				allBindings,
+				viewModel,
+				bindingContext
+			);
 			var passValue = valueAccessor();
 			passValue.value = valueAccessor().value();
-			$(element).slider(passValue).on('slidechange', function(event, ui) {
-				valueAccessor().value(ui.value);
-			});
-		}
+			$(element)
+				.slider(passValue)
+				.on('slidechange', function(event, ui) {
+					valueAccessor().value(ui.value);
+				});
+		},
 	};
 
 	/**
@@ -636,7 +719,7 @@ var app = (function() {
 			if (value === -1) {
 				$(element).rateit('reset');
 			}
-		}
+		},
 	};
 
 	/**
@@ -653,7 +736,9 @@ var app = (function() {
 		 * element inline styling that can't be overriden by CSS.
 		 */
 		init: function(element) {
-			var subContainer = $(element).parent().parent()
+			var subContainer = $(element)
+				.parent()
+				.parent()
 				.addClass('custom-info-window-subcontainer');
 			var containerSiblings = subContainer.siblings();
 			var containerSubSiblings, backgroundContainer;
@@ -666,9 +751,15 @@ var app = (function() {
 				}
 			}
 			if (containerSubSiblings) {
-				for (var j = 0, jlen = containerSubSiblings.length; j < jlen; j++) {
-					if ($(containerSubSiblings[j])
-						.css('background-color') === 'rgb(255, 255, 255)') {
+				for (
+					var j = 0, jlen = containerSubSiblings.length;
+					j < jlen;
+					j++
+				) {
+					if (
+						$(containerSubSiblings[j]).css('background-color') ===
+						'rgb(255, 255, 255)'
+					) {
 						backgroundContainer = $(containerSubSiblings[j])
 							.addClass('custom-info-window-background')
 							.attr('id', 'custom-info-window-background');
@@ -676,15 +767,18 @@ var app = (function() {
 					}
 				}
 				if (backgroundContainer) {
-					subContainer.parent().parent()
-						.parent().addClass('custom-info-window');
+					subContainer
+						.parent()
+						.parent()
+						.parent()
+						.addClass('custom-info-window');
 					backgroundContainer.css({
 						'background-color': '',
-						'border-radius': ''
+						'border-radius': '',
 					});
 				}
 			}
-		}
+		},
 	};
 
 	/**
@@ -699,7 +793,13 @@ var app = (function() {
 		 * when a new infoWindow is opened. Element should be the most root
 		 * level info-window element that is user-defined.
 		 */
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		update: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext
+		) {
 			var model = ko.unwrap(valueAccessor());
 			// Remove previous infoWindow calls if present
 			if (element.resizeSensor) {
@@ -707,12 +807,12 @@ var app = (function() {
 				delete element.resizedAttached;
 			}
 			//CurrentlySelectedElement could be undefined
-			if (typeof(model) !== 'undefined') {
+			if (typeof model !== 'undefined') {
 				var theElement = $(element);
 				// Select the outer infowindow ideally
 				var infoWindow = $('#custom-info-window-background');
 				var xModifier = 0;
-				if (typeof(infoWindow.get(0)) === 'undefined') {
+				if (typeof infoWindow.get(0) === 'undefined') {
 					infoWindow = theElement;
 					// Difference between inner and outer
 					xModifier = 50;
@@ -727,7 +827,9 @@ var app = (function() {
 					bindingContext.$data.regularInfoWindowPan(true);
 					// Could previously use this but stopped working with API 3.23
 					// model.infoWindow.open(window.map, model.marker());
-					$(model.infoWindow.content).height($(model.infoWindow.content).height());
+					$(model.infoWindow.content).height(
+						$(model.infoWindow.content).height()
+					);
 					// Alternate method, not neccessary probably
 					// model.infoWindow.setContent($(model.infoWindow.content).get(0));
 				});
@@ -738,10 +840,14 @@ var app = (function() {
 				 * called for a bit.
 				 */
 				setTimeout(function() {
-					bindingContext.$data.reCheckInfoWindowIsCentered(infoWindow, model, xModifier);
+					bindingContext.$data.reCheckInfoWindowIsCentered(
+						infoWindow,
+						model,
+						xModifier
+					);
 				}, 75);
 			}
-		}
+		},
 	};
 
 	/**
@@ -753,9 +859,9 @@ var app = (function() {
 	ko.bindingHandlers.ko_bootstrapTooltip = {
 		init: function() {
 			$('[data-toggle="tooltip"]').tooltip({
-				container: 'body'
+				container: 'body',
 			});
-		}
+		},
 	};
 
 	/**
@@ -783,8 +889,7 @@ var app = (function() {
 		update: function(element, valueAccessor) {
 			ko.utils.unwrapObservable(valueAccessor());
 			perfectScrollbar_updatePerfectScrollbar($(element));
-
-		}
+		},
 	};
 
 	/**
@@ -801,10 +906,16 @@ var app = (function() {
 		 *                                  them to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(element, valueAccessor, allBindings,
-			viewModel, bindingContext, internal) {
+		update: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext,
+			internal
+		) {
 			var stars;
-			if (typeof(valueAccessor) === 'function') {
+			if (typeof valueAccessor === 'function') {
 				stars = ko.unwrap(valueAccessor());
 			} else {
 				stars = valueAccessor;
@@ -813,12 +924,15 @@ var app = (function() {
 			var partialStar = stars - wholeStars;
 			var toAppend = '';
 			for (var i = 1; i <= stars; i++) {
-				toAppend += '<span class="glyphicon glyphicon-star" ' +
+				toAppend +=
+					'<span class="glyphicon glyphicon-star" ' +
 					'aria-hidden="true"></span>';
 			}
 			if (partialStar > 0) {
-				toAppend += '<span class="glyphicon glyphicon-star partial-width-' +
-					Math.round(partialStar * 10) + '" aria-hidden="true"></span>';
+				toAppend +=
+					'<span class="glyphicon glyphicon-star partial-width-' +
+					Math.round(partialStar * 10) +
+					'" aria-hidden="true"></span>';
 			}
 			if (toAppend !== '') {
 				if (internal !== true) {
@@ -827,7 +941,7 @@ var app = (function() {
 					return toAppend;
 				}
 			}
-		}
+		},
 	};
 
 	/**
@@ -844,16 +958,22 @@ var app = (function() {
 		 *                                  it to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(element, valueAccessor, allBindings,
-			viewModel, bindingContext, internal) {
+		update: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext,
+			internal
+		) {
 			var value;
-			if (typeof(valueAccessor) === 'function') {
+			if (typeof valueAccessor === 'function') {
 				value = ko.unwrap(valueAccessor());
 			} else {
 				value = valueAccessor;
 			}
 			var toAppend = '';
-			if (typeof(value) !== 'undefined') {
+			if (typeof value !== 'undefined') {
 				toAppend += '<img src="' + value + '" alt="observable">';
 			}
 			if (toAppend !== '') {
@@ -863,7 +983,7 @@ var app = (function() {
 					return toAppend;
 				}
 			}
-		}
+		},
 	};
 
 	/**
@@ -880,18 +1000,24 @@ var app = (function() {
 		 *                                  it to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(element, valueAccessor, allBindings,
-			viewModel, bindingContext, internal) {
+		update: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext,
+			internal
+		) {
 			var value;
-			if (typeof(valueAccessor) === 'function') {
+			if (typeof valueAccessor === 'function') {
 				value = ko.unwrap(valueAccessor());
 			} else {
 				value = valueAccessor;
 			}
 			var toAppend = '';
-			if (typeof(value) !== 'undefined') {
-				toAppend += '<a target="_blank" href="' + value + '">' +
-					value + '</a>';
+			if (typeof value !== 'undefined') {
+				toAppend +=
+					'<a target="_blank" href="' + value + '">' + value + '</a>';
 			}
 			if (toAppend !== '') {
 				if (internal !== true) {
@@ -900,7 +1026,7 @@ var app = (function() {
 					return toAppend;
 				}
 			}
-		}
+		},
 	};
 
 	/**
@@ -916,10 +1042,16 @@ var app = (function() {
 		 *                                  them to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(element, valueAccessor, allBindings,
-			viewModel, bindingContext, internal) {
+		update: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext,
+			internal
+		) {
 			var price;
-			if (typeof(valueAccessor) === 'function') {
+			if (typeof valueAccessor === 'function') {
 				price = ko.unwrap(valueAccessor());
 			} else {
 				price = valueAccessor;
@@ -935,7 +1067,7 @@ var app = (function() {
 					return toAppend;
 				}
 			}
-		}
+		},
 	};
 
 	/**
@@ -950,7 +1082,7 @@ var app = (function() {
 			ko.utils.registerEventHandler(element, 'click', function() {
 				$(value).modal();
 			});
-		}
+		},
 	};
 
 	/**
@@ -978,10 +1110,10 @@ var app = (function() {
 			var value = ko.unwrap(valueAccessor());
 			var menu = value.menu;
 			var toggled = value.toggled;
-			if ($('#' + menu).hasClass('panel-visible') && (toggled === false)) {
+			if ($('#' + menu).hasClass('panel-visible') && toggled === false) {
 				$(element).click();
 			}
-		}
+		},
 	};
 
 	/**
@@ -993,10 +1125,16 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.scrollToItem = {
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		update: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext
+		) {
 			ko.utils.unwrapObservable(valueAccessor());
 			bindingContext.$data.scrollToItem();
-		}
+		},
 	};
 
 	/**
@@ -1006,12 +1144,27 @@ var app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.infoWindowTemplate = {
-		init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
-			if (!$(element).prev().hasClass('info-window-loaded')) {
-				ko.renderTemplate('info-window-template-container',
-					bindingContext.$data, {}, element, 'replaceNode');
+		init: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext
+		) {
+			if (
+				!$(element)
+					.prev()
+					.hasClass('info-window-loaded')
+			) {
+				ko.renderTemplate(
+					'info-window-template-container',
+					bindingContext.$data,
+					{},
+					element,
+					'replaceNode'
+				);
 			}
-		}
+		},
 	};
 
 	/**
@@ -1026,25 +1179,35 @@ var app = (function() {
 		 * Verbose errors die after 3 seconds, normal errors have to be clicked
 		 * to be removed.
 		 */
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		update: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext
+		) {
 			var error = valueAccessor().data();
 			if (error !== false) {
 				valueAccessor().data(false);
 				var verbose = valueAccessor().verbose();
 				var isVerbose = error.verbose;
-				if ((verbose === true) || (isVerbose === false)) {
+				if (verbose === true || isVerbose === false) {
 					var killOnMarkers = error.killOnMarkers;
 					var customMessage = error.customMessage;
 					var textStatus = error.textStatus;
 					var toAdd = '<div class="panel ';
-					toAdd += (isVerbose === true ? 'panel-warning' : 'panel-danger');
-					toAdd += '"><div class="panel-heading"><h3 class="panel-title">';
+					toAdd +=
+						isVerbose === true ? 'panel-warning' : 'panel-danger';
+					toAdd +=
+						'"><div class="panel-heading"><h3 class="panel-title">';
 					toAdd += customMessage;
 					toAdd += '</h3></div><div class="panel-body">';
 					toAdd += textStatus;
 					toAdd += '</div></div>';
 					$('#error-container').append(toAdd);
-					var added = $('#error-container').children().last();
+					var added = $('#error-container')
+						.children()
+						.last();
 					added.show(200);
 					added.bind('click', errorsHandler_onClickPanel);
 					if (isVerbose === true) {
@@ -1059,17 +1222,18 @@ var app = (function() {
 					if (killOnMarkers === true) {
 						$.doWhen({
 							when: function() {
-								return (bindingContext.$data
-									.listableEntries().entries.length > 0);
-							}
-						})
-						.done(function() {
+								return (
+									bindingContext.$data.listableEntries()
+										.entries.length > 0
+								);
+							},
+						}).done(function() {
 							errorsHandler_killPanel(added, 200);
 						});
 					}
 				}
 			}
-		}
+		},
 	};
 
 	/**
@@ -1080,15 +1244,17 @@ var app = (function() {
 	ko.bindingHandlers.listOutOpeningHours = {
 		update: function(element, valueAccessor) {
 			var value = ko.unwrap(valueAccessor());
-			if ((typeof(value) !== 'undefined') &&
-				(checkNested(value, 'weekday_text', '0') !== false)) {
+			if (
+				typeof value !== 'undefined' &&
+				checkNested(value, 'weekday_text', '0') !== false
+			) {
 				var toAdd = '';
 				for (var i = 0, len = value.weekday_text.length; i < len; i++) {
 					toAdd += '<div>' + value.weekday_text[i] + '</div>';
 				}
 				element.innerHTML = toAdd;
 			}
-		}
+		},
 	};
 
 	/**
@@ -1105,7 +1271,7 @@ var app = (function() {
 		init: function(element) {
 			$(element).on('shown.bs.dropdown', function() {
 				var menu = $(this).find('.dropdown-menu');
-				if ((menu !== null) && (menu.length === 1)) {
+				if (menu !== null && menu.length === 1) {
 					var btn = menu.parent();
 					var withinContainer = $('#info-window-template');
 					menu.position({
@@ -1113,7 +1279,7 @@ var app = (function() {
 						my: 'left top',
 						at: 'left bottom',
 						collision: 'flip',
-						within: withinContainer
+						within: withinContainer,
 					});
 				}
 			});
@@ -1134,9 +1300,16 @@ var app = (function() {
 		 *      }
 		 *  }
 		 */
-		update: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+		update: function(
+			element,
+			valueAccessor,
+			allBindings,
+			viewModel,
+			bindingContext
+		) {
 			var value = valueAccessor().data;
-			var starter = '<button type="button" class="btn btn-default ' +
+			var starter =
+				'<button type="button" class="btn btn-default ' +
 				'dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" ' +
 				'aria-expanded="false"><span class="caret caret-dropdown">' +
 				'</span></button><ul class="dropdown-menu dropdown-menu-right">';
@@ -1145,31 +1318,47 @@ var app = (function() {
 			for (var service in value) {
 				var theValue;
 				//Interpret the value and send them to binding handler if needed
-				if (typeof(value[service].value_binding) !== 'undefined') {
-					theValue = dropdown_interpretValue(value[service].value,
-						value[service].value_binding, element, allBindings,
-						viewModel, bindingContext);
+				if (typeof value[service].value_binding !== 'undefined') {
+					theValue = dropdown_interpretValue(
+						value[service].value,
+						value[service].value_binding,
+						element,
+						allBindings,
+						viewModel,
+						bindingContext
+					);
 				} else {
 					theValue = dropdown_interpretValue(value[service].value);
 				}
 				if (theValue !== false) {
-					toAdd += '<li><strong>' + service + ':</strong> <span>' +
-						theValue + '</span>';
+					toAdd +=
+						'<li><strong>' +
+						service +
+						':</strong> <span>' +
+						theValue +
+						'</span>';
 					//Add in value_binding_show_text if it's declared
-					if (typeof(value[service].value_binding_show_text) !==
-						'undefined') {
-						toAdd += ' (' + dropdown_interpretValue(value[service]
-							.value) + ')';
+					if (
+						typeof value[service].value_binding_show_text !==
+						'undefined'
+					) {
+						toAdd +=
+							' (' +
+							dropdown_interpretValue(value[service].value) +
+							')';
 					}
 					//Add in value_n if defined
-					if (typeof(value[service].value_2) !== 'undefined') {
+					if (typeof value[service].value_2 !== 'undefined') {
 						//Check if more than value_2, iterate through if so
-						if (typeof(value[service].value_3) !== 'undefined') {
+						if (typeof value[service].value_3 !== 'undefined') {
 							var i = 2;
-							while (typeof(value[service]['value_' + i]) !==
-								'undefined') {
+							while (
+								typeof value[service]['value_' + i] !==
+								'undefined'
+							) {
 								var extraValue = dropdown_interpretValue(
-									value[service]['value_' + i]);
+									value[service]['value_' + i]
+								);
 								if (extraValue !== false) {
 									if (i === 2) {
 										toAdd += '(' + extraValue + ')';
@@ -1177,11 +1366,15 @@ var app = (function() {
 										toAdd += ', ' + extraValue;
 									}
 									//Append to last
-									if (typeof(value[service]['value_' + (i + 1)
-											.toString()
-										]) === 'undefined') {
-										if (typeof(value[service]
-												.append) !== 'undefined') {
+									if (
+										typeof value[service][
+											'value_' + (i + 1).toString()
+										] === 'undefined'
+									) {
+										if (
+											typeof value[service].append !==
+											'undefined'
+										) {
 											toAdd += value[service].append;
 										}
 									}
@@ -1191,11 +1384,13 @@ var app = (function() {
 							//just value_2
 						} else {
 							var extraValue2 = dropdown_interpretValue(
-								value[service].value_2);
+								value[service].value_2
+							);
 							if (extraValue2 !== false) {
 								toAdd += ', ' + extraValue2;
-								if (typeof(value[service]
-										.append) !== 'undefined') {
+								if (
+									typeof value[service].append !== 'undefined'
+								) {
 									toAdd += value[service].append;
 								}
 							}
@@ -1212,8 +1407,7 @@ var app = (function() {
 			if ($(element).hasClass('open')) {
 				$(element).trigger('shown.bs.dropdown');
 			}
-		}
-
+		},
 	};
 
 	/**
@@ -1229,10 +1423,10 @@ var app = (function() {
 	ko.extenders.numeric = function(target, precision) {
 		var result = ko.computed({
 			read: function() {
-				var num = (Number(target()).toFixed(precision)) / 1;
+				var num = Number(target()).toFixed(precision) / 1;
 				return num;
 			},
-			write: target
+			write: target,
 		});
 		return result;
 	};
@@ -1288,81 +1482,109 @@ var app = (function() {
 		 * Create marker within model, set it as an observable (which will
 		 * need to be manually called).
 		 */
-		self.marker = ko.observable(new google.maps.Marker({
-			map: currentViewModel.mainMap,
-			opacity: (self.isListed() === false ?
-				currentViewModel.lowMarkerOpacity() : appConfigObject.highMarkerOpacity),
-			icon: currentViewModel.markerImageCreator(),
-			shape: appConfigObject.defaultMarkerShape
-		}));
+		self.marker = ko.observable(
+			new google.maps.Marker({
+				map: currentViewModel.mainMap,
+				opacity:
+					self.isListed() === false
+						? currentViewModel.lowMarkerOpacity()
+						: appConfigObject.highMarkerOpacity,
+				icon: currentViewModel.markerImageCreator(),
+				shape: appConfigObject.defaultMarkerShape,
+			})
+		);
 
 		/**
 		 * Subscribe to isFavorite to update marker image when it's changed
 		 * and to push itself to the favoriteArray for localStorage saving
 		 */
-		self.disposableArray.push(self.isFavorite.subscribe(function(newValue) {
-			self.marker().setIcon(currentViewModel
-				.markerImageCreator(newValue, self.google_priceLevel()));
-			self.marker(self.marker());
-			currentViewModel.changeFavoriteArray(newValue, self);
-		}));
+		self.disposableArray.push(
+			self.isFavorite.subscribe(function(newValue) {
+				self.marker().setIcon(
+					currentViewModel.markerImageCreator(
+						newValue,
+						self.google_priceLevel()
+					)
+				);
+				self.marker(self.marker());
+				currentViewModel.changeFavoriteArray(newValue, self);
+			})
+		);
 
 		/**
 		 * Subscribe to isSelected to update the viewModel's
 		 * currentlySelectedLocation consistently and automatically
 		 */
-		self.disposableArray.push(self.isSelected.subscribe(function(newValue) {
-			currentViewModel.changeCurrentlySelectedItem(newValue, self);
-		}));
+		self.disposableArray.push(
+			self.isSelected.subscribe(function(newValue) {
+				currentViewModel.changeCurrentlySelectedItem(newValue, self);
+			})
+		);
 
 		/**
 		 * Subscribe to isListed to set marker opacity dependent upon listing
 		 * status.
 		 */
-		self.disposableArray.push(self.isListed.subscribe(function(newValue) {
-			if (newValue) {
-				self.marker().setOpacity(appConfigObject.highMarkerOpacity);
-				self.marker(self.marker());
-			} else {
-				self.marker().setOpacity(currentViewModel.lowMarkerOpacity());
-				self.marker(self.marker());
-			}
-		}));
+		self.disposableArray.push(
+			self.isListed.subscribe(function(newValue) {
+				if (newValue) {
+					self.marker().setOpacity(appConfigObject.highMarkerOpacity);
+					self.marker(self.marker());
+				} else {
+					self.marker().setOpacity(
+						currentViewModel.lowMarkerOpacity()
+					);
+					self.marker(self.marker());
+				}
+			})
+		);
 
 		/**
 		 * Subscribe to google_priceLevel to update marker image if it changes
 		 */
-		self.disposableArray.push(self.google_priceLevel.subscribe(function(newValue) {
-			self.marker().setIcon(currentViewModel
-				.markerImageCreator(self.isFavorite(), newValue));
-			self.marker(self.marker());
-		}));
+		self.disposableArray.push(
+			self.google_priceLevel.subscribe(function(newValue) {
+				self.marker().setIcon(
+					currentViewModel.markerImageCreator(
+						self.isFavorite(),
+						newValue
+					)
+				);
+				self.marker(self.marker());
+			})
+		);
 
 		/**
 		 * Subscribe to google_name to update marker title if it changes
 		 */
-		self.disposableArray.push(self.google_name.subscribe(function(newValue) {
-			self.marker().setTitle(newValue);
-			self.marker(self.marker());
-		}));
+		self.disposableArray.push(
+			self.google_name.subscribe(function(newValue) {
+				self.marker().setTitle(newValue);
+				self.marker(self.marker());
+			})
+		);
 
 		/**
 		 * Subscribe to google_geometry to update marker position if it changes
 		 */
-		self.disposableArray.push(self.google_geometry.subscribe(function(newValue) {
-			self.marker().setPosition(newValue.location);
-			self.marker(self.marker());
-		}));
+		self.disposableArray.push(
+			self.google_geometry.subscribe(function(newValue) {
+				self.marker().setPosition(newValue.location);
+				self.marker(self.marker());
+			})
+		);
 
 		/**
 		 * Create computed for determining short hand version of
 		 * google_openingHoursObject().open_now
 		 */
 		self.isItOpenRightNow = ko.pureComputed(function() {
-			if (typeof(self.google_openingHoursObject()) !== 'undefined') {
+			if (typeof self.google_openingHoursObject() !== 'undefined') {
 				if (self.google_openingHoursObject().open_now === true) {
 					return 'Open';
-				} else if (self.google_openingHoursObject().open_now === false) {
+				} else if (
+					self.google_openingHoursObject().open_now === false
+				) {
 					return 'Closed';
 				}
 			}
@@ -1378,19 +1600,29 @@ var app = (function() {
 		/**
 		 * Infowindow listeners, functions on viewModel to minimize model size
 		 */
-		self.listenerStorage.push(self.infoWindow.addListener(
-			'closeclick', currentViewModel.markerCloseClick));
-		self.listenerStorage.push(self.infoWindow.addListener(
-			'domready', currentViewModel.markerDomReady));
+		self.listenerStorage.push(
+			self.infoWindow.addListener(
+				'closeclick',
+				currentViewModel.markerCloseClick
+			)
+		);
+		self.listenerStorage.push(
+			self.infoWindow.addListener(
+				'domready',
+				currentViewModel.markerDomReady
+			)
+		);
 
 		/**
 		 * Infowindow click listener, sets the markerList to scroll to this model,
 		 * starts the data fetching process with Google Places API, closes
 		 * previous info and opens this one, sets markerAnimation going
 		 */
-		self.listenerStorage.push(self.marker().addListener('click', function() {
-			currentViewModel.markerClick(self);
-		}));
+		self.listenerStorage.push(
+			self.marker().addListener('click', function() {
+				currentViewModel.markerClick(self);
+			})
+		);
 
 		/**
 		 * Triggers click event and pans to marker when location is selected from
@@ -1454,12 +1686,18 @@ var app = (function() {
 		self.APIConfiguredSearchTypes = appConfigObject.configuredSearchTypes;
 		// Set default marker image object based on config object
 		self.defaultMarkerImage = {
-			size: new google.maps.Size(appConfigObject.markerImageSize[0],
-				appConfigObject.markerImageSize[1]),
-			origin: new google.maps.Point(appConfigObject.markerImageOrigin[0],
-				appConfigObject.markerImageOrigin[1]),
-			anchor: new google.maps.Point(appConfigObject.markerImageAnchor[0],
-				appConfigObject.markerImageAnchor[1])
+			size: new google.maps.Size(
+				appConfigObject.markerImageSize[0],
+				appConfigObject.markerImageSize[1]
+			),
+			origin: new google.maps.Point(
+				appConfigObject.markerImageOrigin[0],
+				appConfigObject.markerImageOrigin[1]
+			),
+			anchor: new google.maps.Point(
+				appConfigObject.markerImageAnchor[0],
+				appConfigObject.markerImageAnchor[1]
+			),
 		};
 
 		// Array of models
@@ -1499,21 +1737,26 @@ var app = (function() {
 		// Variables for sort types and filter types
 		self.sortType = ko.observable('count');
 		self.searchQuery = ko.observable();
-		self.priceButtonFilter = ko.observableArray(appConfigObject
-			.defaultPriceButtonFilter);
-		self.minRatingButtonFilter = ko.observable(appConfigObject
-			.defaultMinRatingButtonFilter);
-		self.openButtonFilter = ko.observable(appConfigObject
-			.defaultOpenButtonFilter);
-		self.favoriteButtonFilter = ko.observable(appConfigObject
-			.defaultFavoriteButtonFilter);
+		self.priceButtonFilter = ko.observableArray(
+			appConfigObject.defaultPriceButtonFilter
+		);
+		self.minRatingButtonFilter = ko.observable(
+			appConfigObject.defaultMinRatingButtonFilter
+		);
+		self.openButtonFilter = ko.observable(
+			appConfigObject.defaultOpenButtonFilter
+		);
+		self.favoriteButtonFilter = ko.observable(
+			appConfigObject.defaultFavoriteButtonFilter
+		);
 
 		/**
 		 * Initial HTML that gets parsed through knockout applyBindings and sets
 		 * up template for infoWindow
 		 * @type {String}
 		 */
-		self.infoWindowHTMLTemplate = '<div class = "info-window-template" ' +
+		self.infoWindowHTMLTemplate =
+			'<div class = "info-window-template" ' +
 			'data-bind = "infoWindowTemplate: true"></div>';
 
 		/**
@@ -1521,7 +1764,7 @@ var app = (function() {
 		 * new opacity
 		 */
 		self.lowMarkerOpacity.subscribe(function(newValue) {
-			newValue = (Number(newValue).toFixed(2)) / 1;
+			newValue = Number(newValue).toFixed(2) / 1;
 			ko.utils.arrayForEach(self.markedLocations(), function(item) {
 				if (item.isListed() === false) {
 					item.marker().setOpacity(newValue);
@@ -1530,16 +1773,19 @@ var app = (function() {
 		});
 
 		self.lowMarkerOpacity.extend({
-			numeric: 2
+			numeric: 2,
 		});
 
 		// When map center changes, save it to localstorage
 		self.mainMapCenter.subscribe(function(newValue) {
-			self.setLocalStorage('mapCenter', JSON.stringify({
-				'lat': newValue.lat(),
-				'lng': newValue.lng(),
-				'zoom': self.mainMap.getZoom()
-			}));
+			self.setLocalStorage(
+				'mapCenter',
+				JSON.stringify({
+					lat: newValue.lat(),
+					lng: newValue.lng(),
+					zoom: self.mainMap.getZoom(),
+				})
+			);
 		});
 
 		/**
@@ -1568,29 +1814,33 @@ var app = (function() {
 
 		// Prevent frequent calls to localStorage
 		self.favoriteArray.extend({
-			rateLimit: 2000
+			rateLimit: 2000,
 		});
 
 		/**
 		 * Subscribe to currentlySelectedLocation and call scrollToItem on
 		 * change. Stop the infoWindow move listener.
 		 */
-		self.currentlySelectedLocation.subscribe(debounce(function(newValue) {
-			if (typeof(newValue) !== 'undefined') {
-				self.scrollToItem();
-				self.userDrag(false);
-			}
-		}, 5));
+		self.currentlySelectedLocation.subscribe(
+			debounce(function(newValue) {
+				if (typeof newValue !== 'undefined') {
+					self.scrollToItem();
+					self.userDrag(false);
+				}
+			}, 5)
+		);
 
 		// Computed array of all IDs and nearby/places search only ids
 		self.idArray = ko.pureComputed(function() {
 			var returnArray = {
-				'all': [],
-				'nearby': []
+				all: [],
+				nearby: [],
 			};
 			ko.utils.arrayMap(self.markedLocations(), function(item) {
-				if ((item.googleSearchType() === 'Nearby') ||
-					(item.googleSearchType() === 'Places')) {
+				if (
+					item.googleSearchType() === 'Nearby' ||
+					item.googleSearchType() === 'Places'
+				) {
 					returnArray.nearby.push(item.google_placeId);
 				}
 				returnArray.all.push(item.google_placeId);
@@ -1600,8 +1850,13 @@ var app = (function() {
 
 		// Computed check if priceButtonFilter has changed
 		self.priceButtonFilterHasChanged = ko.pureComputed(function() {
-			return !allValuesSameInTwoArray(
-				self.priceButtonFilter(), [true, true, true, true, true]);
+			return !allValuesSameInTwoArray(self.priceButtonFilter(), [
+				true,
+				true,
+				true,
+				true,
+				true,
+			]);
 		});
 
 		/**
@@ -1611,23 +1866,28 @@ var app = (function() {
 		 */
 		self.listableEntries = ko.computed(function() {
 			var returnArray = {
-				'entries': [],
-				'allNames': []
+				entries: [],
+				allNames: [],
 			};
-			returnArray.entries = ko.utils.arrayFilter(self.markedLocations(), function(item) {
-				if (((item.googleSearchType() === 'Nearby') ||
-						(item.googleSearchType() === 'Places')) &&
-					(item.isInViewOnMap() === true) &&
-					(self.isSearchFiltered(item) === false) &&
-					self.isButtonFiltered(item) === false) {
-					item.isListed(true);
-					returnArray.allNames.push(item.google_name());
-					return true;
-				} else {
-					item.isListed(false);
-					return false;
+			returnArray.entries = ko.utils.arrayFilter(
+				self.markedLocations(),
+				function(item) {
+					if (
+						(item.googleSearchType() === 'Nearby' ||
+							item.googleSearchType() === 'Places') &&
+						item.isInViewOnMap() === true &&
+						self.isSearchFiltered(item) === false &&
+						self.isButtonFiltered(item) === false
+					) {
+						item.isListed(true);
+						returnArray.allNames.push(item.google_name());
+						return true;
+					} else {
+						item.isListed(false);
+						return false;
+					}
 				}
-			});
+			);
 			return returnArray;
 		});
 
@@ -1638,54 +1898,63 @@ var app = (function() {
 		self.sortedEntries = ko.pureComputed(function() {
 			var returnArray = self.listableEntries().entries;
 			if (self.sortType() === 'count') {
-				returnArray.sort(
-					function(left, right) {
-						return (left.modelNumber < right.modelNumber ? -1 : 1);
-					});
+				returnArray.sort(function(left, right) {
+					return left.modelNumber < right.modelNumber ? -1 : 1;
+				});
 			} else if (self.sortType() === 'alpha') {
-				returnArray.sort(
-					function(left, right) {
-						return left.google_name() === right.google_name() ? 0 :
-							(left.google_name() < right.google_name() ? -1 : 1);
-					});
+				returnArray.sort(function(left, right) {
+					return left.google_name() === right.google_name()
+						? 0
+						: left.google_name() < right.google_name()
+						? -1
+						: 1;
+				});
 			} else if (self.sortType() === 'rating') {
 				// Sort undefined to the end of the list
-				returnArray.sort(
-					function(left, right) {
-						if (typeof(left.google_rating()) === 'undefined') {
-							if (typeof(right.google_rating()) === 'undefined') {
-								return 0;
-							} else {
-								return 1;
-							}
-						} else if (typeof(right.google_rating()) === 'undefined') {
-							return -1;
+				returnArray.sort(function(left, right) {
+					if (typeof left.google_rating() === 'undefined') {
+						if (typeof right.google_rating() === 'undefined') {
+							return 0;
 						} else {
-							return (left.google_rating() < right.google_rating() ? 1 : -1);
+							return 1;
 						}
-					});
+					} else if (typeof right.google_rating() === 'undefined') {
+						return -1;
+					} else {
+						return left.google_rating() < right.google_rating()
+							? 1
+							: -1;
+					}
+				});
 			} else if (self.sortType() === 'distance') {
-				returnArray.sort(
-					function(left, right) {
-						var x1 = left.google_geometry().location.lat();
-						var x2 = right.google_geometry().location.lat();
-						var x3 = self.mainMapCenter().lat();
-						var y1 = left.google_geometry().location.lng();
-						var y2 = right.google_geometry().location.lng();
-						var y3 = self.mainMapCenter().lng();
-						var dist1 = appConfigObject
-							.distanceBetweenTwoPointsInMeters(x1, y1, x3, y3);
-						var dist2 = appConfigObject
-							.distanceBetweenTwoPointsInMeters(x2, y2, x3, y3);
-						return (dist1 === dist2 ? 0 : (dist1 < dist2 ? -1 : 1));
-					});
+				returnArray.sort(function(left, right) {
+					var x1 = left.google_geometry().location.lat();
+					var x2 = right.google_geometry().location.lat();
+					var x3 = self.mainMapCenter().lat();
+					var y1 = left.google_geometry().location.lng();
+					var y2 = right.google_geometry().location.lng();
+					var y3 = self.mainMapCenter().lng();
+					var dist1 = appConfigObject.distanceBetweenTwoPointsInMeters(
+						x1,
+						y1,
+						x3,
+						y3
+					);
+					var dist2 = appConfigObject.distanceBetweenTwoPointsInMeters(
+						x2,
+						y2,
+						x3,
+						y3
+					);
+					return dist1 === dist2 ? 0 : dist1 < dist2 ? -1 : 1;
+				});
 			}
 			return returnArray;
 		});
 
 		// Limit resorting, slows down too much otherwise
 		self.listableEntries.extend({
-			rateLimit: 50
+			rateLimit: 50,
 		});
 
 		/**
@@ -1704,7 +1973,11 @@ var app = (function() {
 			 * @param  {object} ID      model to lookup
 			 * @return {number}         index of model or -1 if not found
 			 */
-			self.currentDetailedAPIInfoBeingFetched.findID = function(service, type, ID) {
+			self.currentDetailedAPIInfoBeingFetched.findID = function(
+				service,
+				type,
+				ID
+			) {
 				return this[service][type].indexOf(ID);
 			};
 			/**
@@ -1714,9 +1987,15 @@ var app = (function() {
 			 * @param  {string} type    type of call
 			 * @param  {object} ID      model to push in
 			 */
-			self.currentDetailedAPIInfoBeingFetched.pushID = function(service, type, ID) {
+			self.currentDetailedAPIInfoBeingFetched.pushID = function(
+				service,
+				type,
+				ID
+			) {
 				this[service][type].push(ID);
-				this[service][type][this[service][type].length - 1][service + 'IsLoading'](true);
+				this[service][type][this[service][type].length - 1][
+					service + 'IsLoading'
+				](true);
 			};
 			/**
 			 * Remove model from array after particular service/method call is
@@ -1727,7 +2006,11 @@ var app = (function() {
 			 * @param  {string} type    type of call
 			 * @param  {object} ID      model to remove
 			 */
-			self.currentDetailedAPIInfoBeingFetched.removeID = function(service, type, ID) {
+			self.currentDetailedAPIInfoBeingFetched.removeID = function(
+				service,
+				type,
+				ID
+			) {
 				var index = this.findID(service, type, ID);
 				if (index > -1) {
 					this[service][type][index][service + 'IsLoading'](false);
@@ -1736,7 +2019,9 @@ var app = (function() {
 				for (var i = 0, len = this.intercept.length; i < len; i++) {
 					if (this.intercept[i].ID === ID) {
 						self.getDetailedAPIData(
-							this.intercept[i].service, this.intercept[i].ID);
+							this.intercept[i].service,
+							this.intercept[i].ID
+						);
 						this.intercept.splice(i, 1);
 					}
 				}
@@ -1751,24 +2036,29 @@ var app = (function() {
 			 * @param  {object} ID      model to call
 			 * @return {}               returns if call is already in place
 			 */
-			self.currentDetailedAPIInfoBeingFetched.interceptIDPush =
-				function(service, type, ID) {
-					for (var i = 0, len = this.intercept.length; i < len; i++) {
-						if (this.intercept.ID === ID) {
-							return;
-						}
+			self.currentDetailedAPIInfoBeingFetched.interceptIDPush = function(
+				service,
+				type,
+				ID
+			) {
+				for (var i = 0, len = this.intercept.length; i < len; i++) {
+					if (this.intercept.ID === ID) {
+						return;
 					}
-					this.intercept.push({
-						'ID': ID,
-						'type': type,
-						'service': service
-					});
-				};
+				}
+				this.intercept.push({
+					ID: ID,
+					type: type,
+					service: service,
+				});
+			};
 			/**
 			 * Remove call from intercept array (for a failed previous call)
 			 * @param  {object} ID      model to remove
 			 */
-			self.currentDetailedAPIInfoBeingFetched.interceptIDRemove = function(ID) {
+			self.currentDetailedAPIInfoBeingFetched.interceptIDRemove = function(
+				ID
+			) {
 				for (var i = 0, len = this.intercept.length; i < len; i++) {
 					if (this.intercept.ID === ID) {
 						this.intercept.splice(i, 1);
@@ -1776,16 +2066,20 @@ var app = (function() {
 				}
 			};
 			// Setup arrays for basic and detailed calls for all services
-			for (var i = 0, len = self.APIConfiguredSearchTypes.length; i < len; i++) {
-				self
-					.currentDetailedAPIInfoBeingFetched[self
-						.APIConfiguredSearchTypes[i]] = {
-							'basic': [],
-							'detailed': []
-						};
+			for (
+				var i = 0, len = self.APIConfiguredSearchTypes.length;
+				i < len;
+				i++
+			) {
+				self.currentDetailedAPIInfoBeingFetched[
+					self.APIConfiguredSearchTypes[i]
+				] = {
+					basic: [],
+					detailed: [],
+				};
 			}
 			self.currentDetailedAPIInfoBeingFetched.google = {
-				'detailed': []
+				detailed: [],
 			};
 		};
 
@@ -1821,7 +2115,7 @@ var app = (function() {
 		 * event - sets the currentlySelectedLocation to not selected
 		 */
 		self.markerCloseClick = function() {
-			if (typeof(self.currentlySelectedLocation()) !== 'undefined') {
+			if (typeof self.currentlySelectedLocation() !== 'undefined') {
 				self.currentlySelectedLocation().hasBeenOpened = false;
 				self.currentlySelectedLocation().isSelected(false);
 			}
@@ -1835,8 +2129,10 @@ var app = (function() {
 		 */
 		self.markerDomReady = function() {
 			if (!self.currentlySelectedLocation().hasBeenOpened) {
-				ko.applyBindings(self, self.currentlySelectedLocation()
-					.infoWindow.getContent());
+				ko.applyBindings(
+					self,
+					self.currentlySelectedLocation().infoWindow.getContent()
+				);
 				self.currentlySelectedLocation().hasBeenOpened = true;
 			}
 		};
@@ -1856,7 +2152,7 @@ var app = (function() {
 			}
 			self.shouldScroll(true);
 			self.getDetailedGooglePlacesAPIInfo(model, self.callSearchAPIs);
-			if (typeof(self.currentlySelectedLocation()) !== 'undefined') {
+			if (typeof self.currentlySelectedLocation() !== 'undefined') {
 				self.currentlySelectedLocation().infoWindow.close();
 				self.currentlySelectedLocation().isSelected(false);
 			}
@@ -1916,7 +2212,8 @@ var app = (function() {
 		self.getNavWithCallback = function() {
 			if (navigator.geolocation) {
 				return navigator.geolocation.getCurrentPosition(
-					self.mapPanFromNavigation);
+					self.mapPanFromNavigation
+				);
 			} else {
 				return false;
 			}
@@ -1974,11 +2271,12 @@ var app = (function() {
 				var currentType = self.APIMappingsForModel[prop];
 				for (var i = 0, len = currentType.length; i < len; i++) {
 					if (currentType[i].oType === 0) {
-						returnModel[currentType[i]
-							.model] = model[currentType[i].model];
+						returnModel[currentType[i].model] =
+							model[currentType[i].model];
 					} else {
-						returnModel[currentType[i]
-							.model] = model[currentType[i].model]();
+						returnModel[currentType[i].model] = model[
+							currentType[i].model
+						]();
 					}
 				}
 			}
@@ -1995,11 +2293,14 @@ var app = (function() {
 		self.modelUpdater = function(model, type, result) {
 			var currentType = self.APIMappingsForModel[type];
 			for (var i = 0, len = currentType.length; i < len; i++) {
-				if (typeof(result[currentType[i].server]) !== 'undefined') {
+				if (typeof result[currentType[i].server] !== 'undefined') {
 					if (currentType[i].oType !== 0) {
-						model[currentType[i].model](result[currentType[i].server]);
+						model[currentType[i].model](
+							result[currentType[i].server]
+						);
 					} else {
-						model[currentType[i].model] = result[currentType[i].server];
+						model[currentType[i].model] =
+							result[currentType[i].server];
 					}
 				}
 			}
@@ -2016,15 +2317,20 @@ var app = (function() {
 			for (var prop in self.APIMappingsForModel) {
 				var currentType = self.APIMappingsForModel[prop];
 				for (var i = 0, len = currentType.length; i < len; i++) {
-					if ((currentType[i].oType !== 0) &&
-						(currentType[i].model !== 'google_geometry')) {
-						model[currentType[i].model](blueprint[currentType[i].model]);
+					if (
+						currentType[i].oType !== 0 &&
+						currentType[i].model !== 'google_geometry'
+					) {
+						model[currentType[i].model](
+							blueprint[currentType[i].model]
+						);
 					} else if (currentType[i].model === 'google_geometry') {
 						var geometryBlueprint = blueprint[currentType[i].model];
 						geometryBlueprint.location = location;
 						model[currentType[i].model](geometryBlueprint);
 					} else {
-						model[currentType[i].model] = blueprint[currentType[i].model];
+						model[currentType[i].model] =
+							blueprint[currentType[i].model];
 					}
 				}
 			}
@@ -2036,11 +2342,18 @@ var app = (function() {
 		 * @param  {object} model model to add observables to
 		 */
 		self.modelSearchTypeConstructor = function(model) {
-			for (var i = 0, len = self.APIConfiguredSearchTypes.length; i < len; i++) {
-				model[self.APIConfiguredSearchTypes[i]
-					.toLowerCase() + 'SearchType'] = ko.observable('None');
-				model[self.APIConfiguredSearchTypes[i]
-					.toLowerCase() + 'IsLoading'] = ko.observable(false);
+			for (
+				var i = 0, len = self.APIConfiguredSearchTypes.length;
+				i < len;
+				i++
+			) {
+				model[
+					self.APIConfiguredSearchTypes[i].toLowerCase() +
+						'SearchType'
+				] = ko.observable('None');
+				model[
+					self.APIConfiguredSearchTypes[i].toLowerCase() + 'IsLoading'
+				] = ko.observable(false);
 			}
 		};
 
@@ -2050,19 +2363,33 @@ var app = (function() {
 		 * subscriber
 		 * @param  {Array}  newValue       newValue of markedLocations array
 		 */
-		self.removeMultipleLocations = throttle(function(newValue) {
-			//Push favorite to front
-			self.markedLocations.sort(function(left, right) {
-				return (left.isFavorite() === true ? 1 :
-					(left.modelNumber < right.modelNumber ? -1 : 1));
-			});
-			for (var i = 0; i < appConfigObject.markerLimitRemoveBulkAmount; i++) {
-				newValue[i].dispose();
+		self.removeMultipleLocations = throttle(
+			function(newValue) {
+				//Push favorite to front
+				self.markedLocations.sort(function(left, right) {
+					return left.isFavorite() === true
+						? 1
+						: left.modelNumber < right.modelNumber
+						? -1
+						: 1;
+				});
+				for (
+					var i = 0;
+					i < appConfigObject.markerLimitRemoveBulkAmount;
+					i++
+				) {
+					newValue[i].dispose();
+				}
+				self.markedLocations.splice(
+					0,
+					appConfigObject.markerLimitRemoveBulkAmount
+				);
+			},
+			1000,
+			{
+				trailing: false,
 			}
-			self.markedLocations.splice(0, appConfigObject.markerLimitRemoveBulkAmount);
-		}, 1000, {
-			'trailing': false
-		});
+		);
 
 		/**
 		 * Called when a model is created, iterates locationModelNumber when
@@ -2071,7 +2398,7 @@ var app = (function() {
 		 */
 		self.getLocationModelNumber = function() {
 			self.locationModelNumber++;
-			return (self.locationModelNumber - 1);
+			return self.locationModelNumber - 1;
 		};
 
 		/**
@@ -2080,13 +2407,17 @@ var app = (function() {
 		 * @param  {string} name                name of property to set
 		 * @param  {string} item)               value of property to set
 		 */
-		self.setLocalStorage = throttle(function(name, item) {
-			if (self.storageAvailable === true) {
-				localStorage.setItem(name, item);
+		self.setLocalStorage = throttle(
+			function(name, item) {
+				if (self.storageAvailable === true) {
+					localStorage.setItem(name, item);
+				}
+			},
+			1000,
+			{
+				trailing: false,
 			}
-		}, 1000, {
-			'trailing': false
-		});
+		);
 
 		/**
 		 * Function to create a limited copy of some listableEntries properties
@@ -2094,12 +2425,14 @@ var app = (function() {
 		 * @return {array} array of limited-info models
 		 */
 		self.locationArrayForWorkers = function() {
-			return ko.utils.arrayMap(self.listableEntries().entries, function(item) {
+			return ko.utils.arrayMap(self.listableEntries().entries, function(
+				item
+			) {
 				return {
-					'lat': item.google_geometry().location.lat(),
-					'lng': item.google_geometry().location.lng(),
-					'name': item.google_name(),
-					'google_placeId': item.google_placeId
+					lat: item.google_geometry().location.lat(),
+					lng: item.google_geometry().location.lng(),
+					name: item.google_name(),
+					google_placeId: item.google_placeId,
 				};
 			});
 		};
@@ -2111,9 +2444,13 @@ var app = (function() {
 		 * @return {Boolean}      if the model is filtered by the query
 		 */
 		self.isSearchFiltered = function(item) {
-			if (typeof(self.searchQuery()) !== 'undefined') {
-				if (item.google_name().toLowerCase()
-					.indexOf(self.searchQuery().toLowerCase()) >= 0) {
+			if (typeof self.searchQuery() !== 'undefined') {
+				if (
+					item
+						.google_name()
+						.toLowerCase()
+						.indexOf(self.searchQuery().toLowerCase()) >= 0
+				) {
 					return false;
 				} else {
 					return true;
@@ -2132,7 +2469,7 @@ var app = (function() {
 		 */
 		self.isButtonFiltered = function(item) {
 			if (self.priceButtonFilterHasChanged() === true) {
-				if (typeof(item.google_priceLevel()) !== 'undefined') {
+				if (typeof item.google_priceLevel() !== 'undefined') {
 					for (var i = 0; i < 5; i++) {
 						if (self.priceButtonFilter()[i] !== true) {
 							if (item.google_priceLevel() === i) {
@@ -2148,7 +2485,7 @@ var app = (function() {
 				}
 			}
 			if (self.minRatingButtonFilter() !== 0) {
-				if (typeof(item.google_rating()) !== 'undefined') {
+				if (typeof item.google_rating() !== 'undefined') {
 					if (item.google_rating() < self.minRatingButtonFilter()) {
 						return true;
 					}
@@ -2176,8 +2513,10 @@ var app = (function() {
 		 * the marker list
 		 */
 		self.scrollToItem = function() {
-			if ((typeof(self.currentlySelectedLocation()) !== 'undefined') &&
-				(self.shouldScroll() === true)) {
+			if (
+				typeof self.currentlySelectedLocation() !== 'undefined' &&
+				self.shouldScroll() === true
+			) {
 				self.scrolledItem(self.currentlySelectedLocation());
 			}
 		};
@@ -2202,7 +2541,10 @@ var app = (function() {
 		 */
 		self.checkIfOnMap = function(currentBounds) {
 			ko.utils.arrayForEach(self.markedLocations(), function(item) {
-				if (currentBounds.contains(item.google_geometry().location) === false) {
+				if (
+					currentBounds.contains(item.google_geometry().location) ===
+					false
+				) {
 					item.isInViewOnMap(false);
 				} else {
 					item.isInViewOnMap(true);
@@ -2238,37 +2580,50 @@ var app = (function() {
 		 *                                        being called and is defined
 		 *                                        in the config object
 		 */
-		self.successAPIFunction = function(results, selectedPlace,
-			setResultSearchType, service, clonedMarkedLocations,
-			initialPoint, workerHandler) {
+		self.successAPIFunction = function(
+			results,
+			selectedPlace,
+			setResultSearchType,
+			service,
+			clonedMarkedLocations,
+			initialPoint,
+			workerHandler
+		) {
 			var type;
-			if (typeof(clonedMarkedLocations) !== 'undefined') {
+			if (typeof clonedMarkedLocations !== 'undefined') {
 				type = 'basic';
 			} else {
 				type = 'detailed';
 			}
 
 			if (type === 'basic') {
-				var match = matchBasedOnName(results, selectedPlace.google_name());
+				var match = matchBasedOnName(
+					results,
+					selectedPlace.google_name()
+				);
 				// Match will be a number if there's been a match
-				if (typeof(match) === 'number') {
+				if (typeof match === 'number') {
 					setResultSearchType(selectedPlace);
 					self.modelUpdater(selectedPlace, service, results[match]);
 					results.splice(match, 1);
 				} else {
 					setResultSearchType(selectedPlace, 'Not Found');
-					self.failAPIFunction((service.toProperCase() +
-						' Search Problem'), 'No Match Found', undefined, true);
+					self.failAPIFunction(
+						service.toProperCase() + ' Search Problem',
+						'No Match Found',
+						undefined,
+						true
+					);
 				}
 				// Call worker irregardless of match
 				var workerArray = {
-					'resultsArray': results,
-					'locationsArray': clonedMarkedLocations,
-					'initialPoint': initialPoint,
-					'maxDistance': appConfigObject.latLngAccuracy,
-					'service': service,
-					'minFuzzyMatch': appConfigObject.minFuzzyMatch,
-					'workerHandler': workerHandler
+					resultsArray: results,
+					locationsArray: clonedMarkedLocations,
+					initialPoint: initialPoint,
+					maxDistance: appConfigObject.latLngAccuracy,
+					service: service,
+					minFuzzyMatch: appConfigObject.minFuzzyMatch,
+					workerHandler: workerHandler,
 				};
 
 				self.workerHandler(workerArray, service, setResultSearchType);
@@ -2287,19 +2642,25 @@ var app = (function() {
 		 * @param  {object} errorThrown   Error object thrown - optional
 		 * @param  {boolean} verbose      If the error is verbose or not
 		 */
-		self.failAPIFunction = function(customMessage, textStatus, errorThrown, verbose) {
-			if (typeof(verbose) === 'undefined') {
+		self.failAPIFunction = function(
+			customMessage,
+			textStatus,
+			errorThrown,
+			verbose
+		) {
+			if (typeof verbose === 'undefined') {
 				verbose = false;
 			}
 			var customTextStatus, killOnMarkers;
 			switch (textStatus) {
 				case 'ZERO_RESULTS':
-					customTextStatus = 'No results found from Google. ' +
-						'Try zooming out?';
+					customTextStatus =
+						'No results found from Google. ' + 'Try zooming out?';
 					killOnMarkers = true;
 					break;
 				case 'OVER_QUERY_LIMIT':
-					customTextStatus = 'Requests are being throttled by Google. ' +
+					customTextStatus =
+						'Requests are being throttled by Google. ' +
 						'Usually caused by panning the map too quickly. ' +
 						'Give it 10-20 seconds';
 					killOnMarkers = false;
@@ -2330,17 +2691,33 @@ var app = (function() {
 		 */
 		self.getDetailedAPIData = function(service, selectedPlace) {
 			if (selectedPlace.searchType(service)() === 'None') {
-				if (self.currentDetailedAPIInfoBeingFetched.findID(service,
-						'basic', selectedPlace) === -1) {
+				if (
+					self.currentDetailedAPIInfoBeingFetched.findID(
+						service,
+						'basic',
+						selectedPlace
+					) === -1
+				) {
 					self.callBasicAPIData(service, selectedPlace);
 				}
-				self.currentDetailedAPIInfoBeingFetched.interceptIDPush(service,
-					'detailed', selectedPlace);
+				self.currentDetailedAPIInfoBeingFetched.interceptIDPush(
+					service,
+					'detailed',
+					selectedPlace
+				);
 			} else if (selectedPlace.searchType(service)() === 'Basic') {
-				if (self.currentDetailedAPIInfoBeingFetched.findID(service,
-						'detailed', selectedPlace) === -1) {
-					self.currentDetailedAPIInfoBeingFetched.pushID(service,
-						'detailed', selectedPlace);
+				if (
+					self.currentDetailedAPIInfoBeingFetched.findID(
+						service,
+						'detailed',
+						selectedPlace
+					) === -1
+				) {
+					self.currentDetailedAPIInfoBeingFetched.pushID(
+						service,
+						'detailed',
+						selectedPlace
+					);
 					self.callAPIInfo('detailed', service, selectedPlace);
 				}
 			}
@@ -2355,13 +2732,25 @@ var app = (function() {
 		 */
 		self.callSearchAPIs = function(currentLoc) {
 			var clonedMarkedLocations = ko.toJS(self.locationArrayForWorkers());
-			for (var i = 0, len = self.APIConfiguredSearchTypes.length; i < len; i++) {
+			for (
+				var i = 0, len = self.APIConfiguredSearchTypes.length;
+				i < len;
+				i++
+			) {
 				var currentServiceType = self.APIConfiguredSearchTypes[i];
 				if (currentLoc.searchType(currentServiceType)() === 'None') {
-					if (self.currentDetailedAPIInfoBeingFetched
-						.findID(currentServiceType, 'basic', currentLoc) === -1) {
-						self.callBasicAPIData(currentServiceType, currentLoc,
-							clonedMarkedLocations);
+					if (
+						self.currentDetailedAPIInfoBeingFetched.findID(
+							currentServiceType,
+							'basic',
+							currentLoc
+						) === -1
+					) {
+						self.callBasicAPIData(
+							currentServiceType,
+							currentLoc,
+							clonedMarkedLocations
+						);
 					}
 				}
 			}
@@ -2374,12 +2763,25 @@ var app = (function() {
 		 * @param  {object} clonedMarkedLocations clone of markedLocations for
 		 *                                        web workers
 		 */
-		self.callBasicAPIData = function(service, selectedPlace, clonedMarkedLocations) {
-			if (typeof(clonedMarkedLocations) === 'undefined') {
+		self.callBasicAPIData = function(
+			service,
+			selectedPlace,
+			clonedMarkedLocations
+		) {
+			if (typeof clonedMarkedLocations === 'undefined') {
 				clonedMarkedLocations = ko.toJS(self.locationArrayForWorkers());
 			}
-			self.currentDetailedAPIInfoBeingFetched.pushID(service, 'basic', selectedPlace);
-			self.callAPIInfo('basic', service, selectedPlace, clonedMarkedLocations);
+			self.currentDetailedAPIInfoBeingFetched.pushID(
+				service,
+				'basic',
+				selectedPlace
+			);
+			self.callAPIInfo(
+				'basic',
+				service,
+				selectedPlace,
+				clonedMarkedLocations
+			);
 		};
 
 		/**
@@ -2390,11 +2792,16 @@ var app = (function() {
 		self.checkAndAddFullAttributions = function(attributionsArray) {
 			var attributionsToPush = [];
 			for (var z = 0, len = attributionsArray.length; z < len; z++) {
-				if (self.attributionsArray.indexOf(attributionsArray[z]) === -1) {
+				if (
+					self.attributionsArray.indexOf(attributionsArray[z]) === -1
+				) {
 					attributionsToPush.push(attributionsArray[z]);
 				}
 			}
-			self.attributionsArray.push.apply(self.attributionsArray, attributionsToPush);
+			self.attributionsArray.push.apply(
+				self.attributionsArray,
+				attributionsToPush
+			);
 		};
 
 		/**
@@ -2406,7 +2813,12 @@ var app = (function() {
 		 * @param  {number} callArrayIndex index of google call array of
 		 *                                 current set of calls
 		 */
-		self.processNearbyResults = function(results, status, pagination, callArrayIndex) {
+		self.processNearbyResults = function(
+			results,
+			status,
+			pagination,
+			callArrayIndex
+		) {
 			if (status !== google.maps.places.PlacesServiceStatus.OK) {
 				self.failAPIFunction('Google Maps Nearby Search Error', status);
 				return;
@@ -2415,37 +2827,61 @@ var app = (function() {
 				var markerList = [];
 				for (var i = 0, len = results.length; i < len; i++) {
 					// If marker as nearby or places searchType doesn't exist
-					if (self.idArray().nearby.indexOf(results[i].place_id) === -1) {
+					if (
+						self.idArray().nearby.indexOf(results[i].place_id) ===
+						-1
+					) {
 						// If marker doesn't exist, create new
-						if (self.idArray().all.indexOf(results[i].place_id) === -1) {
+						if (
+							self.idArray().all.indexOf(results[i].place_id) ===
+							-1
+						) {
 							var newLoc = new LocationModel(self, 'Nearby');
-							self.successAPIFunction(results[i], newLoc,
-								function() {}, 'google');
+							self.successAPIFunction(
+								results[i],
+								newLoc,
+								function() {},
+								'google'
+							);
 							markerList.push(newLoc);
 						} else {
 							// Marker exists as radar, simply update
-							var matchedLocation = self.compareIDs(results[i].place_id);
+							var matchedLocation = self.compareIDs(
+								results[i].place_id
+							);
 							if (matchedLocation) {
-								self.successAPIFunction(results[i],
-									matchedLocation, self.setAPIResultSearchType(
-										'Nearby', 'google').setSearchType, 'google');
+								self.successAPIFunction(
+									results[i],
+									matchedLocation,
+									self.setAPIResultSearchType(
+										'Nearby',
+										'google'
+									).setSearchType,
+									'google'
+								);
 							}
 						}
 						if (results[i].html_attributions.length !== 0) {
-							self.checkAndAddFullAttributions(results[i].html_attributions);
+							self.checkAndAddFullAttributions(
+								results[i].html_attributions
+							);
 						}
 					}
 				}
-				self.markedLocations.push.apply(self.markedLocations, markerList);
+				self.markedLocations.push.apply(
+					self.markedLocations,
+					markerList
+				);
 				if (pagination && pagination.hasNextPage) {
 					setTimeout(function() {
-						if (self
-							.getRestaurantsFromGoogleMapsAPICallArray[callArrayIndex] ===
-							true) {
+						if (
+							self.getRestaurantsFromGoogleMapsAPICallArray[
+								callArrayIndex
+							] === true
+						) {
 							pagination.nextPage();
 						}
 					}, 2000);
-
 				}
 			}
 		};
@@ -2467,10 +2903,16 @@ var app = (function() {
 				var markerList = [];
 				for (var i = 0, len = results.length; i < len; i++) {
 					// If marker doesn't exist yet, create
-					if (self.idArray().all.indexOf(results[i].place_id) === -1) {
+					if (
+						self.idArray().all.indexOf(results[i].place_id) === -1
+					) {
 						var newLoc = new LocationModel(self, 'Radar');
-						self.successAPIFunction(results[i], newLoc,
-							function() {}, 'google');
+						self.successAPIFunction(
+							results[i],
+							newLoc,
+							function() {},
+							'google'
+						);
 						markerList.push(newLoc);
 					}
 					/**
@@ -2478,12 +2920,15 @@ var app = (function() {
 					 * info to update
 					 */
 					if (results[i].html_attributions.length !== 0) {
-						self.checkAndAddFullAttributions(results[i]
-							.html_attributions);
+						self.checkAndAddFullAttributions(
+							results[i].html_attributions
+						);
 					}
 				}
-				self.markedLocations.push.apply(self.markedLocations,
-					markerList);
+				self.markedLocations.push.apply(
+					self.markedLocations,
+					markerList
+				);
 			}
 		};
 
@@ -2502,16 +2947,23 @@ var app = (function() {
 			// Only search in current bounds and for restaurants
 			var request = {
 				bounds: currentMapBounds,
-				types: ['restaurant']
+				types: ['restaurant'],
 			};
 
 			// Call radar and nearby search
 			self.service.radarSearch(request, self.processRadarResults);
-			self.service.nearbySearch(request,
-				function(results, status, pagination) {
-					self.processNearbyResults(results, status, pagination,
-						callArrayIndex);
-				});
+			self.service.nearbySearch(request, function(
+				results,
+				status,
+				pagination
+			) {
+				self.processNearbyResults(
+					results,
+					status,
+					pagination,
+					callArrayIndex
+				);
+			});
 		};
 
 		/**
@@ -2526,26 +2978,52 @@ var app = (function() {
 		 *                                  no discernable information to match
 		 *                                  against for the other APIs.
 		 */
-		self.getDetailedGooglePlacesAPIInfo = function(selectedPlace, callback) {
-			if (self.currentDetailedAPIInfoBeingFetched.findID('google',
-					'detailed', selectedPlace) === -1) {
-				self.currentDetailedAPIInfoBeingFetched.pushID('google',
-					'detailed', selectedPlace);
+		self.getDetailedGooglePlacesAPIInfo = function(
+			selectedPlace,
+			callback
+		) {
+			if (
+				self.currentDetailedAPIInfoBeingFetched.findID(
+					'google',
+					'detailed',
+					selectedPlace
+				) === -1
+			) {
+				self.currentDetailedAPIInfoBeingFetched.pushID(
+					'google',
+					'detailed',
+					selectedPlace
+				);
 
-				self.service.getDetails({
-					'placeId': selectedPlace.google_placeId
-				}, function(result, status) {
-					self.currentDetailedAPIInfoBeingFetched.removeID('google',
-						'detailed', selectedPlace);
-					if (status !== google.maps.places.PlacesServiceStatus.OK) {
-						self.failAPIFunction('Google Places Search Error', status);
-						return;
+				self.service.getDetails(
+					{
+						placeId: selectedPlace.google_placeId,
+					},
+					function(result, status) {
+						self.currentDetailedAPIInfoBeingFetched.removeID(
+							'google',
+							'detailed',
+							selectedPlace
+						);
+						if (
+							status !== google.maps.places.PlacesServiceStatus.OK
+						) {
+							self.failAPIFunction(
+								'Google Places Search Error',
+								status
+							);
+							return;
+						}
+						self.successAPIFunction(
+							result,
+							selectedPlace,
+							self.setAPIResultSearchType('Places', 'google')
+								.setSearchType,
+							'google'
+						);
+						callback(selectedPlace);
 					}
-					self.successAPIFunction(result, selectedPlace,
-						self.setAPIResultSearchType('Places', 'google')
-						.setSearchType, 'google');
-					callback(selectedPlace);
-				});
+				);
 			}
 		};
 
@@ -2562,7 +3040,7 @@ var app = (function() {
 		self.setAPIResultSearchType = function(type, service) {
 			var inputs = {
 				type: type,
-				service: service
+				service: service,
 			};
 			/**
 			 * Set the search type of a model
@@ -2577,7 +3055,7 @@ var app = (function() {
 				result.searchType(inputs.service)(toSet);
 			}
 			return {
-				setSearchType: setSearchType
+				setSearchType: setSearchType,
 			};
 		};
 
@@ -2595,8 +3073,13 @@ var app = (function() {
 		 *                                          called when the initial call
 		 *                                          is sent out
 		 */
-		self.callAPIInfo = function(APIType, service, selectedPlace,
-			clonedMarkedLocations, callback) {
+		self.callAPIInfo = function(
+			APIType,
+			service,
+			selectedPlace,
+			clonedMarkedLocations,
+			callback
+		) {
 			/**
 			 * Object with the following properties:
 			 * settings 			settings for jQuery ajax call
@@ -2616,7 +3099,8 @@ var app = (function() {
 			 *  					specific instructions
 			 * @type {object}
 			 */
-			var configObject = appConfigObject[service + '_searchAPIProperties'];
+			var configObject =
+				appConfigObject[service + '_searchAPIProperties'];
 			var settings = configObject.settings;
 			var lat, lng, initialPoint;
 			settings.url = configObject[APIType + '_URL'];
@@ -2632,14 +3116,17 @@ var app = (function() {
 				lat = selectedPlace.google_geometry().location.lat();
 				lng = selectedPlace.google_geometry().location.lng();
 				initialPoint = {
-					'lat': lat,
-					'lng': lng
+					lat: lat,
+					lng: lng,
 				};
 				for (var name2 in configObject.basicExtraParameters) {
-					if (typeof(configObject
-							.basicExtraParameters[name2]) === 'function') {
-						settings.data[name2] =
-							configObject.basicExtraParameters[name2](lat, lng);
+					if (
+						typeof configObject.basicExtraParameters[name2] ===
+						'function'
+					) {
+						settings.data[
+							name2
+						] = configObject.basicExtraParameters[name2](lat, lng);
 					} else {
 						settings.data[name2] =
 							configObject.basicExtraParameters[name2];
@@ -2648,8 +3135,10 @@ var app = (function() {
 			}
 			// For oauth
 			for (var name1 in configObject.allExtraParameters) {
-				settings.data[name1] = configObject
-					.allExtraParameters[name1](settings.url, settings.data);
+				settings.data[name1] = configObject.allExtraParameters[name1](
+					settings.url,
+					settings.data
+				);
 			}
 
 			/**
@@ -2664,33 +3153,48 @@ var app = (function() {
 				 * Parse through the results until the array of result objects
 				 *  is found
 				 */
-				if (typeof(configObject[APIType + '_returnType']) ===
-					'object') {
-					for (var i = 0, len = configObject[APIType + '_returnType']
-							.length; i < len; i++) {
+				if (typeof configObject[APIType + '_returnType'] === 'object') {
+					for (
+						var i = 0,
+							len = configObject[APIType + '_returnType'].length;
+						i < len;
+						i++
+					) {
 						theResult =
 							theResult[configObject[APIType + '_returnType'][i]];
 					}
-				} else if (typeof(configObject[APIType + '_returnType']) !==
-					'undefined') {
+				} else if (
+					typeof configObject[APIType + '_returnType'] !== 'undefined'
+				) {
 					theResult =
 						theResult[configObject[APIType + '_returnType']];
 				} else {
 					theResult = results;
 				}
 				//Success/fail in finding array of result objects
-				if (typeof(theResult) !== 'undefined') {
-					self.successAPIFunction(theResult, selectedPlace,
+				if (typeof theResult !== 'undefined') {
+					self.successAPIFunction(
+						theResult,
+						selectedPlace,
 						self.setAPIResultSearchType(APIType, service)
-						.setSearchType, service, clonedMarkedLocations,
-						initialPoint, configObject.workerHandler);
+							.setSearchType,
+						service,
+						clonedMarkedLocations,
+						initialPoint,
+						configObject.workerHandler
+					);
 				} else {
-					self.currentDetailedAPIInfoBeingFetched
-						.interceptIDRemove(selectedPlace);
+					self.currentDetailedAPIInfoBeingFetched.interceptIDRemove(
+						selectedPlace
+					);
 					console.debug(results);
-					self.failAPIFunction(service.toProperCase() + ' ' +
-						APIType.toProperCase() +
-						' Search Error', 'Could not interpret results');
+					self.failAPIFunction(
+						service.toProperCase() +
+							' ' +
+							APIType.toProperCase() +
+							' Search Error',
+						'Could not interpret results'
+					);
 				}
 			};
 
@@ -2702,11 +3206,17 @@ var app = (function() {
 			 * @param  {object} errorThrown error object from jQuery
 			 */
 			settings.error = function(jqXHR, textStatus, errorThrown) {
-				self.currentDetailedAPIInfoBeingFetched
-					.interceptIDRemove(selectedPlace);
-				self.failAPIFunction(service.toProperCase() + ' ' +
-					APIType.toProperCase() + ' Search Error', textStatus,
-					errorThrown);
+				self.currentDetailedAPIInfoBeingFetched.interceptIDRemove(
+					selectedPlace
+				);
+				self.failAPIFunction(
+					service.toProperCase() +
+						' ' +
+						APIType.toProperCase() +
+						' Search Error',
+					textStatus,
+					errorThrown
+				);
 			};
 
 			/**
@@ -2716,13 +3226,16 @@ var app = (function() {
 			 * @param  {string} textStatus textStatus string from jQuery
 			 */
 			settings.complete = function() {
-				self.currentDetailedAPIInfoBeingFetched.removeID(service,
-					APIType, selectedPlace);
+				self.currentDetailedAPIInfoBeingFetched.removeID(
+					service,
+					APIType,
+					selectedPlace
+				);
 			};
 
 			$.ajax(settings);
 
-			if (typeof(callback) === 'function') {
+			if (typeof callback === 'function') {
 				callback();
 			}
 		};
@@ -2735,7 +3248,7 @@ var app = (function() {
 		 * @return {string}             url of photo or empty string
 		 */
 		self.getGooglePhotoURL = function(photoObject, parameter) {
-			if (typeof(photoObject.getUrl) === 'function') {
+			if (typeof photoObject.getUrl === 'function') {
 				return photoObject.getUrl(parameter);
 			} else {
 				return '';
@@ -2767,11 +3280,15 @@ var app = (function() {
 				worker.onmessage = function(e) {
 					var returnObject = e.data;
 					for (var i = 0, len = returnObject.length; i < len; i++) {
-						var matchedLocation = self.compareIDs(returnObject[i]
-							.google_placeId);
+						var matchedLocation = self.compareIDs(
+							returnObject[i].google_placeId
+						);
 						resultFunction(matchedLocation);
-						self.modelUpdater(matchedLocation, service,
-							returnObject[i]);
+						self.modelUpdater(
+							matchedLocation,
+							service,
+							returnObject[i]
+						);
 					}
 					// Worker should kill itself but make sure
 					self.avoidMemeoryLeaksDueToEventListeners(worker);
@@ -2787,45 +3304,59 @@ var app = (function() {
 		self.getLocalStorage = function() {
 			if (self.storageAvailable === true) {
 				if (localStorage.getItem('favoritesArray')) {
-					var favArray = JSON.parse(localStorage
-						.getItem('favoritesArray'));
+					var favArray = JSON.parse(
+						localStorage.getItem('favoritesArray')
+					);
 					if (favArray !== null) {
 						// Push all the favorites at once
 						var markerList = [];
 						for (var i = 0, len = favArray.length; i < len; i++) {
 							// Nearby will force it to refresh when clicked
 							var newLoc = new LocationModel(self, 'Nearby');
-							var lat = Number(favArray[i]
-								.google_geometry.location.lat);
-							var lng = Number(favArray[i]
-								.google_geometry.location.lng);
-							var passedGeometry = new google.maps
-								.LatLng(lat, lng);
-							self.modelRebuilder(newLoc, favArray[i],
-								passedGeometry);
+							var lat = Number(
+								favArray[i].google_geometry.location.lat
+							);
+							var lng = Number(
+								favArray[i].google_geometry.location.lng
+							);
+							var passedGeometry = new google.maps.LatLng(
+								lat,
+								lng
+							);
+							self.modelRebuilder(
+								newLoc,
+								favArray[i],
+								passedGeometry
+							);
 							newLoc.google_geometry(newLoc.google_geometry());
 							newLoc.isFavorite(true);
 							// Reset open/closed computed
 							newLoc.google_openingHoursObject(undefined);
 							markerList.push(newLoc);
 						}
-						self.markedLocations.push.apply(self.markedLocations,
-							markerList);
+						self.markedLocations.push.apply(
+							self.markedLocations,
+							markerList
+						);
 					}
 				}
 				if (localStorage.getItem('mapCenter')) {
-					var mapCenter = JSON.parse(localStorage
-						.getItem('mapCenter'));
-					if ((mapCenter !== null) &&
-						(typeof(mapCenter.lat) !== 'undefined') &&
-						(mapCenter.lat !== null)) {
+					var mapCenter = JSON.parse(
+						localStorage.getItem('mapCenter')
+					);
+					if (
+						mapCenter !== null &&
+						typeof mapCenter.lat !== 'undefined' &&
+						mapCenter.lat !== null
+					) {
 						self.mapPan(mapCenter.lat, mapCenter.lng);
-						if ((mapCenter.zoom !== null) &&
-							(typeof(mapCenter.zoom) === 'number')) {
+						if (
+							mapCenter.zoom !== null &&
+							typeof mapCenter.zoom === 'number'
+						) {
 							self.mainMap.setZoom(mapCenter.zoom);
 						}
 					}
-
 				}
 			}
 		};
@@ -2835,17 +3366,21 @@ var app = (function() {
 		 */
 		self.singleErrorMessages = function() {
 			if (self.storageAvailable !== true) {
-				self.failAPIFunction('Local Storage Problem',
+				self.failAPIFunction(
+					'Local Storage Problem',
 					'Local Storage support is not available. ' +
-					'Favorites will not save after page reload.');
+						'Favorites will not save after page reload.'
+				);
 			}
 			if (self.workersAvailable !== true) {
-				self.failAPIFunction('Web Workers Problem',
+				self.failAPIFunction(
+					'Web Workers Problem',
 					'Web Workers support is not available. App will function ' +
-					'normally but average data retrieval wait times will ' +
-					'increase. \n Web workers do not work when loading this ' +
-					'application from older browsers or directly from the ' +
-					'local file system.');
+						'normally but average data retrieval wait times will ' +
+						'increase. \n Web workers do not work when loading this ' +
+						'application from older browsers or directly from the ' +
+						'local file system.'
+				);
 			}
 		};
 
@@ -2859,24 +3394,38 @@ var app = (function() {
 		 * @param  {object} model      currently selected location
 		 * @param  {number} xModifier  size modifier for removing operating
 		 */
-		self.reCheckInfoWindowIsCentered = function(theElement, model,
-			xModifier) {
+		self.reCheckInfoWindowIsCentered = function(
+			theElement,
+			model,
+			xModifier
+		) {
 			var time = 100;
 			if (self.regularInfoWindowPan() === true) {
 				time = 600;
 				self.regularInfoWindowPan(false);
 			}
-			if ((self.userDrag() === true) ||
-				(typeof(self.currentlySelectedLocation()) === 'undefined') ||
-				(self.currentlySelectedLocation() !== model)) {
+			if (
+				self.userDrag() === true ||
+				typeof self.currentlySelectedLocation() === 'undefined' ||
+				self.currentlySelectedLocation() !== model
+			) {
 				time = false;
 			}
 			if (time !== false) {
-				setResizeListener_centerWindow(theElement, model,
-					true, true, 0, xModifier);
+				setResizeListener_centerWindow(
+					theElement,
+					model,
+					true,
+					true,
+					0,
+					xModifier
+				);
 				self.currentInfoWindowCheck = setTimeout(function() {
-					self.reCheckInfoWindowIsCentered(theElement,
-						model, xModifier);
+					self.reCheckInfoWindowIsCentered(
+						theElement,
+						model,
+						xModifier
+					);
 				}, time);
 			}
 		};
@@ -2889,13 +3438,12 @@ var app = (function() {
 		 */
 		self.resetFilters = function() {
 			self.searchQuery('');
-			self.priceButtonFilter(appConfigObject
-				.defaultPriceButtonFilter);
+			self.priceButtonFilter(appConfigObject.defaultPriceButtonFilter);
 			self.minRatingButtonFilter(-1);
-			self.openButtonFilter(appConfigObject
-				.defaultOpenButtonFilter);
-			self.favoriteButtonFilter(appConfigObject
-				.defaultFavoriteButtonFilter);
+			self.openButtonFilter(appConfigObject.defaultOpenButtonFilter);
+			self.favoriteButtonFilter(
+				appConfigObject.defaultFavoriteButtonFilter
+			);
 		};
 
 		self.initializeCurrentDetailedAPIInfoBeingFetched();
@@ -2924,8 +3472,8 @@ var app = (function() {
 			google: {
 				families: [
 					'Lato:400,400italic,700:latin',
-					'Scheherazade:400,700:latin'
-				]
+					'Scheherazade:400,700:latin',
+				],
 			},
 			timeout: 10000,
 			active: function() {
@@ -2935,16 +3483,23 @@ var app = (function() {
 			inactive: function() {
 				fontsPreloaded = true;
 				console.warn('Fonts were not loaded.');
-			}
+			},
 		};
 		WebFont.load(WebFontConfig);
 
-		preload(['img/marker-1.png', 'img/marker-2.png', 'img/marker-3.png',
-			'img/marker-4.png', 'img/marker-empty.png',
-			'img/marker-heart.png'
-		], function() {
-			imagesPreloaded = true;
-		});
+		preload(
+			[
+				'img/marker-1.png',
+				'img/marker-2.png',
+				'img/marker-3.png',
+				'img/marker-4.png',
+				'img/marker-empty.png',
+				'img/marker-heart.png',
+			],
+			function() {
+				imagesPreloaded = true;
+			}
+		);
 		waitUntilEverythingLoaded();
 	}
 
@@ -2971,12 +3526,13 @@ var app = (function() {
 	function waitUntilEverythingLoaded() {
 		$.doWhen({
 			when: function() {
-				return (imagesPreloaded === true) &&
-					(fontsPreloaded === true) &&
-					(googlePreloaded === true);
-			}
-		})
-		.done(function() {
+				return (
+					imagesPreloaded === true &&
+					fontsPreloaded === true &&
+					googlePreloaded === true
+				);
+			},
+		}).done(function() {
 			createMap();
 			$('#loading').fadeOut(500);
 		});
@@ -2993,10 +3549,13 @@ var app = (function() {
 		} else {
 			// Setup default options from config object
 			var defaultLatLng = new google.maps.LatLng(
-					appConfigObject.defaultLat, appConfigObject.defaultLng),
-				defaultZoom = (window.innerWidth < 992 ?
-					appConfigObject.defaultMobileZoom :
-					appConfigObject.defaultZoom),
+					appConfigObject.defaultLat,
+					appConfigObject.defaultLng
+				),
+				defaultZoom =
+					window.innerWidth < 992
+						? appConfigObject.defaultMobileZoom
+						: appConfigObject.defaultZoom,
 				mapElement = document.getElementById('mapDiv'),
 				defaultStyle = appConfigObject.mapStyle;
 
@@ -3005,9 +3564,9 @@ var app = (function() {
 				zoom: defaultZoom,
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				mapTypeControlOptions: {
-					mapTypeIds: []
+					mapTypeIds: [],
 				}, //remove some controls
-				styles: defaultStyle
+				styles: defaultStyle,
 			};
 
 			// Define reticle to be pegged at center of map
@@ -3015,11 +3574,12 @@ var app = (function() {
 				'img/reticle.png', // marker image
 				new google.maps.Size(16, 16), // marker size
 				new google.maps.Point(0, 0), // marker origin
-				new google.maps.Point(8, 8)); // marker anchor point
+				new google.maps.Point(8, 8)
+			); // marker anchor point
 
 			var reticleShape = {
 				coords: [8, 8, 8, 8], // 1px
-				type: 'rect' // rectangle
+				type: 'rect', // rectangle
 			};
 
 			// Create map and viewModel using map
@@ -3034,18 +3594,22 @@ var app = (function() {
 				icon: reticleImage,
 				shape: reticleShape,
 				optimized: false,
-				zIndex: 5
+				zIndex: 5,
 			});
 
 			/**
 			 * Keep center reticle centered, throttle as panning would call
 			 * too frequently and performance is the same
 			 */
-			var centerReticle = throttle(function(center) {
-				reticleMarker.setPosition(center);
-			}, 16, {
-				'leading': false
-			});
+			var centerReticle = throttle(
+				function(center) {
+					reticleMarker.setPosition(center);
+				},
+				16,
+				{
+					leading: false,
+				}
+			);
 
 			/**
 			 * Function called when map pans that calls radar and nearby search
@@ -3056,56 +3620,76 @@ var app = (function() {
 			 * to current map center rather than map center from original call.
 			 * Throttled to avoid over-query errors.
 			 */
-			var callAPIs = throttle(function() {
-				if (typeof(viewModel1
-						.getRestaurantsFromGoogleMapsAPICallArray[viewModel1
-							.getRestaurantsFromGoogleMapsAPICallArray
-							.length - 1]) !== 'undefined') {
-					viewModel1
-						.getRestaurantsFromGoogleMapsAPICallArray[viewModel1
-							.getRestaurantsFromGoogleMapsAPICallArray
-							.length - 1] = false;
+			var callAPIs = throttle(
+				function() {
+					if (
+						typeof viewModel1
+							.getRestaurantsFromGoogleMapsAPICallArray[
+							viewModel1.getRestaurantsFromGoogleMapsAPICallArray
+								.length - 1
+						] !== 'undefined'
+					) {
+						viewModel1.getRestaurantsFromGoogleMapsAPICallArray[
+							viewModel1.getRestaurantsFromGoogleMapsAPICallArray
+								.length - 1
+						] = false;
+					}
+					viewModel1.getRestaurantsFromGoogleMapsAPICallArray.push(
+						true
+					);
+					viewModel1.getRestaurantsFromGoogleMapsAPI(
+						viewModel1.getRestaurantsFromGoogleMapsAPICallArray
+							.length - 1
+					);
+				},
+				1200,
+				{
+					trailing: false,
 				}
-				viewModel1.getRestaurantsFromGoogleMapsAPICallArray.push(true);
-				viewModel1.getRestaurantsFromGoogleMapsAPI(viewModel1
-					.getRestaurantsFromGoogleMapsAPICallArray.length - 1);
-			}, 1200, {
-				'trailing': false
-			});
+			);
 
 			/**
 			 * Function called when map pans that updates center of map and then
 			 * calls callAPIs function
 			 * @param  {object} map.getCenter() coordinates object
 			 */
-			var boundsChange = throttle(function(center) {
-				viewModel1.checkIfOnMap(viewModel1.mainMap.getBounds());
-				viewModel1.mainMapCenter(center);
-				callAPIs();
-			}, 50, {
-				'leading': false
-			});
-
+			var boundsChange = throttle(
+				function(center) {
+					viewModel1.checkIfOnMap(viewModel1.mainMap.getBounds());
+					viewModel1.mainMapCenter(center);
+					callAPIs();
+				},
+				50,
+				{
+					leading: false,
+				}
+			);
 
 			/**
 			 * Event listener for map panning/bounds changing. Calls the bounds
 			 * changed function and also updates center reticle coordinates.
 			 */
-			google.maps.event.addListener(mainGoogleMap, 'bounds_changed',
+			google.maps.event.addListener(
+				mainGoogleMap,
+				'bounds_changed',
 				function() {
 					var center = mainGoogleMap.getCenter();
 					boundsChange(center);
 					centerReticle(center);
-				});
+				}
+			);
 
 			/**
 			 * If the user starts dragging, set userDrag to true to stop the
 			 * infoWindow from moving.
 			 */
-			google.maps.event.addListener(mainGoogleMap, 'dragstart',
+			google.maps.event.addListener(
+				mainGoogleMap,
+				'dragstart',
 				function() {
 					viewModel1.userDrag(true);
-				});
+				}
+			);
 
 			/**
 			 * Check localStorage, if mapCenter is preset, sets map to that
@@ -3114,9 +3698,11 @@ var app = (function() {
 			 */
 			if (viewModel1.storageAvailable === true) {
 				var mapCenter = JSON.parse(localStorage.getItem('mapCenter'));
-				if (!localStorage.getItem('mapCenter') ||
-					(typeof(mapCenter.lat) === 'undefined') ||
-					(mapCenter.lat === null)) {
+				if (
+					!localStorage.getItem('mapCenter') ||
+					typeof mapCenter.lat === 'undefined' ||
+					mapCenter.lat === null
+				) {
 					viewModel1.getNavWithCallback();
 				}
 			} else {
@@ -3131,9 +3717,8 @@ var app = (function() {
 	return {
 		googleLoaded: googleLoaded,
 		googleFailedToLoad: googleFailedToLoad,
-		preloadFontsAndImages: preloadFontsAndImages
+		preloadFontsAndImages: preloadFontsAndImages,
 	};
-
-}());
+})();
 
 /* exported app */

@@ -1,0 +1,39 @@
+{
+	"paths": {
+		"src": {
+			"folder": "app",
+			"jsNotBundled": ["<ggSrc>/js/**/*.js", "<ggSrc>/vendor/**/*.js"],
+			"cssNotBundled": ["<ggSrc>/css/**/*.css", "<ggSrc>/vendor/**/*.css"]
+		},
+		"build": {
+			"folder": "dist"
+		}
+	},
+
+	"run": {
+		"development": {
+			"webpack": false,
+			"browserify": false,
+			"useref": false,
+			"babel": true,
+			"cacheBust": false,
+			"uncss": true,
+			"sourcemaps": true,
+			"lintJS": true,
+			"lintCSS": true,
+			"cssNano": false,
+			"incrementalBuilds": true
+		},
+		"staging": {
+			"useref": true,
+			"lintJS": false,
+			"lintCSS": false,
+			"cssNano": true,
+			"incrementalBuilds": false
+		},
+		"production": {
+			"cacheBust": true,
+			"sourcemaps": false
+		}
+	}
+}
