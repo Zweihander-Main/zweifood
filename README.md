@@ -14,12 +14,13 @@
     - `gulp` or `gulp default`: creates production folder and nothing more
     - `gulp serve`: used for development, starts BrowserSync https server on development folder and watches for changes (will rerun tasks on certain files as they change)
     - `gulp serve:dist`: creates production folder, starts BrowserSync http server (for ngrok), does not watch for changes
-        <!-- -  `gulp psi`: creates production folder, starts BrowserSync http server, starts ngrok on production files, sends files to Page Speed Insights to return scores and exits -->
-        <!-- -  `gulp psi:no-kill`: same as above, doesn't exit at the end -->
+          <!-- -  `gulp psi`: creates production folder, starts BrowserSync http server, starts ngrok on production files, sends files to Page Speed Insights to return scores and exits -->
+          <!-- -  `gulp psi:no-kill`: same as above, doesn't exit at the end -->
 
 ### Current Todos:
 
--   Fix uncss build
+-   Switch to browserify, kill vendor folder and switch to proper imports if possible
+    -   Research for custom modules
 
 ### Development notes:
 

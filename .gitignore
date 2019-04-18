@@ -91,3 +91,4 @@ GitHub.sublime-settings
 
 # Environment variables
 .env
+.envrc
