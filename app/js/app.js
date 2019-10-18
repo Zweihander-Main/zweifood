@@ -1,5 +1,47 @@
-/* global appConfigObject, FuzzySet, ko, google, $, ResizeSensor, WebFont */
+/* global FuzzySet, google, ko, $, ResizeSensor, WebFont */
 'use strict';
+import './imports.js';
+import 'jquery-ui';
+// import 'jquery-ui/ui/core';
+import 'jquery-ui/ui/widget';
+import 'jquery-ui/ui/version';
+import 'jquery-ui/ui/unique-id';
+import 'jquery-ui/ui/position';
+import 'jquery-ui/ui/safe-active-element';
+import 'jquery-ui/ui/keycode';
+import 'jquery-ui/ui/widgets/mouse';
+import 'jquery-ui/ui/widgets/selectable';
+import 'jquery-ui/ui/widgets/sortable';
+import 'jquery-ui/ui/widgets/autocomplete';
+import 'jquery-ui/ui/widgets/menu';
+import 'jquery-ui/ui/widgets/slider';
+import 'jquery-ui/ui/widgets/tooltip';
+import 'jquery-ui/ui/widgets/dialog';
+import 'jquery-ui/ui/effect';
+import 'jquery-ui/ui/effects/effect-drop';
+import 'jquery-ui/ui/effects/effect-fade';
+import 'jquery-ui/ui/effects/effect-fold';
+import 'jquery-ui/ui/effects/effect-highlight';
+import 'jquery-ui/ui/effects/effect-puff';
+import 'jquery-ui/ui/effects/effect-scale';
+import 'jquery-ui/ui/effects/effect-size';
+import 'jquery-ui/ui/effects/effect-slide';
+
+// import 'bootstrap';
+// import 'bootstrap/js/src/modal';
+// import 'bootstrap/js/src/tooltip';
+import '../vendor/bootstrap/js/bootstrap.js'; // took out jquery version complaint
+import 'oauth-signature';
+import 'fuzzyset';
+// import PerfectScrollbar from 'perfect-scrollbar';
+import '../vendor/perfect-scrollbar/js/min/perfect-scrollbar.jquery.min.js';
+import '../vendor/slidebars.min.js';
+import 'jquery.rateit';
+import '../vendor/jQuery.doWhen.js';
+import '../vendor/jquery.scrollintoview.custom.js';
+import '../vendor/ResizeSensor.js';
+
+import appConfigObject from './config.js';
 /**
  * App contains utility functions, the view model, model definitions, and
  * success/fail functions for google maps (that create the map and viewmodel).
@@ -3720,5 +3762,7 @@ var app = (function() {
 		preloadFontsAndImages: preloadFontsAndImages,
 	};
 })();
+
+export default (window.app = app);
 
 /* exported app */

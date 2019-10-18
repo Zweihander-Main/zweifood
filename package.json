@@ -3,7 +3,10 @@
 	"version": "1.0.0",
 	"description": "ZweiFood",
 	"author": "Zweihänder",
-	"scripts": {},
+	"scripts": {
+		"dev": "parcel app/index.html",
+		"build": "parcel build app/index.html"
+	},
 	"main": "index.html",
 	"private": true,
 	"license": "MIT",
@@ -92,16 +95,36 @@
 			"no-descending-specificity": null
 		}
 	},
-	"dependencies": {},
+	"browserslist": [
+		"> 0.2%",
+		"last 2 versions",
+		"Firefox ESR",
+		"not dead",
+		"maintained node versions"
+	],
+	"dependencies": {
+		"bootstrap": "^3.3.7",
+		"crypto-js": "^3.1.9-1",
+		"fuzzyset": "0.0.4",
+		"jquery": "^3.4.1",
+		"jquery-migrate": "^3.1.0",
+		"jquery-ui": "^1.12.1",
+		"jquery.rateit": "^1.1.2",
+		"knockout": "^3.5.0",
+		"oauth-signature": "^1.5.0",
+		"perfect-scrollbar": "^1.4.0",
+		"popper.js": "^1.16.0",
+		"vendor": "^1.7.0",
+		"webfontloader": "^1.6.28"
+	},
 	"devDependencies": {
-		"gulp": "^4.0.0",
-		"gulp-guru": "file:../Gulp-Guru",
 		"@babel/core": "^7.4.0",
 		"@babel/preset-env": "^7.4.0",
 		"@babel/register": "^7.4.0",
 		"eslint": "^5.15.3",
 		"eslint-config-prettier": "^4.1.0",
 		"eslint-plugin-prettier": "^3.0.1",
+		"parcel-bundler": "^1.12.4",
 		"prettier": "^1.16.4"
 	}
 }
