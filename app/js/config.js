@@ -1,4 +1,13 @@
 /* global oauthSignature */
+
+import image_marker1 from '../img/marker-1.png';
+import image_marker2 from '../img/marker-2.png';
+import image_marker3 from '../img/marker-3.png';
+import image_marker4 from '../img/marker-4.png';
+import image_markerEmpty from '../img/marker-empty.png';
+import image_markerHeart from '../img/marker-heart.png';
+import image_markerDefault from '../img/marker-default.png';
+
 /**
  * Config object which defines a lot of developer settings, map styles, and API
  * information. API information was chose to be listed here to make it easy to
@@ -6,6 +15,7 @@
  * where API settings for actually calling the APIs is listed.
  * @type {Object}
  */
+
 var appConfigObject = {};
 
 Object.defineProperties(appConfigObject, {
@@ -638,31 +648,31 @@ Object.defineProperties(appConfigObject, {
 		enumberable: true,
 	},
 	markerImageURLDefault: {
-		value: 'img/marker-default.png',
+		value: image_markerDefault,
 		enumberable: true,
 	},
 	markerImageURLEmpty: {
-		value: 'img/marker-empty.png',
+		value: image_markerEmpty,
 		enumberable: true,
 	},
 	markerImageURL1: {
-		value: 'img/marker-1.png',
+		value: image_marker1,
 		enumberable: true,
 	},
 	markerImageURL2: {
-		value: 'img/marker-2.png',
+		value: image_marker2,
 		enumberable: true,
 	},
 	markerImageURL3: {
-		value: 'img/marker-3.png',
+		value: image_marker3,
 		enumberable: true,
 	},
 	markerImageURL4: {
-		value: 'img/marker-4.png',
+		value: image_marker4,
 		enumberable: true,
 	},
 	markerImageURLFav: {
-		value: 'img/marker-heart.png',
+		value: image_markerHeart,
 		enumberable: true,
 	},
 	markerImageSize: {

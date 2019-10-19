@@ -26,13 +26,20 @@ import 'jquery-ui/ui/effects/effect-puff';
 import 'jquery-ui/ui/effects/effect-scale';
 import 'jquery-ui/ui/effects/effect-size';
 import 'jquery-ui/ui/effects/effect-slide';
+import image_reticle from '../img/reticle.png';
+import image_marker1 from '../img/marker-1.png';
+import image_marker2 from '../img/marker-2.png';
+import image_marker3 from '../img/marker-3.png';
+import image_marker4 from '../img/marker-4.png';
+import image_markerEmpty from '../img/marker-empty.png';
+import image_markerHeart from '../img/marker-heart.png';
+import image_markerDefault from '../img/marker-default.png';
 
 // import 'bootstrap';
 // import 'bootstrap/js/src/modal';
 // import 'bootstrap/js/src/tooltip';
 import '../vendor/bootstrap/js/bootstrap.js'; // took out jquery version complaint
-import 'oauth-signature';
-import 'fuzzyset';
+import 'fuzzyset.js';
 // import PerfectScrollbar from 'perfect-scrollbar';
 import '../vendor/perfect-scrollbar/js/min/perfect-scrollbar.jquery.min.js';
 import '../vendor/slidebars.min.js';
@@ -265,7 +272,7 @@ var app = (function() {
 			typeof Worker !== 'undefined' &&
 			window.location.protocol !== 'file:'
 		) {
-			return true;
+			return false; //TODO temp change
 		} else {
 			return false;
 		}
@@ -2988,12 +2995,13 @@ var app = (function() {
 
 			// Only search in current bounds and for restaurants
 			var request = {
+				rankby: 'distance',
 				bounds: currentMapBounds,
-				types: ['restaurant'],
+				type: 'restaurant',
 			};
 
 			// Call radar and nearby search
-			self.service.radarSearch(request, self.processRadarResults);
+			// self.service.radarSearch(request, self.processRadarResults);
 			self.service.nearbySearch(request, function(
 				results,
 				status,
@@ -3531,12 +3539,14 @@ var app = (function() {
 
 		preload(
 			[
-				'img/marker-1.png',
-				'img/marker-2.png',
-				'img/marker-3.png',
-				'img/marker-4.png',
-				'img/marker-empty.png',
-				'img/marker-heart.png',
+				image_marker1,
+				image_marker2,
+				image_marker3,
+				image_marker4,
+				image_markerEmpty,
+				image_markerHeart,
+				image_markerDefault,
+				image_reticle,
 			],
 			function() {
 				imagesPreloaded = true;
@@ -3612,12 +3622,12 @@ var app = (function() {
 			};
 
 			// Define reticle to be pegged at center of map
-			var reticleImage = new google.maps.MarkerImage(
-				'img/reticle.png', // marker image
-				new google.maps.Size(16, 16), // marker size
-				new google.maps.Point(0, 0), // marker origin
-				new google.maps.Point(8, 8)
-			); // marker anchor point
+			var reticleImage = {
+				url: image_reticle, // marker image
+				size: new google.maps.Size(16, 16), // marker size
+				origin: new google.maps.Point(0, 0), // marker origin
+				anchor: new google.maps.Point(8, 8),
+			}; // marker anchor point
 
 			var reticleShape = {
 				coords: [8, 8, 8, 8], // 1px
