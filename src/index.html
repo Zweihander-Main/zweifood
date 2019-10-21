@@ -349,31 +349,31 @@
 					<div class="filter-button-multi-container">
 						<div
 							class="filter-button filter-button-multi filter-button-multi-first"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[0] }, click: function() {var temp = priceButtonFilter();temp[0] = !temp[0]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[0] }, click: function() {let temp = priceButtonFilter();temp[0] = !temp[0]; priceButtonFilter(temp)}"
 						>
 							Ø
 						</div>
 						<div
 							class="filter-button filter-button-multi"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[1] }, click: function() {var temp = priceButtonFilter();temp[1] = !temp[1]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[1] }, click: function() {let temp = priceButtonFilter();temp[1] = !temp[1]; priceButtonFilter(temp)}"
 						>
 							$
 						</div>
 						<div
 							class="filter-button filter-button-multi"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[2] }, click: function() {var temp = priceButtonFilter();temp[2] = !temp[2]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[2] }, click: function() {let temp = priceButtonFilter();temp[2] = !temp[2]; priceButtonFilter(temp)}"
 						>
 							$$
 						</div>
 						<div
 							class="filter-button filter-button-multi"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[3] }, click: function() {var temp = priceButtonFilter();temp[3] = !temp[3]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[3] }, click: function() {let temp = priceButtonFilter();temp[3] = !temp[3]; priceButtonFilter(temp)}"
 						>
 							$$$
 						</div>
 						<div
 							class="filter-button filter-button-multi filter-button-multi-last"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[4] }, click: function() {var temp = priceButtonFilter();temp[4] = !temp[4]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[4] }, click: function() {let temp = priceButtonFilter();temp[4] = !temp[4]; priceButtonFilter(temp)}"
 						>
 							$$$$
 						</div>
@@ -696,7 +696,7 @@
 				<!-- /ko -->
 			</div>
 		</script>
-		<script src="./js/app.js"></script>
+		<script src="./js/app.ts"></script>
 		<script
 			src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyAypPO_LPwapkN6ykqyUDdnzxXBGV-0QyU&libraries=places&callback=app.googleLoaded"
 			async

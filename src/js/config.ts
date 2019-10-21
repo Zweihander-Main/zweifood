@@ -1,12 +1,13 @@
 /* global oauthSignature */
-
-import image_marker1 from '../img/marker-1.png';
-import image_marker2 from '../img/marker-2.png';
-import image_marker3 from '../img/marker-3.png';
-import image_marker4 from '../img/marker-4.png';
-import image_markerEmpty from '../img/marker-empty.png';
-import image_markerHeart from '../img/marker-heart.png';
-import image_markerDefault from '../img/marker-default.png';
+import 'fuzzyset.js';
+// import oauthSignature from 'oauth-signature'; //TODO
+import imageMarker1 from '../img/marker-1.png';
+import imageMarker2 from '../img/marker-2.png';
+import imageMarker3 from '../img/marker-3.png';
+import imageMarker4 from '../img/marker-4.png';
+import imageMarkerEmpty from '../img/marker-empty.png';
+import imageMarkerHeart from '../img/marker-heart.png';
+import imageMarkerDefault from '../img/marker-default.png';
 
 /**
  * Config object which defines a lot of developer settings, map styles, and API
@@ -16,7 +17,7 @@ import image_markerDefault from '../img/marker-default.png';
  * @type {Object}
  */
 
-var appConfigObject = {};
+const appConfigObject = {};
 
 Object.defineProperties(appConfigObject, {
 	lowMarkerOpacity: {
@@ -648,31 +649,31 @@ Object.defineProperties(appConfigObject, {
 		enumberable: true,
 	},
 	markerImageURLDefault: {
-		value: image_markerDefault,
+		value: imageMarkerDefault,
 		enumberable: true,
 	},
 	markerImageURLEmpty: {
-		value: image_markerEmpty,
+		value: imageMarkerEmpty,
 		enumberable: true,
 	},
 	markerImageURL1: {
-		value: image_marker1,
+		value: imageMarker1,
 		enumberable: true,
 	},
 	markerImageURL2: {
-		value: image_marker2,
+		value: imageMarker2,
 		enumberable: true,
 	},
 	markerImageURL3: {
-		value: image_marker3,
+		value: imageMarker3,
 		enumberable: true,
 	},
 	markerImageURL4: {
-		value: image_marker4,
+		value: imageMarker4,
 		enumberable: true,
 	},
 	markerImageURLFav: {
-		value: image_markerHeart,
+		value: imageMarkerHeart,
 		enumberable: true,
 	},
 	markerImageSize: {
@@ -781,7 +782,7 @@ Object.defineProperties(appConfigObject, {
 	// Information for return object can be found in callAPIInfo function
 	yelp_searchAPIProperties: {
 		get: function() {
-			var self = this;
+			let self = this;
 			/**
 			 * Generates a random number and returns it as a string for OAuthentication
 			 * @return {string}
@@ -790,8 +791,8 @@ Object.defineProperties(appConfigObject, {
 				return Math.floor(Math.random() * 1e12).toString();
 			}
 
-			var returnObject = {};
-			var parameters = {
+			let returnObject = {};
+			let parameters = {
 				oauth_consumer_key: self.searchAPIInfo.yelp.consumerKey,
 				oauth_token: self.searchAPIInfo.yelp.token,
 				oauth_nonce: nonce_generate(),
@@ -806,7 +807,7 @@ Object.defineProperties(appConfigObject, {
 				actionlinks: true,
 			};
 
-			var settings = {
+			let settings = {
 				method: 'GET',
 				timeout: self.callAPITimeout,
 				data: parameters,
@@ -819,7 +820,7 @@ Object.defineProperties(appConfigObject, {
 				dataType: 'jsonp',
 			};
 
-			var basicExtraParameters = {
+			let basicExtraParameters = {
 				bounds: function(lat, lng) {
 					return (
 						lat -
@@ -836,7 +837,7 @@ Object.defineProperties(appConfigObject, {
 				sort: 1, //sort by distance
 			};
 
-			var allExtraParameters = {
+			let allExtraParameters = {
 				oauth_signature: function(url, fullParameters) {
 					return oauthSignature.generate(
 						'GET',
@@ -848,7 +849,7 @@ Object.defineProperties(appConfigObject, {
 				},
 			};
 
-			var workerHandler = {
+			let workerHandler = {
 				lat: ['location', 'coordinate', 'latitude'],
 				lng: ['location', 'coordinate', 'longitude'],
 			};
@@ -869,13 +870,13 @@ Object.defineProperties(appConfigObject, {
 	},
 	locu_searchAPIProperties: {
 		get: function() {
-			var self = this;
-			var returnObject = {};
-			var parameters = {
+			let self = this;
+			let returnObject = {};
+			let parameters = {
 				api_key: self.searchAPIInfo.locu.APIKey,
 			};
 
-			var settings = {
+			let settings = {
 				timeout: self.callAPITimeout,
 				method: 'GET',
 				data: parameters,
@@ -883,7 +884,7 @@ Object.defineProperties(appConfigObject, {
 				dataType: 'jsonp',
 			};
 
-			var basicExtraParameters = {
+			let basicExtraParameters = {
 				bounds: function(lat, lng) {
 					return (
 						lat +
@@ -898,7 +899,7 @@ Object.defineProperties(appConfigObject, {
 				},
 			};
 
-			var workerHandler = {
+			let workerHandler = {
 				lng: ['long'],
 			};
 
@@ -918,15 +919,15 @@ Object.defineProperties(appConfigObject, {
 	},
 	foursquare_searchAPIProperties: {
 		get: function() {
-			var self = this;
-			var returnObject = {};
-			var parameters = {
+			let self = this;
+			let returnObject = {};
+			let parameters = {
 				client_id: self.searchAPIInfo.foursquare.clientID,
 				client_secret: self.searchAPIInfo.foursquare.clientSecret,
 				v: '20150711',
 			};
 
-			var settings = {
+			let settings = {
 				timeout: self.callAPITimeout,
 				method: 'GET',
 				data: parameters,
@@ -934,7 +935,7 @@ Object.defineProperties(appConfigObject, {
 				dataType: 'jsonp',
 			};
 
-			var basicExtraParameters = {
+			let basicExtraParameters = {
 				radius: function(lat, lng) {
 					return self.distanceBetweenTwoPointsInMeters(
 						lat,
@@ -951,7 +952,7 @@ Object.defineProperties(appConfigObject, {
 				intent: 'checkin',
 			};
 
-			var workerHandler = {
+			let workerHandler = {
 				lat: ['location', 'lat'],
 				lng: ['location', 'lng'],
 			};
@@ -972,9 +973,9 @@ Object.defineProperties(appConfigObject, {
 	// neccessary for sending to worker
 	distanceBetweenTwoPointsInMeters: {
 		value: function(lat1, lon1, lat2, lon2) {
-			var p = 0.017453292519943295; // Math.PI / 180
-			var c = Math.cos;
-			var a =
+			let p = 0.017453292519943295; // Math.PI / 180
+			let c = Math.cos;
+			let a =
 				0.5 -
 				c((lat2 - lat1) * p) / 2 +
 				(c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))) / 2;
