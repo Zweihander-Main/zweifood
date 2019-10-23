@@ -2,6 +2,8 @@ interface String {
 	toProperCase(): string;
 }
 
+import appConfigObject from './config.ts';
+
 /**
  * Function that converts a string to Proper Case.
  * @return {string} string with proper case

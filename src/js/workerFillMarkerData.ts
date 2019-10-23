@@ -5,7 +5,7 @@
  * location and within map bounds. Matches are sent back to main thread.
  */
 importScripts('/vendor/fuzzyset.js'); // TODO
-let self = this;
+const self = this;
 
 /**
  * Checks if a given set of coordinates are within a square distance of a
@@ -18,7 +18,13 @@ let self = this;
  * @return {boolean}            if the marker is within the maxDistance of the
  *                              center
  */
-function checkIfMarkerIsWithinBounds(iLat, iLng, cLat, cLng, maxDistance) {
+function checkIfMarkerIsWithinBounds(
+	iLat,
+	iLng,
+	cLat,
+	cLng,
+	maxDistance
+): boolean {
 	return (
 		iLat - maxDistance <= cLat &&
 		cLat <= iLat + maxDistance &&
@@ -35,8 +41,12 @@ function checkIfMarkerIsWithinBounds(iLat, iLng, cLat, cLng, maxDistance) {
  * @param  {number} minFuzzyMatch fuzzy confidence threshold
  * @return {number/false}         index of match or false
  */
-function matchBasedOnNameForWorker(setToMatch, nameToMatch, minFuzzyMatch) {
-	let match = setToMatch.get(nameToMatch);
+function matchBasedOnNameForWorker(
+	setToMatch,
+	nameToMatch,
+	minFuzzyMatch
+): number | false {
+	const match = setToMatch.get(nameToMatch);
 	if (match !== null && match[0][0] > minFuzzyMatch) {
 		return setToMatch.values().indexOf(match[0][1]);
 	} else {
@@ -47,9 +57,8 @@ function matchBasedOnNameForWorker(setToMatch, nameToMatch, minFuzzyMatch) {
 self.addEventListener(
 	'message',
 	function(e) {
-		let resultsArray;
-		let fuzzySetOfResultsNames = new FuzzySet([]);
-		let returnObject = [];
+		const fuzzySetOfResultsNames = new FuzzySet([]);
+		const returnObject = [];
 
 		/**
 		 * Parse through workerHandler object which is defined as:
@@ -57,9 +66,9 @@ self.addEventListener(
 		 * This allows coords.long to get matched to lng.
 		 * Also creates the fuzzySet object to check against.
 		 */
-		resultsArray = e.data.resultsArray.map(function(item) {
-			let newItem = item;
-			for (let name in e.data.workerHandler) {
+		const resultsArray = e.data.resultsArray.map(function(item) {
+			const newItem = item;
+			for (const name in e.data.workerHandler) {
 				if (e.data.workerHandler.hasOwnProperty(name)) {
 					for (
 						let i = 0, len = e.data.workerHandler[name].length;
@@ -77,7 +86,7 @@ self.addEventListener(
 		/**
 		 * Make sure locations are within the search point plus the search distance
 		 */
-		let narrowedDownLocations = e.data.locationsArray.filter(function(
+		const narrowedDownLocations = e.data.locationsArray.filter(function(
 			item
 		) {
 			return checkIfMarkerIsWithinBounds(
@@ -94,13 +103,13 @@ self.addEventListener(
 		 * If a match exists, push it back to the return object.
 		 */
 		for (let i = 0; i < narrowedDownLocations.length; i++) {
-			let match = matchBasedOnNameForWorker(
+			const match = matchBasedOnNameForWorker(
 				fuzzySetOfResultsNames,
 				narrowedDownLocations[i].name,
 				e.data.minFuzzyMatch
 			);
 			if (typeof match === 'number') {
-				let correctResult = resultsArray[match];
+				const correctResult = resultsArray[match];
 				correctResult.google_placeId =
 					narrowedDownLocations[i].google_placeId;
 				returnObject.push(correctResult);

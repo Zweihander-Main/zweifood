@@ -1,4 +1,4 @@
-/* global google, ko, $, ResizeSensor, WebFont */
+/* global google, ko*/
 
 import appConfigObject from './config.ts';
 ///////////////////////
@@ -12,7 +12,7 @@ import appConfigObject from './config.ts';
  * @param {string} searchType       Google search type which created model,
  *                                  usually 'Radar' or 'Nearby'
  */
-export default function(currentViewModel, searchType) {
+export default function(currentViewModel, searchType): void {
 	const self = this;
 	// Initialize google properties from the getgo
 	self.googleSearchType = ko.observable(searchType);
@@ -188,7 +188,7 @@ export default function(currentViewModel, searchType) {
 	 * Triggers click event and pans to marker when location is selected from
 	 * marker list
 	 */
-	self.listWasClicked = function(data, event, width) {
+	self.listWasClicked = function(data, event, width): void {
 		new google.maps.event.trigger(self.marker(), 'click');
 		self.marker().map.panTo(self.google_geometry().location);
 		if (width < 1200) {
@@ -202,7 +202,7 @@ export default function(currentViewModel, searchType) {
 	 * @param  {string} type Search type to be called ie yelp, google, ect.
 	 * @return {string}      Contents of search type observable
 	 */
-	self.searchType = function(type) {
+	self.searchType = function(type): string {
 		return self[type.toLowerCase() + 'SearchType'];
 	};
 
@@ -210,7 +210,7 @@ export default function(currentViewModel, searchType) {
 	 * Sets the model to dispose of itself when it's being removed - kills
 	 * subscriptions, kills listeners, and takes itself off of the map
 	 */
-	self.dispose = function() {
+	self.dispose = function(): void {
 		self.marker().setMap(null);
 		ko.utils.arrayForEach(self.disposableArray, function(disposable) {
 			disposable.dispose();

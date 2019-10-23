@@ -733,25 +733,25 @@ Object.defineProperties(appConfigObject, {
 		enumberable: true,
 	},
 	defaultPriceButtonFilter: {
-		get: function() {
+		get: function(): Array<boolean> {
 			return [true, true, true, true, true];
 		},
 		enumberable: true,
 	},
 	defaultMinRatingButtonFilter: {
-		get: function() {
+		get: function(): number {
 			return 0;
 		},
 		enumberable: true,
 	},
 	defaultOpenButtonFilter: {
-		get: function() {
+		get: function(): boolean {
 			return false;
 		},
 		enumberable: true,
 	},
 	defaultFavoriteButtonFilter: {
-		get: function() {
+		get: function(): boolean {
 			return false;
 		},
 		enumberable: true,
@@ -781,18 +781,18 @@ Object.defineProperties(appConfigObject, {
 	},
 	// Information for return object can be found in callAPIInfo function
 	yelp_searchAPIProperties: {
-		get: function() {
-			let self = this;
+		get: function(): object {
+			const self = this;
 			/**
 			 * Generates a random number and returns it as a string for OAuthentication
 			 * @return {string}
 			 */
-			function nonce_generate() {
+			function nonce_generate(): string {
 				return Math.floor(Math.random() * 1e12).toString();
 			}
 
-			let returnObject = {};
-			let parameters = {
+			const returnObject = {};
+			const parameters = {
 				oauth_consumer_key: self.searchAPIInfo.yelp.consumerKey,
 				oauth_token: self.searchAPIInfo.yelp.token,
 				oauth_nonce: nonce_generate(),
@@ -807,7 +807,7 @@ Object.defineProperties(appConfigObject, {
 				actionlinks: true,
 			};
 
-			let settings = {
+			const settings = {
 				method: 'GET',
 				timeout: self.callAPITimeout,
 				data: parameters,
@@ -820,8 +820,8 @@ Object.defineProperties(appConfigObject, {
 				dataType: 'jsonp',
 			};
 
-			let basicExtraParameters = {
-				bounds: function(lat, lng) {
+			const basicExtraParameters = {
+				bounds: function(lat, lng): string {
 					return (
 						lat -
 						self.latLngAccuracy +
@@ -837,8 +837,8 @@ Object.defineProperties(appConfigObject, {
 				sort: 1, //sort by distance
 			};
 
-			let allExtraParameters = {
-				oauth_signature: function(url, fullParameters) {
+			const allExtraParameters = {
+				oauth_signature: function(url, fullParameters): string {
 					return oauthSignature.generate(
 						'GET',
 						url,
@@ -849,7 +849,7 @@ Object.defineProperties(appConfigObject, {
 				},
 			};
 
-			let workerHandler = {
+			const workerHandler = {
 				lat: ['location', 'coordinate', 'latitude'],
 				lng: ['location', 'coordinate', 'longitude'],
 			};
@@ -869,14 +869,14 @@ Object.defineProperties(appConfigObject, {
 		enumberable: true,
 	},
 	locu_searchAPIProperties: {
-		get: function() {
-			let self = this;
-			let returnObject = {};
-			let parameters = {
+		get: function(): object {
+			const self = this;
+			const returnObject = {};
+			const parameters = {
 				api_key: self.searchAPIInfo.locu.APIKey,
 			};
 
-			let settings = {
+			const settings = {
 				timeout: self.callAPITimeout,
 				method: 'GET',
 				data: parameters,
@@ -884,8 +884,8 @@ Object.defineProperties(appConfigObject, {
 				dataType: 'jsonp',
 			};
 
-			let basicExtraParameters = {
-				bounds: function(lat, lng) {
+			const basicExtraParameters = {
+				bounds: function(lat, lng): string {
 					return (
 						lat +
 						self.latLngAccuracy +
@@ -899,7 +899,7 @@ Object.defineProperties(appConfigObject, {
 				},
 			};
 
-			let workerHandler = {
+			const workerHandler = {
 				lng: ['long'],
 			};
 
@@ -918,16 +918,16 @@ Object.defineProperties(appConfigObject, {
 		enumberable: true,
 	},
 	foursquare_searchAPIProperties: {
-		get: function() {
-			let self = this;
-			let returnObject = {};
-			let parameters = {
+		get: function(): object {
+			const self = this;
+			const returnObject = {};
+			const parameters = {
 				client_id: self.searchAPIInfo.foursquare.clientID,
 				client_secret: self.searchAPIInfo.foursquare.clientSecret,
 				v: '20150711',
 			};
 
-			let settings = {
+			const settings = {
 				timeout: self.callAPITimeout,
 				method: 'GET',
 				data: parameters,
@@ -935,7 +935,7 @@ Object.defineProperties(appConfigObject, {
 				dataType: 'jsonp',
 			};
 
-			let basicExtraParameters = {
+			const basicExtraParameters = {
 				radius: function(lat, lng) {
 					return self.distanceBetweenTwoPointsInMeters(
 						lat,
@@ -952,7 +952,7 @@ Object.defineProperties(appConfigObject, {
 				intent: 'checkin',
 			};
 
-			let workerHandler = {
+			const workerHandler = {
 				lat: ['location', 'lat'],
 				lng: ['location', 'lng'],
 			};
@@ -972,10 +972,10 @@ Object.defineProperties(appConfigObject, {
 	},
 	// neccessary for sending to worker
 	distanceBetweenTwoPointsInMeters: {
-		value: function(lat1, lon1, lat2, lon2) {
-			let p = 0.017453292519943295; // Math.PI / 180
-			let c = Math.cos;
-			let a =
+		value: function(lat1, lon1, lat2, lon2): number {
+			const p = 0.017453292519943295; // Math.PI / 180
+			const c = Math.cos;
+			const a =
 				0.5 -
 				c((lat2 - lat1) * p) / 2 +
 				(c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))) / 2;

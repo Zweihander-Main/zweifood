@@ -5,6 +5,12 @@
 // 	toProperCase(): string;
 // }
 
+interface App {
+	googleLoaded: () => void;
+	googleFailedToLoad: () => void;
+	preloadFontsAndImages: () => void;
+}
+
 import './imports.ts';
 import 'jquery-ui';
 import 'jquery-ui/ui/widget';
@@ -68,7 +74,7 @@ import ViewModel from './ViewModel.ts';
  * Section IV : View Model
  * Section V  : Map Init/Fail Functions
  */
-const app = (function() {
+const app: App = ((): App => {
 	//////////////////////////////////
 	// Section I: Utility Functions //
 	//////////////////////////////////
@@ -79,8 +85,8 @@ const app = (function() {
 	 * @param {object} jQueryObject   jQuery object that perfectscrollbar is
 	 *                                attached to
 	 */
-	const perfectScrollbar_updatePerfectScrollbar = throttle(
-		function(jqueryObject) {
+	const perfectScrollbarUpdatePerfectScrollbar = throttle(
+		(jqueryObject): void => {
 			jqueryObject.perfectScrollbar('update');
 		},
 		16,
@@ -106,19 +112,19 @@ const app = (function() {
 	 *                                         bindinghandler
 	 * @return {string/boolean}         	   String of parsed input or false
 	 */
-	function dropdown_interpretValue(
+	const dropdownInterpretValue = (
 		input,
 		binding,
 		element,
 		allBindings,
 		viewModel,
 		bindingContext
-	) {
+	): string | false => {
 		if (typeof input !== 'undefined' && input !== null) {
 			// Array will likely be a checkNested object
 			if (input.constructor === Array) {
 				if (typeof input[0] !== 'undefined') {
-					if (checkNested.apply(undefined, input) === true) {
+					if (checkNested(...input) === true) {
 						let returnValue = input[0];
 						for (let i = 1, len = input.length; i < len; i++) {
 							returnValue = returnValue[input[i]];
@@ -145,114 +151,7 @@ const app = (function() {
 			);
 		}
 		return input;
-	}
-
-	/**
-	 * Function to change position of map relative to center/marker by a given
-	 * number of pixels.
-	 * @param {object} map     Google map object
-	 * @param {object} latlng  Optional google LatLng object of center point,
-	 *                         will default to center of map otherwise
-	 * @param {number} offsetx X pixels to offset by
-	 * @param {number} offsety Y pixels to offset by
-	 */
-	function setResizeListener_mapRecenter(map, latlng, offsetx, offsety) {
-		let point1 = map
-			.getProjection()
-			.fromLatLngToPoint(
-				latlng instanceof google.maps.LatLng ? latlng : map.getCenter()
-			);
-		let point2 = new google.maps.Point(
-			(typeof offsetx == 'number' ? offsetx : 0) /
-				Math.pow(2, map.getZoom()) || 0,
-			(typeof offsety == 'number' ? offsety : 0) /
-				Math.pow(2, map.getZoom()) || 0
-		);
-		map.setCenter(
-			map
-				.getProjection()
-				.fromPointToLatLng(
-					new google.maps.Point(
-						point1.x - point2.x,
-						point1.y + point2.y
-					)
-				)
-		);
-	}
-
-	/**
-	 * Function to determine if the map needs to be moved to fit in the
-	 * infoWindow (along with the markerList if it's visible). Calls the
-	 * mapRecenter function if it needs to be moved.
-	 * @param {object} theElement jQuery selector of the infoWindow
-	 * @param {object} model      currently selected location
-	 * @param {boolean} x         should x be adjusted?
-	 * @param {boolean} y         should y be adjusted?
-	 * @param {number} time       setTimeout - defaults to 0 to put the function
-	 *                            into the event queue correctly
-	 * @param {number} xModifier  number of pixels to add in case the infoWindow
-	 *                            selector is the inner infoWindow rather than
-	 *                            the outer one
-	 */
-	function setResizeListener_centerWindow(
-		theElement,
-		model,
-		x,
-		y,
-		time,
-		xModifier
-	) {
-		setTimeout(
-			function() {
-				let xAmount = 0;
-				let yAmount = 0;
-				if (x === true) {
-					let markerList = $('#marker-list');
-					let extraXSpace = 10;
-					if (
-						window.innerWidth > 1199 ||
-						markerList.hasClass('panel-visible') === true
-					) {
-						if (
-							markerList.width() +
-								markerList.offset().left +
-								theElement.width() +
-								xModifier +
-								2 * extraXSpace /*+ 50*/ <
-							window.innerWidth
-						) {
-							if (
-								theElement.offset().left <
-								markerList.width() +
-									markerList.offset().left +
-									extraXSpace
-							) {
-								xAmount =
-									markerList.width() +
-									markerList.offset().left -
-									theElement.offset().left +
-									extraXSpace;
-							}
-						}
-					}
-				}
-				if (y === true) {
-					if (theElement.offset().top < 0) {
-						yAmount = theElement.offset().top - 15;
-					}
-				}
-				if (xAmount !== 0 || yAmount !== 0) {
-					setResizeListener_mapRecenter(
-						model.marker().map,
-						undefined,
-						xAmount,
-						yAmount
-					);
-				}
-			},
-			typeof time !== 'undefined' ? time : 0
-		);
-	}
+	};
 
 	/**
 	 * Called from click or after setTimeout for verbose errors from
@@ -260,20 +159,20 @@ const app = (function() {
 	 * @param  {object} element element from bindingHandler
 	 * @param  {number} time    animation length
 	 */
-	function errorsHandler_killPanel(element, time) {
+	const errorsHandlerKillPanel = (element, time): void => {
 		element.hide(time, function() {
-			element.unbind('click', errorsHandler_onClickPanel);
+			element.unbind('click', errorsHandlerOnClickPanel);
 			element.remove();
 		});
-	}
+	};
 
 	/**
 	 * Removes error panel on click or after a timeout
 	 * @param  {object} event event listener object
 	 */
-	function errorsHandler_onClickPanel(event) {
-		errorsHandler_killPanel($(event.currentTarget), 50);
-	}
+	const errorsHandlerOnClickPanel = (event): void => {
+		errorsHandlerKillPanel($(event.currentTarget), 50);
+	};
 
 	/**
 	 * Called from perfectScrollbar bindingHandler, calls perfect scrollbar
@@ -281,17 +180,17 @@ const app = (function() {
 	 * populated too quickly
 	 * @param  {[type]} event [description]
 	 */
-	function perfectScrollbar_hoverHandler(event, element) {
-		perfectScrollbar_updatePerfectScrollbar($(element));
-		perfectScrollbar_killHandler(element);
-	}
+	const perfectScrollbarHoverHandler = (event, element): void => {
+		perfectScrollbarUpdatePerfectScrollbar($(element));
+		perfectScrollbarKillHandler(element);
+	};
 
 	/**
 	 * Kills event listener that deals with bug for perfectScrollbar
 	 */
-	function perfectScrollbar_killHandler(element) {
-		$(element).unbind('mouseenter', perfectScrollbar_hoverHandler);
-	}
+	const perfectScrollbarKillHandler = (element): void => {
+		$(element).unbind('mouseenter', perfectScrollbarHoverHandler);
+	};
 
 	/**
 	 * Function to toggle a menu while mobile UI is enabled and to change the
@@ -301,9 +200,9 @@ const app = (function() {
 	 * @param  {object} toggledObservable observable associated with the menu
 	 *                                    state
 	 */
-	function menuToggle_toggleMenu(element, menu, toggledObservable) {
+	const menuToggleToggleMenu = (element, menu, toggledObservable): void => {
 		$(element).toggleClass('mobile-button-pressed');
-		let theMenu = $('#' + menu);
+		const theMenu = $('#' + menu);
 		$(element).trigger('mouseleave');
 		if (theMenu.hasClass('panel-visible')) {
 			theMenu.removeClass('panel-visible');
@@ -316,7 +215,7 @@ const app = (function() {
 				toggledObservable(true);
 			}
 		}
-	}
+	};
 
 	/////////////////////////////////////////////
 	//Section II: Binding Handlers & Extenders //
@@ -330,20 +229,20 @@ const app = (function() {
 	 * Input object with jQuery UI parameters used normally for autocomplete
 	 * @type {Object}
 	 */
-	ko.bindingHandlers.ko_autocomplete = {
+	ko.bindingHandlers.koAutocomplete = {
 		/**
 		 * Bind jQuery UI autocomplete to element
 		 */
-		init: function(element, valueAccessor) {
+		init: function(element, valueAccessor): void {
 			$(element).autocomplete(valueAccessor());
 		},
 		/**
 		 * Sync updated source or input data to autocomplete widget
 		 */
-		update: function(element, valueAccessor, allBindingsAccessor) {
+		update: function(element, valueAccessor, allBindingsAccessor): void {
 			$(element).autocomplete({
 				source: function(request, response) {
-					let results = $.ui.autocomplete.filter(
+					const results = $.ui.autocomplete.filter(
 						valueAccessor().source,
 						request.term
 					);
@@ -364,8 +263,8 @@ const app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.textInputForAutocomplete = {
-		update: function(element, valueAccessor) {
-			let value = ko.unwrap(valueAccessor());
+		update: function(element, valueAccessor): void {
+			const value = ko.unwrap(valueAccessor());
 			if (value === '') {
 				$(element).trigger('change');
 			}
@@ -379,10 +278,10 @@ const app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.focusBox = {
-		init: function(element) {
+		init: function(element): void {
 			$(element).on('input change autocompletechange', function() {
-				let value = $(this).val();
-				let theElement = $(this);
+				const value = $(this).val();
+				const theElement = $(this);
 				if (theElement.hasClass('search-box-focused')) {
 					if (typeof value === 'undefined' || value === '') {
 						theElement.removeClass('search-box-focused');
@@ -413,18 +312,18 @@ const app = (function() {
 			allBindingsAccessor,
 			viewModel,
 			bindingContext
-		) {
-			let allBindings = allBindingsAccessor(),
+		): void {
+			const allBindings = allBindingsAccessor(),
 				map = bindingContext.$data.mainMap,
 				value = valueAccessor(),
 				markerCloseClick = bindingContext.$data.markerCloseClick;
 
-			let options = {
+			const options = {
 				types: ['geocode'],
 			};
 			ko.utils.extend(options, allBindings.autocompleteOptions);
 
-			let autocomplete = new google.maps.places.Autocomplete(
+			const autocomplete = new google.maps.places.Autocomplete(
 				element,
 				options
 			);
@@ -434,7 +333,7 @@ const app = (function() {
 				markerCloseClick();
 				value(false);
 				$.slidebars.close();
-				let place = autocomplete.getPlace();
+				const place = autocomplete.getPlace();
 				if (!place.geometry) {
 					return;
 				}
@@ -443,7 +342,7 @@ const app = (function() {
 					map.fitBounds(place.geometry.viewport);
 				} else {
 					map.setCenter(place.geometry.location);
-					let defaultZoom =
+					const defaultZoom =
 						window.innerWidth < 992
 							? appConfigObject.defaultMobileZoom
 							: appConfigObject.defaultZoom;
@@ -454,14 +353,14 @@ const app = (function() {
 		/**
 		 * Make sure input elements value is bound
 		 */
-		update: function(element, valueAccessor) {
+		update: function(element, valueAccessor): void {
 			ko.bindingHandlers.value.update(element, valueAccessor());
 		},
 	};
 
 	/** @type {Object} Bind jQuery Sliderbars plugin to element */
-	ko.bindingHandlers.ko_slideOutMenu = {
-		init: function() {
+	ko.bindingHandlers.koSlideOutMenu = {
+		init: function(): void {
 			$.slidebars();
 		},
 	};
@@ -473,11 +372,11 @@ const app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.scrollTo = {
-		update: function(element, valueAccessor) {
-			let _value = valueAccessor();
-			let _valueUnwrapped = ko.unwrap(_value);
+		update: function(element, valueAccessor): void {
+			const _value = valueAccessor();
+			const _valueUnwrapped = ko.unwrap(_value);
 			if (_valueUnwrapped) {
-				let scrollItemIntoView = throttle(function() {
+				const scrollItemIntoView = throttle(function() {
 					$(element).scrollintoview({
 						duration: 100,
 					});
@@ -499,7 +398,7 @@ const app = (function() {
 			allBindings,
 			viewModel,
 			bindingContext
-		) {
+		): void {
 			ko.utils.registerEventHandler(element, 'mouseover', function() {
 				bindingContext.$data.shouldScroll(false);
 				$(element).stop(false, true);
@@ -511,14 +410,14 @@ const app = (function() {
 	 * Binding for jQuery UI slider widget - used in settings menu
 	 * @type {Object}
 	 */
-	ko.bindingHandlers.ko_slider = {
+	ko.bindingHandlers.koSlider = {
 		init: function(
 			element,
 			valueAccessor,
 			allBindings,
 			viewModel,
 			bindingContext
-		) {
+		): void {
 			ko.bindingHandlers.value.init(
 				element,
 				valueAccessor,
@@ -526,7 +425,7 @@ const app = (function() {
 				viewModel,
 				bindingContext
 			);
-			let passValue = valueAccessor();
+			const passValue = valueAccessor();
 			passValue.value = valueAccessor().value();
 			$(element)
 				.slider(passValue)
@@ -540,15 +439,15 @@ const app = (function() {
 	 * Listens for rateIt plugin reset to reset binded value
 	 * @type {Object}
 	 */
-	ko.bindingHandlers.ko_rateit = {
+	ko.bindingHandlers.koRateit = {
 		/**
 		 * Value should be object with observable property corresponding to
 		 * value binded to rateit plugin. Resets that value when the rateit
 		 * reset event is called (after the reset button is clicked or when
 		 * all filters are cleared).
 		 */
-		init: function(element, valueAccessor) {
-			let observable = ko.unwrap(valueAccessor()).observable;
+		init: function(element, valueAccessor): void {
+			const observable = ko.unwrap(valueAccessor()).observable;
 			$(element).bind('reset', function() {
 				observable(0);
 			});
@@ -558,8 +457,8 @@ const app = (function() {
 		 * binded to the rateit plugin. Calls to reset the state of the stars
 		 * if the value is -1 (as it would be when all filters are cleared).
 		 */
-		update: function(element, valueAccessor) {
-			let value = ko.unwrap(valueAccessor()).value;
+		update: function(element, valueAccessor): void {
+			const value = ko.unwrap(valueAccessor()).value;
 			if (value === -1) {
 				$(element).rateit('reset');
 			}
@@ -572,19 +471,19 @@ const app = (function() {
 	 * infoWindow is opened). Classes are styles using CSS.
 	 * @type {Object}
 	 */
-	ko.bindingHandlers.ko_styleInfoWindow = {
+	ko.bindingHandlers.koStyleInfoWindow = {
 		/**
 		 * Element will be the infoWindow template that is used as the contents
 		 * of every window. Sets classes on root parent of infoWindow, parent of
 		 * infoWindow elements that style it, and those elements. Resets some
 		 * element inline styling that can't be overriden by CSS.
 		 */
-		init: function(element) {
-			let subContainer = $(element)
+		init: function(element): void {
+			const subContainer = $(element)
 				.parent()
 				.parent()
 				.addClass('custom-info-window-subcontainer');
-			let containerSiblings = subContainer.siblings();
+			const containerSiblings = subContainer.siblings();
 			let containerSubSiblings, backgroundContainer;
 			for (let i = 0, len = containerSiblings.length; i < len; i++) {
 				if ($(containerSiblings[i]).css('top') === '0px') {
@@ -643,8 +542,8 @@ const app = (function() {
 			allBindings,
 			viewModel,
 			bindingContext
-		) {
-			let model = ko.unwrap(valueAccessor());
+		): void {
+			const model = ko.unwrap(valueAccessor());
 			// Remove previous infoWindow calls if present
 			if (element.resizeSensor) {
 				delete element.resizeSensor;
@@ -652,7 +551,7 @@ const app = (function() {
 			}
 			//CurrentlySelectedElement could be undefined
 			if (typeof model !== 'undefined') {
-				let theElement = $(element);
+				const theElement = $(element);
 				// Select the outer infowindow ideally
 				let infoWindow = $('#custom-info-window-background');
 				let xModifier = 0;
@@ -700,8 +599,8 @@ const app = (function() {
 	 * modal on the same element.
 	 * @type {Object}
 	 */
-	ko.bindingHandlers.ko_bootstrapTooltip = {
-		init: function() {
+	ko.bindingHandlers.koBootstrapTooltip = {
+		init: function(): void {
 			$('[data-toggle="tooltip"]').tooltip({
 				container: 'body',
 			});
@@ -712,17 +611,17 @@ const app = (function() {
 	 * Binding handler for perfectScrollbar plugin - used on marker list.
 	 * @type {Object}
 	 */
-	ko.bindingHandlers.ko_perfectScrollbar = {
+	ko.bindingHandlers.koPerfectScrollbar = {
 		/**
 		 * Initialize perfectScrollbar on element. Binds a mouseenter listener
 		 * that kills itself after first use to get around a bug where you have
 		 * to update the scrollbar when the marker list is first created and
 		 * populated by knockout.
 		 */
-		init: function(element) {
+		init: function(element): void {
 			$(element).perfectScrollbar();
 			$(element).bind('mouseenter', function(event) {
-				perfectScrollbar_hoverHandler(event, element);
+				perfectScrollbarHoverHandler(event, element);
 			});
 		},
 		/**
@@ -730,9 +629,9 @@ const app = (function() {
 		 * smooth usage with rapidly updating marker list as the plugin
 		 * struggles to autoupdate 100% of the time otherwise.
 		 */
-		update: function(element, valueAccessor) {
+		update: function(element, valueAccessor): void {
 			ko.utils.unwrapObservable(valueAccessor());
-			perfectScrollbar_updatePerfectScrollbar($(element));
+			perfectScrollbarUpdatePerfectScrollbar($(element));
 		},
 	};
 
@@ -757,15 +656,15 @@ const app = (function() {
 			viewModel,
 			bindingContext,
 			internal
-		) {
+		): void {
 			let stars;
 			if (typeof valueAccessor === 'function') {
 				stars = ko.unwrap(valueAccessor());
 			} else {
 				stars = valueAccessor;
 			}
-			let wholeStars = Math.floor(stars);
-			let partialStar = stars - wholeStars;
+			const wholeStars = Math.floor(stars);
+			const partialStar = stars - wholeStars;
 			let toAppend = '';
 			for (let i = 1; i <= stars; i++) {
 				toAppend +=
@@ -809,7 +708,7 @@ const app = (function() {
 			viewModel,
 			bindingContext,
 			internal
-		) {
+		): void {
 			let value;
 			if (typeof valueAccessor === 'function') {
 				value = ko.unwrap(valueAccessor());
@@ -851,7 +750,7 @@ const app = (function() {
 			viewModel,
 			bindingContext,
 			internal
-		) {
+		): void {
 			let value;
 			if (typeof valueAccessor === 'function') {
 				value = ko.unwrap(valueAccessor());
@@ -893,7 +792,7 @@ const app = (function() {
 			viewModel,
 			bindingContext,
 			internal
-		) {
+		): void {
 			let price;
 			if (typeof valueAccessor === 'function') {
 				price = ko.unwrap(valueAccessor());
@@ -920,9 +819,9 @@ const app = (function() {
 	 * modal is going to call in jQuery format ie #myModal
 	 * @type {Object}
 	 */
-	ko.bindingHandlers.ko_modal = {
-		init: function(element, valueAccessor) {
-			let value = ko.unwrap(valueAccessor());
+	ko.bindingHandlers.koModal = {
+		init: function(element, valueAccessor): void {
+			const value = ko.unwrap(valueAccessor());
 			ko.utils.registerEventHandler(element, 'click', function() {
 				$(value).modal();
 			});
@@ -939,21 +838,21 @@ const app = (function() {
 		/**
 		 * Creates click listener.
 		 */
-		init: function(element, valueAccessor) {
-			let value = ko.unwrap(valueAccessor());
-			let menu = value.menu;
-			let toggledObservable = value.toggledObservable;
+		init: function(element, valueAccessor): void {
+			const value = ko.unwrap(valueAccessor());
+			const menu = value.menu;
+			const toggledObservable = value.toggledObservable;
 			ko.utils.registerEventHandler(element, 'click', function() {
-				menuToggle_toggleMenu(element, menu, toggledObservable);
+				menuToggleToggleMenu(element, menu, toggledObservable);
 			});
 		},
 		/**
 		 * Kills the menu if a location has been selected and the menu is open.
 		 */
-		update: function(element, valueAccessor) {
-			let value = ko.unwrap(valueAccessor());
-			let menu = value.menu;
-			let toggled = value.toggled;
+		update: function(element, valueAccessor): void {
+			const value = ko.unwrap(valueAccessor());
+			const menu = value.menu;
+			const toggled = value.toggled;
 			if ($('#' + menu).hasClass('panel-visible') && toggled === false) {
 				$(element).click();
 			}
@@ -975,7 +874,7 @@ const app = (function() {
 			allBindings,
 			viewModel,
 			bindingContext
-		) {
+		): void {
 			ko.utils.unwrapObservable(valueAccessor());
 			bindingContext.$data.scrollToItem();
 		},
@@ -994,7 +893,7 @@ const app = (function() {
 			allBindings,
 			viewModel,
 			bindingContext
-		) {
+		): void {
 			if (
 				!$(element)
 					.prev()
@@ -1029,16 +928,16 @@ const app = (function() {
 			allBindings,
 			viewModel,
 			bindingContext
-		) {
-			let error = valueAccessor().data();
+		): void {
+			const error = valueAccessor().data();
 			if (error !== false) {
 				valueAccessor().data(false);
-				let verbose = valueAccessor().verbose();
-				let isVerbose = error.verbose;
+				const verbose = valueAccessor().verbose();
+				const isVerbose = error.verbose;
 				if (verbose === true || isVerbose === false) {
-					let killOnMarkers = error.killOnMarkers;
-					let customMessage = error.customMessage;
-					let textStatus = error.textStatus;
+					const killOnMarkers = error.killOnMarkers;
+					const customMessage = error.customMessage;
+					const textStatus = error.textStatus;
 					let toAdd = '<div class="panel ';
 					toAdd +=
 						isVerbose === true ? 'panel-warning' : 'panel-danger';
@@ -1049,14 +948,14 @@ const app = (function() {
 					toAdd += textStatus;
 					toAdd += '</div></div>';
 					$('#error-container').append(toAdd);
-					let added = $('#error-container')
+					const added = $('#error-container')
 						.children()
 						.last();
 					added.show(200);
-					added.bind('click', errorsHandler_onClickPanel);
+					added.bind('click', errorsHandlerOnClickPanel);
 					if (isVerbose === true) {
 						setTimeout(function() {
-							errorsHandler_killPanel(added, 200);
+							errorsHandlerKillPanel(added, 200);
 						}, 3000);
 					}
 					/**
@@ -1072,7 +971,7 @@ const app = (function() {
 								);
 							},
 						}).done(function() {
-							errorsHandler_killPanel(added, 200);
+							errorsHandlerKillPanel(added, 200);
 						});
 					}
 				}
@@ -1086,8 +985,8 @@ const app = (function() {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.listOutOpeningHours = {
-		update: function(element, valueAccessor) {
-			let value = ko.unwrap(valueAccessor());
+		update: function(element, valueAccessor): void {
+			const value = ko.unwrap(valueAccessor());
 			if (
 				typeof value !== 'undefined' &&
 				checkNested(value, 'weekday_text', '0') !== false
@@ -1112,12 +1011,12 @@ const app = (function() {
 		 * the purpose of using jQuery UI's collision detection to flip the
 		 * dropdown when neccessary.
 		 */
-		init: function(element) {
+		init: function(element): void {
 			$(element).on('shown.bs.dropdown', function() {
-				let menu = $(this).find('.dropdown-menu');
+				const menu = $(this).find('.dropdown-menu');
 				if (menu !== null && menu.length === 1) {
-					let btn = menu.parent();
-					let withinContainer = $('#info-window-template');
+					const btn = menu.parent();
+					const withinContainer = $('#info-window-template');
 					menu.position({
 						of: btn,
 						my: 'left top',
@@ -1150,20 +1049,20 @@ const app = (function() {
 			allBindings,
 			viewModel,
 			bindingContext
-		) {
-			let value = valueAccessor().data;
-			let starter =
+		): void {
+			const value = valueAccessor().data;
+			const starter =
 				'<button type="button" class="btn btn-default ' +
 				'dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" ' +
 				'aria-expanded="false"><span class="caret caret-dropdown">' +
 				'</span></button><ul class="dropdown-menu dropdown-menu-right">';
 			let toAdd = starter;
 
-			for (let service in value) {
+			for (const service in value) {
 				let theValue;
 				//Interpret the value and send them to binding handler if needed
 				if (typeof value[service].value_binding !== 'undefined') {
-					theValue = dropdown_interpretValue(
+					theValue = dropdownInterpretValue(
 						value[service].value,
 						value[service].value_binding,
 						element,
@@ -1172,7 +1071,7 @@ const app = (function() {
 						bindingContext
 					);
 				} else {
-					theValue = dropdown_interpretValue(value[service].value);
+					theValue = dropdownInterpretValue(value[service].value);
 				}
 				if (theValue !== false) {
 					toAdd +=
@@ -1188,7 +1087,7 @@ const app = (function() {
 					) {
 						toAdd +=
 							' (' +
-							dropdown_interpretValue(value[service].value) +
+							dropdownInterpretValue(value[service].value) +
 							')';
 					}
 					//Add in value_n if defined
@@ -1200,7 +1099,7 @@ const app = (function() {
 								typeof value[service]['value_' + i] !==
 								'undefined'
 							) {
-								let extraValue = dropdown_interpretValue(
+								const extraValue = dropdownInterpretValue(
 									value[service]['value_' + i]
 								);
 								if (extraValue !== false) {
@@ -1227,7 +1126,7 @@ const app = (function() {
 							}
 							//just value_2
 						} else {
-							let extraValue2 = dropdown_interpretValue(
+							const extraValue2 = dropdownInterpretValue(
 								value[service].value_2
 							);
 							if (extraValue2 !== false) {
@@ -1264,10 +1163,10 @@ const app = (function() {
 	 *                               	    number to
 	 * @return {number}           	        Converted number
 	 */
-	ko.extenders.numeric = function(target, precision) {
-		let result = ko.computed({
+	ko.extenders.numeric = function(target, precision): number {
+		const result = ko.computed({
 			read: function() {
-				let num = Number(target()).toFixed(precision) / 1;
+				const num = Number(target()).toFixed(precision) / 1;
 				return num;
 			},
 			write: target,
@@ -1285,14 +1184,222 @@ const app = (function() {
 	let googlePreloaded = false;
 
 	/**
+	 * Called if the Google Maps API has failed to load, lets the user know
+	 * to try again later
+	 */
+	function googleFailedToLoad(): void {
+		alert('Google Maps failed to load. Please try again later.');
+	}
+
+	/**
+	 * Called if the Google Maps API has successfully loaded.
+	 */
+	function googleLoaded(): void {
+		googlePreloaded = true;
+	}
+
+	/**
+	 * Function to create the google map as well as create and setup the
+	 * viewModel
+	 */
+	function createMap(): void {
+		// Double check api is really loaded
+		if (typeof google === 'undefined') {
+			googleFailedToLoad();
+		} else {
+			// Setup default options from config object
+			const defaultLatLng = new google.maps.LatLng(
+					appConfigObject.defaultLat,
+					appConfigObject.defaultLng
+				),
+				defaultZoom =
+					window.innerWidth < 992
+						? appConfigObject.defaultMobileZoom
+						: appConfigObject.defaultZoom,
+				mapElement = document.getElementById('mapDiv'),
+				defaultStyle = appConfigObject.mapStyle;
+
+			const mapOptions = {
+				center: defaultLatLng,
+				zoom: defaultZoom,
+				mapTypeId: google.maps.MapTypeId.ROADMAP,
+				mapTypeControlOptions: {
+					mapTypeIds: [],
+				}, //remove some controls
+				styles: defaultStyle,
+			};
+
+			// Define reticle to be pegged at center of map
+			const reticleImage = {
+				url: imageReticle, // marker image
+				size: new google.maps.Size(16, 16), // marker size
+				origin: new google.maps.Point(0, 0), // marker origin
+				anchor: new google.maps.Point(8, 8),
+			}; // marker anchor point
+
+			const reticleShape = {
+				coords: [8, 8, 8, 8], // 1px
+				type: 'rect', // rectangle
+			};
+
+			// Create map and viewModel using map
+			const mainGoogleMap = new google.maps.Map(mapElement, mapOptions);
+			const viewModel1 = new ViewModel(mainGoogleMap);
+			ko.applyBindings(viewModel1, document.body);
+
+			// Setup and add center reticle
+			const reticleMarker = new google.maps.Marker({
+				position: mainGoogleMap.getCenter(),
+				map: mainGoogleMap,
+				icon: reticleImage,
+				shape: reticleShape,
+				optimized: false,
+				zIndex: 5,
+			});
+
+			/**
+			 * Keep center reticle centered, throttle as panning would call
+			 * too frequently and performance is the same
+			 */
+			const centerReticle = throttle(
+				function(center) {
+					reticleMarker.setPosition(center);
+				},
+				16,
+				{
+					leading: false,
+				}
+			);
+
+			/**
+			 * Function called when map pans that calls radar and nearby search
+			 * functions from viewModel. Manages the call array dedicated to
+			 * these that stops pagination from happening if a map pan occurs -
+			 * this attempts to minimize total amount of calls made to google
+			 * servers - also tries to prioritize information more pertinent
+			 * to current map center rather than map center from original call.
+			 * Throttled to avoid over-query errors.
+			 */
+			const callAPIs = throttle(
+				function() {
+					if (
+						typeof viewModel1
+							.getRestaurantsFromGoogleMapsAPICallArray[
+							viewModel1.getRestaurantsFromGoogleMapsAPICallArray
+								.length - 1
+						] !== 'undefined'
+					) {
+						viewModel1.getRestaurantsFromGoogleMapsAPICallArray[
+							viewModel1.getRestaurantsFromGoogleMapsAPICallArray
+								.length - 1
+						] = false;
+					}
+					viewModel1.getRestaurantsFromGoogleMapsAPICallArray.push(
+						true
+					);
+					viewModel1.getRestaurantsFromGoogleMapsAPI(
+						viewModel1.getRestaurantsFromGoogleMapsAPICallArray
+							.length - 1
+					);
+				},
+				1200,
+				{
+					trailing: false,
+				}
+			);
+
+			/**
+			 * Function called when map pans that updates center of map and then
+			 * calls callAPIs function
+			 * @param  {object} map.getCenter() coordinates object
+			 */
+			const boundsChange = throttle(
+				function(center) {
+					viewModel1.checkIfOnMap(viewModel1.mainMap.getBounds());
+					viewModel1.mainMapCenter(center);
+					callAPIs();
+				},
+				50,
+				{
+					leading: false,
+				}
+			);
+
+			/**
+			 * Event listener for map panning/bounds changing. Calls the bounds
+			 * changed function and also updates center reticle coordinates.
+			 */
+			google.maps.event.addListener(
+				mainGoogleMap,
+				'bounds_changed',
+				function() {
+					const center = mainGoogleMap.getCenter();
+					boundsChange(center);
+					centerReticle(center);
+				}
+			);
+
+			/**
+			 * If the user starts dragging, set userDrag to true to stop the
+			 * infoWindow from moving.
+			 */
+			google.maps.event.addListener(
+				mainGoogleMap,
+				'dragstart',
+				function() {
+					viewModel1.userDrag(true);
+				}
+			);
+
+			/**
+			 * Check localStorage, if mapCenter is preset, sets map to that
+			 * center. If localStorage isn't available, asks the browser for its
+			 * location.
+			 */
+			if (viewModel1.storageAvailable === true) {
+				const mapCenter = JSON.parse(localStorage.getItem('mapCenter'));
+				if (
+					!localStorage.getItem('mapCenter') ||
+					typeof mapCenter.lat === 'undefined' ||
+					mapCenter.lat === null
+				) {
+					viewModel1.getNavWithCallback();
+				}
+			} else {
+				viewModel1.getNavWithCallback();
+			}
+		}
+	}
+
+	/**
+	 * Called when preloading starts. Waits for images, fonts, and maps API to
+	 * load and then calls createMap() to init map and viewModel. Finally,
+	 * removes loading screen.
+	 */
+	function waitUntilEverythingLoaded(): void {
+		$.doWhen({
+			when: function() {
+				return (
+					imagesPreloaded === true &&
+					fontsPreloaded === true &&
+					googlePreloaded === true
+				);
+			},
+		}).done(function(): void {
+			createMap();
+			$('#loading').fadeOut(500);
+		});
+	}
+
+	/**
 	 * Called from HTML right after maps API script starts to load. Loads
 	 * web fonts and sets functions to declare fontsPreloaded as true when
 	 * either a success, failure, or 10 seconds are up. Also preloads marker
 	 * images for map as that takes the longest for Google Maps to fetch.
 	 * Finally calls function to wait for images, fonts, and API to load.
 	 */
-	function preloadFontsAndImages() {
-		let WebFontConfig = {
+	function preloadFontsAndImages(): void {
+		const WebFontConfig = {
 			google: {
 				families: [
 					'Lato:400,400italic,700:latin',
@@ -1327,214 +1434,6 @@ const app = (function() {
 			}
 		);
 		waitUntilEverythingLoaded();
-	}
-
-	/**
-	 * Called if the Google Maps API has failed to load, lets the user know
-	 * to try again later
-	 */
-	function googleFailedToLoad() {
-		alert('Google Maps failed to load. Please try again later.');
-	}
-
-	/**
-	 * Called if the Google Maps API has successfully loaded.
-	 */
-	function googleLoaded() {
-		googlePreloaded = true;
-	}
-
-	/**
-	 * Called when preloading starts. Waits for images, fonts, and maps API to
-	 * load and then calls createMap() to init map and viewModel. Finally,
-	 * removes loading screen.
-	 */
-	function waitUntilEverythingLoaded() {
-		$.doWhen({
-			when: function() {
-				return (
-					imagesPreloaded === true &&
-					fontsPreloaded === true &&
-					googlePreloaded === true
-				);
-			},
-		}).done(function() {
-			createMap();
-			$('#loading').fadeOut(500);
-		});
-	}
-
-	/**
-	 * Function to create the google map as well as create and setup the
-	 * viewModel
-	 */
-	function createMap() {
-		// Double check api is really loaded
-		if (typeof google === 'undefined') {
-			googleFailedToLoad();
-		} else {
-			// Setup default options from config object
-			let defaultLatLng = new google.maps.LatLng(
-					appConfigObject.defaultLat,
-					appConfigObject.defaultLng
-				),
-				defaultZoom =
-					window.innerWidth < 992
-						? appConfigObject.defaultMobileZoom
-						: appConfigObject.defaultZoom,
-				mapElement = document.getElementById('mapDiv'),
-				defaultStyle = appConfigObject.mapStyle;
-
-			let mapOptions = {
-				center: defaultLatLng,
-				zoom: defaultZoom,
-				mapTypeId: google.maps.MapTypeId.ROADMAP,
-				mapTypeControlOptions: {
-					mapTypeIds: [],
-				}, //remove some controls
-				styles: defaultStyle,
-			};
-
-			// Define reticle to be pegged at center of map
-			let reticleImage = {
-				url: imageReticle, // marker image
-				size: new google.maps.Size(16, 16), // marker size
-				origin: new google.maps.Point(0, 0), // marker origin
-				anchor: new google.maps.Point(8, 8),
-			}; // marker anchor point
-
-			let reticleShape = {
-				coords: [8, 8, 8, 8], // 1px
-				type: 'rect', // rectangle
-			};
-
-			// Create map and viewModel using map
-			let mainGoogleMap = new google.maps.Map(mapElement, mapOptions);
-			let viewModel1 = new ViewModel(mainGoogleMap);
-			ko.applyBindings(viewModel1, document.body);
-
-			// Setup and add center reticle
-			let reticleMarker = new google.maps.Marker({
-				position: mainGoogleMap.getCenter(),
-				map: mainGoogleMap,
-				icon: reticleImage,
-				shape: reticleShape,
-				optimized: false,
-				zIndex: 5,
-			});
-
-			/**
-			 * Keep center reticle centered, throttle as panning would call
-			 * too frequently and performance is the same
-			 */
-			let centerReticle = throttle(
-				function(center) {
-					reticleMarker.setPosition(center);
-				},
-				16,
-				{
-					leading: false,
-				}
-			);
-
-			/**
-			 * Function called when map pans that calls radar and nearby search
-			 * functions from viewModel. Manages the call array dedicated to
-			 * these that stops pagination from happening if a map pan occurs -
-			 * this attempts to minimize total amount of calls made to google
-			 * servers - also tries to prioritize information more pertinent
-			 * to current map center rather than map center from original call.
-			 * Throttled to avoid over-query errors.
-			 */
-			let callAPIs = throttle(
-				function() {
-					if (
-						typeof viewModel1
-							.getRestaurantsFromGoogleMapsAPICallArray[
-							viewModel1.getRestaurantsFromGoogleMapsAPICallArray
-								.length - 1
-						] !== 'undefined'
-					) {
-						viewModel1.getRestaurantsFromGoogleMapsAPICallArray[
-							viewModel1.getRestaurantsFromGoogleMapsAPICallArray
-								.length - 1
-						] = false;
-					}
-					viewModel1.getRestaurantsFromGoogleMapsAPICallArray.push(
-						true
-					);
-					viewModel1.getRestaurantsFromGoogleMapsAPI(
-						viewModel1.getRestaurantsFromGoogleMapsAPICallArray
-							.length - 1
-					);
-				},
-				1200,
-				{
-					trailing: false,
-				}
-			);
-
-			/**
-			 * Function called when map pans that updates center of map and then
-			 * calls callAPIs function
-			 * @param  {object} map.getCenter() coordinates object
-			 */
-			let boundsChange = throttle(
-				function(center) {
-					viewModel1.checkIfOnMap(viewModel1.mainMap.getBounds());
-					viewModel1.mainMapCenter(center);
-					callAPIs();
-				},
-				50,
-				{
-					leading: false,
-				}
-			);
-
-			/**
-			 * Event listener for map panning/bounds changing. Calls the bounds
-			 * changed function and also updates center reticle coordinates.
-			 */
-			google.maps.event.addListener(
-				mainGoogleMap,
-				'bounds_changed',
-				function() {
-					let center = mainGoogleMap.getCenter();
-					boundsChange(center);
-					centerReticle(center);
-				}
-			);
-
-			/**
-			 * If the user starts dragging, set userDrag to true to stop the
-			 * infoWindow from moving.
-			 */
-			google.maps.event.addListener(
-				mainGoogleMap,
-				'dragstart',
-				function() {
-					viewModel1.userDrag(true);
-				}
-			);
-
-			/**
-			 * Check localStorage, if mapCenter is preset, sets map to that
-			 * center. If localStorage isn't available, asks the browser for its
-			 * location.
-			 */
-			if (viewModel1.storageAvailable === true) {
-				let mapCenter = JSON.parse(localStorage.getItem('mapCenter'));
-				if (
-					!localStorage.getItem('mapCenter') ||
-					typeof mapCenter.lat === 'undefined' ||
-					mapCenter.lat === null
-				) {
-					viewModel1.getNavWithCallback();
-				}
-			} else {
-				viewModel1.getNavWithCallback();
-			}
-		}
 	}
 
 	/**

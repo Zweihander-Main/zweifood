@@ -43,7 +43,7 @@
 		<![endif]-->
 	</head>
 
-	<body data-bind="ko_bootstrapTooltip: true">
+	<body data-bind="koBootstrapTooltip: true">
 		<!-- Loading Screen -->
 		<div class="loading-screen" id="loading">
 			<div class="loading-screen-center" id="loading-center">
@@ -140,7 +140,7 @@
 			</h5>
 			<div
 				class="settings-amount-slider"
-				data-bind="ko_slider: {value: lowMarkerOpacity, step: 0.01, min: 0, max: 1}"
+				data-bind="koSlider: {value: lowMarkerOpacity, step: 0.01, min: 0, max: 1}"
 			></div>
 			<div
 				class="settings-amount-box"
@@ -152,7 +152,7 @@
 			</h5>
 			<div
 				class="settings-amount-slider"
-				data-bind="ko_slider: {value: maxMarkerLimit, step: 100, min: 1000, max: 10000}"
+				data-bind="koSlider: {value: maxMarkerLimit, step: 100, min: 1000, max: 10000}"
 			></div>
 			<div
 				class="settings-amount-box"
@@ -180,7 +180,7 @@
 						<ul
 							id="marker-list"
 							class="marker-list"
-							data-bind="foreach: {data: sortedEntries}, scrollToItem: sortedEntries, hoverToggle: true, ko_perfectScrollbar: sortedEntries"
+							data-bind="foreach: {data: sortedEntries}, scrollToItem: sortedEntries, hoverToggle: true, koPerfectScrollbar: sortedEntries"
 						>
 							<li
 								data-bind="css: { listingIsClosed: isItOpenRightNow() === 'Closed', listingSelected: isSelected }, click: function(data, event) {listWasClicked(data, event, window.innerWidth)}, scrollTo: $root.scrolledItem() == $data"
@@ -274,7 +274,7 @@
 							class="search-box"
 							type="text"
 							id="name-search"
-							data-bind="textInput: searchQuery, textInputForAutocomplete: searchQuery(), ko_autocomplete: { source: listableEntries().allNames, position: {collision: 'flip'} }, focusBox: true"
+							data-bind="textInput: searchQuery, textInputForAutocomplete: searchQuery(), koAutocomplete: { source: listableEntries().allNames, position: {collision: 'flip'} }, focusBox: true"
 							autocomplete="off"
 							placeholder="Filter current results"
 						/>
@@ -349,31 +349,31 @@
 					<div class="filter-button-multi-container">
 						<div
 							class="filter-button filter-button-multi filter-button-multi-first"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[0] }, click: function() {let temp = priceButtonFilter();temp[0] = !temp[0]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[0] }, click: function() {const temp = priceButtonFilter();temp[0] = !temp[0]; priceButtonFilter(temp)}"
 						>
 							Ø
 						</div>
 						<div
 							class="filter-button filter-button-multi"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[1] }, click: function() {let temp = priceButtonFilter();temp[1] = !temp[1]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[1] }, click: function() {const temp = priceButtonFilter();temp[1] = !temp[1]; priceButtonFilter(temp)}"
 						>
 							$
 						</div>
 						<div
 							class="filter-button filter-button-multi"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[2] }, click: function() {let temp = priceButtonFilter();temp[2] = !temp[2]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[2] }, click: function() {const temp = priceButtonFilter();temp[2] = !temp[2]; priceButtonFilter(temp)}"
 						>
 							$$
 						</div>
 						<div
 							class="filter-button filter-button-multi"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[3] }, click: function() {let temp = priceButtonFilter();temp[3] = !temp[3]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[3] }, click: function() {const temp = priceButtonFilter();temp[3] = !temp[3]; priceButtonFilter(temp)}"
 						>
 							$$$
 						</div>
 						<div
 							class="filter-button filter-button-multi filter-button-multi-last"
-							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[4] }, click: function() {let temp = priceButtonFilter();temp[4] = !temp[4]; priceButtonFilter(temp)}"
+							data-bind="css: { 'filter-button-pressed': priceButtonFilter()[4] }, click: function() {const temp = priceButtonFilter();temp[4] = !temp[4]; priceButtonFilter(temp)}"
 						>
 							$$$$
 						</div>
@@ -390,7 +390,7 @@
 					<div
 						class="rateit bigstars rateit-filter"
 						data-rateit-backingfld="#stars-backing"
-						data-bind="css: { 'filter-button-pressed': minRatingButtonFilter() > 0 }, ko_rateit: {value: minRatingButtonFilter(), observable: minRatingButtonFilter}"
+						data-bind="css: { 'filter-button-pressed': minRatingButtonFilter() > 0 }, koRateit: {value: minRatingButtonFilter(), observable: minRatingButtonFilter}"
 						data-rateit-starwidth="16"
 						data-rateit-starheight="16"
 					></div>
@@ -412,14 +412,14 @@
 						class="logo-button"
 						data-toggle="tooltip"
 						data-placement="top"
-						data-bind="ko_modal: '#myModal'"
+						data-bind="koModal: '#myModal'"
 						title="Attributions  &amp; Credits"
 					>
 						<i class="fa fa-info-circle"></i>
 					</div>
 					<div
 						class="logo-button sb-open-right"
-						data-bind="ko_slideOutMenu: true"
+						data-bind="koSlideOutMenu: true"
 						data-toggle="tooltip"
 						data-placement="top"
 						title="Settings"
@@ -431,7 +431,7 @@
 		</div>
 		<!-- Info Window Template -->
 		<script type="text/template" id="info-window-template-container">
-			<div id="info-window-template" class="info-window-template info-window-loaded" data-bind="with: currentlySelectedLocation(), ko_styleInfoWindow: true, setResizeListener: $root.currentlySelectedLocation()">
+			<div id="info-window-template" class="info-window-template info-window-loaded" data-bind="with: currentlySelectedLocation(), koStyleInfoWindow: true, setResizeListener: $root.currentlySelectedLocation()">
 				<ul class="nav nav-tabs nav-justified info-window-nav">
 					<li role="presentation" class="active"><a data-toggle="tab" href="#info-window-tabs-info">Info</a></li>
 					<li role="presentation"><a data-toggle="tab" href="#info-window-tabs-reviews" data-bind="click: function() {$parent.getDetailedAPIData('yelp', $data);} ">Reviews</a></li>
