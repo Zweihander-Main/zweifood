@@ -481,45 +481,28 @@ const app: App = ((): App => {
 		init: function(element): void {
 			const subContainer = $(element)
 				.parent()
-				.parent()
 				.addClass('custom-info-window-subcontainer');
-			const containerSiblings = subContainer.siblings();
-			let containerSubSiblings, backgroundContainer;
-			for (let i = 0, len = containerSiblings.length; i < len; i++) {
-				if ($(containerSiblings[i]).css('top') === '0px') {
-					containerSubSiblings = $(containerSiblings[i])
-						.addClass('custom-info-window-background-container')
-						.children();
-					break;
-				}
-			}
-			if (containerSubSiblings) {
-				for (
-					let j = 0, jlen = containerSubSiblings.length;
-					j < jlen;
-					j++
-				) {
-					if (
-						$(containerSubSiblings[j]).css('background-color') ===
-						'rgb(255, 255, 255)'
-					) {
-						backgroundContainer = $(containerSubSiblings[j])
-							.addClass('custom-info-window-background')
-							.attr('id', 'custom-info-window-background');
-						break;
-					}
-				}
-				if (backgroundContainer) {
-					subContainer
-						.parent()
-						.parent()
-						.parent()
-						.addClass('custom-info-window');
-					backgroundContainer.css({
-						'background-color': '',
-						'border-radius': '',
-					});
-				}
+			subContainer.css({
+				overflow: '',
+			});
+			const backgroundContainer = subContainer
+				.parent()
+				.addClass('custom-info-window-background')
+				.attr('id', 'custom-info-window-background');
+			backgroundContainer.css({
+				'padding-right': '',
+				'padding-left': '',
+			});
+			if (backgroundContainer) {
+				backgroundContainer.parent().addClass('custom-info-window');
+				backgroundContainer.css({
+					'background-color': '',
+					'border-radius': '',
+				});
+				backgroundContainer.css({
+					'background-color': '',
+					'border-radius': '',
+				});
 			}
 		},
 	};

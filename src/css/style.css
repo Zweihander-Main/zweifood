@@ -569,9 +569,17 @@ div.bigstars button.rateit-reset:active {
 	border: 1px solid #4a4a4a;
 }
 
+.custom-info-window .custom-info-window-background button img {
+	filter: invert(100);
+}
+
 .info-window-template {
 	color: white;
-	max-height: 75vh;
+	/*max-height: 75vh;*/
+}
+
+.tab-content {
+	margin-bottom: 12px;
 }
 
 .info-window-template .dropdown-toggle {
