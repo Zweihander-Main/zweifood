@@ -204,7 +204,7 @@
 									>(
 									<span
 										class="listing-rating-text"
-										data-bind="text: google_rating"
+										data-bind="text: google_roundedRating"
 									></span
 									>)
 									<span data-bind="visible: google_priceLevel"
@@ -452,11 +452,11 @@
 									</div>
 									<div data-bind="visible: google_rating">
 										<span data-bind="generateStars: google_rating"></span> (
-										<span data-bind="text: google_rating"></span>)
+										<span data-bind="text: google_roundedRating"></span>)
 										<span data-bind="visible: google_totalRatings">,&nbsp;
 									<span data-bind="text: google_totalRatings"></span> total votes
 										</span>
-										<div class="dropdown dropdown-small" data-bind="dropdown: {data:{'Google Rating': {'value': google_rating(), 'value_binding': 'generateStars', 'value_binding_show_text': true, 'value_2': google_totalRatings(), 'append': ' total votes'},'Yelp Rating': {'value': yelp_ratingImgURL(), 'value_binding': 'obToImg', 'value_2': yelp_rating(), 'value_3': yelp_reviewCount(), 'append': ' total votes'},'Foursquare Rating': {'value': foursquare_rating(), 'value_binding': 'generateStars', 'value_binding_show_text': true}}}">
+										<div class="dropdown dropdown-small" data-bind="dropdown: {data:{'Google Rating': {'value': google_roundedRating(), 'value_binding': 'generateStars', 'value_binding_show_text': true, 'value_2': google_totalRatings(), 'append': ' total votes'},'Yelp Rating': {'value': yelp_ratingImgURL(), 'value_binding': 'obToImg', 'value_2': yelp_rating(), 'value_3': yelp_reviewCount(), 'append': ' total votes'},'Foursquare Rating': {'value': foursquare_rating(), 'value_binding': 'generateStars', 'value_binding_show_text': true}}}">
 										</div>
 									</div>
 									<div data-bind="visible: google_priceLevel">

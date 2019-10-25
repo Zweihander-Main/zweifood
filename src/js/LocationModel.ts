@@ -154,6 +154,13 @@ export default function(currentViewModel, searchType): void {
 	});
 
 	/**
+	 * Create rounded rating for google_rating
+	 */
+	self.google_roundedRating = ko.pureComputed(function() {
+		return Math.round(self.google_rating() * 10) / 10;
+	});
+
+	/**
 	 * Create infoWindow using template and binds it to model
 	 */
 	self.infoWindow = new google.maps.InfoWindow({
