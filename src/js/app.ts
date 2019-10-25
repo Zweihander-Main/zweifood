@@ -44,6 +44,16 @@ import imageMarker4 from '../img/marker-4.png';
 import imageMarkerEmpty from '../img/marker-empty.png';
 import imageMarkerHeart from '../img/marker-heart.png';
 import imageMarkerDefault from '../img/marker-default.png';
+import yelpStars0 from '../img/yelpStars/small_0.png';
+import yelpStars1 from '../img/yelpStars/small_1.png';
+import yelpStars15 from '../img/yelpStars/small_1_half.png';
+import yelpStars2 from '../img/yelpStars/small_2.png';
+import yelpStars25 from '../img/yelpStars/small_2_half.png';
+import yelpStars3 from '../img/yelpStars/small_3.png';
+import yelpStars35 from '../img/yelpStars/small_3_half.png';
+import yelpStars4 from '../img/yelpStars/small_4.png';
+import yelpStars45 from '../img/yelpStars/small_4_half.png';
+import yelpStars5 from '../img/yelpStars/small_5.png';
 
 // import 'bootstrap';
 // import 'bootstrap/js/src/modal';
@@ -1411,6 +1421,16 @@ const app: App = ((): App => {
 				imageMarkerHeart,
 				imageMarkerDefault,
 				imageReticle,
+				yelpStars0,
+				yelpStars1,
+				yelpStars15,
+				yelpStars2,
+				yelpStars25,
+				yelpStars3,
+				yelpStars35,
+				yelpStars4,
+				yelpStars45,
+				yelpStars5,
 			],
 			function() {
 				imagesPreloaded = true;

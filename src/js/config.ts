@@ -8,6 +8,16 @@ import imageMarker4 from '../img/marker-4.png';
 import imageMarkerEmpty from '../img/marker-empty.png';
 import imageMarkerHeart from '../img/marker-heart.png';
 import imageMarkerDefault from '../img/marker-default.png';
+import yelpStars0 from '../img/yelpStars/small_0.png';
+import yelpStars1 from '../img/yelpStars/small_1.png';
+import yelpStars15 from '../img/yelpStars/small_1_half.png';
+import yelpStars2 from '../img/yelpStars/small_2.png';
+import yelpStars25 from '../img/yelpStars/small_2_half.png';
+import yelpStars3 from '../img/yelpStars/small_3.png';
+import yelpStars35 from '../img/yelpStars/small_3_half.png';
+import yelpStars4 from '../img/yelpStars/small_4.png';
+import yelpStars45 from '../img/yelpStars/small_4_half.png';
+import yelpStars5 from '../img/yelpStars/small_5.png';
 
 /**
  * Config object which defines a lot of developer settings, map styles, and API
@@ -206,16 +216,6 @@ Object.defineProperties(appConfigObject, {
 					oType: 1,
 				},
 				{
-					server: 'snippet_text',
-					model: 'yelp_snippetText',
-					oType: 1,
-				},
-				{
-					server: 'reservation_url',
-					model: 'yelp_reservationURL',
-					oType: 1,
-				},
-				{
 					server: 'categories',
 					model: 'yelp_categories',
 					oType: 2,
@@ -228,11 +228,6 @@ Object.defineProperties(appConfigObject, {
 				{
 					server: 'location',
 					model: 'yelp_location',
-					oType: 1,
-				},
-				{
-					server: 'rating_img_url',
-					model: 'yelp_ratingImgURL',
 					oType: 1,
 				},
 			],
@@ -728,6 +723,21 @@ Object.defineProperties(appConfigObject, {
 		},
 		enumberable: true,
 	},
+	yelpStarImages: {
+		value: {
+			0: yelpStars0,
+			1: yelpStars1,
+			15: yelpStars15,
+			2: yelpStars2,
+			25: yelpStars25,
+			3: yelpStars3,
+			35: yelpStars35,
+			4: yelpStars4,
+			45: yelpStars45,
+			5: yelpStars5,
+		},
+		enumerable: true,
+	},
 	callAPITimeout: {
 		value: 60000,
 		enumberable: true,
@@ -760,11 +770,10 @@ Object.defineProperties(appConfigObject, {
 	searchAPIInfo: {
 		value: {
 			yelp: {
-				consumerKey: '***REMOVED***',
-				consumerSecret: '***REMOVED***',
-				token: '***REMOVED***',
-				tokenSecret: '***REMOVED***',
-				baseURL: 'https://api.yelp.com/v2/',
+				APIKey:
+					'***REMOVED***',
+				baseURL:
+					'https://cors-anywhere.herokuapp.com/https://api.yelp.com/v3/businesses',
 			},
 			locu: {
 				baseURL: 'https://api.locu.com/v1_0/venue/',
@@ -783,71 +792,69 @@ Object.defineProperties(appConfigObject, {
 	yelp_searchAPIProperties: {
 		get: function(): object {
 			const self = this;
-			/**
-			 * Generates a random number and returns it as a string for OAuthentication
-			 * @return {string}
-			 */
-			function nonce_generate(): string {
-				return Math.floor(Math.random() * 1e12).toString();
-			}
 
 			const returnObject = {};
 			const parameters = {
-				oauth_consumer_key: self.searchAPIInfo.yelp.consumerKey,
-				oauth_token: self.searchAPIInfo.yelp.token,
-				oauth_nonce: nonce_generate(),
-				oauth_timestamp: Math.floor(Date.now() / 1000),
-				oauth_signature_method: 'HMAC-SHA1',
-				oauth_version: '1.0',
-				/**
-				 * This is crucial to include for jsonp implementation in AJAX or
-				 * else the oauth-signature will be wrong.
-				 */
-				callback: 'cb',
-				actionlinks: true,
+				// oauth_consumer_key: self.searchAPIInfo.yelp.consumerKey,
+				// oauth_token: self.searchAPIInfo.yelp.token,
+				// oauth_nonce: nonce_generate(),
+				// oauth_timestamp: Math.floor(Date.now() / 1000),
+				// oauth_signature_method: 'HMAC-SHA1',
+				// oauth_version: '1.0',
+				// /**
+				//  * This is crucial to include for jsonp implementation in AJAX or
+				//  * else the oauth-signature will be wrong.
+				//  */
+				// callback: 'cb',
+				// actionlinks: true,
 			};
 
 			const settings = {
 				method: 'GET',
 				timeout: self.callAPITimeout,
 				data: parameters,
-				/**
-				 * This is crucial to include as well to prevent jQuery from
-				 * adding on a cache-buster parameter '_=23489489749837',
-				 * invalidating our oauth-signature
-				 */
-				cache: true,
-				dataType: 'jsonp',
+				beforeSend: function(xhr) {
+					xhr.setRequestHeader(
+						'Authorization',
+						'Bearer ' + self.searchAPIInfo.yelp.APIKey
+					);
+				},
 			};
 
 			const basicExtraParameters = {
-				bounds: function(lat, lng): string {
-					return (
-						lat -
-						self.latLngAccuracy +
-						',' +
-						(lng - self.latLngAccuracy) +
-						'|' +
-						(lat + self.latLngAccuracy) +
-						',' +
-						(lng + self.latLngAccuracy)
-					);
+				// bounds: function(lat, lng): string {
+				// 	return (
+				// 		lat -
+				// 		self.latLngAccuracy +
+				// 		',' +
+				// 		(lng - self.latLngAccuracy) +
+				// 		'|' +
+				// 		(lat + self.latLngAccuracy) +
+				// 		',' +
+				// 		(lng + self.latLngAccuracy)
+				// 	);
+				// },
+				latitude: function(lat, lng): string {
+					return lat;
+				},
+				longitude: function(lat, lng): string {
+					return lng;
 				},
 				term: 'food',
-				sort: 1, //sort by distance
+				sort_by: 'distance',
 			};
 
-			const allExtraParameters = {
-				oauth_signature: function(url, fullParameters): string {
-					return oauthSignature.generate(
-						'GET',
-						url,
-						fullParameters,
-						self.searchAPIInfo.yelp.consumerSecret,
-						self.searchAPIInfo.yelp.tokenSecret
-					);
-				},
-			};
+			// const allExtraParameters = {
+			// 	oauth_signature: function(url, fullParameters): string {
+			// 		return oauthSignature.generate(
+			// 			'GET',
+			// 			url,
+			// 			fullParameters,
+			// 			self.searchAPIInfo.yelp.consumerSecret,
+			// 			self.searchAPIInfo.yelp.tokenSecret
+			// 		);
+			// 	},
+			// };
 
 			const workerHandler = {
 				lat: ['location', 'coordinate', 'latitude'],
@@ -856,11 +863,10 @@ Object.defineProperties(appConfigObject, {
 
 			returnObject.settings = settings;
 			returnObject.basicExtraParameters = basicExtraParameters;
-			returnObject.allExtraParameters = allExtraParameters;
+			// returnObject.allExtraParameters = allExtraParameters;
 			returnObject.basic_URL =
-				self.searchAPIInfo.yelp.baseURL + 'search/';
-			returnObject.detailed_URL =
-				self.searchAPIInfo.yelp.baseURL + 'business/';
+				self.searchAPIInfo.yelp.baseURL + '/search';
+			returnObject.detailed_URL = self.searchAPIInfo.yelp.baseURL + '/';
 			returnObject.basic_returnType = 'businesses';
 			returnObject.workerHandler = workerHandler;
 

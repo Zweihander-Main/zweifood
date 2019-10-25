@@ -161,6 +161,44 @@ export default function(currentViewModel, searchType): void {
 	});
 
 	/**
+	 * Translate yelp rating into branded star image
+	 */
+	self.yelp_ratingImgURL = ko.pureComputed(function() {
+		switch (self.yelp_rating()) {
+			case 0:
+				return appConfigObject.yelpStarImages[0];
+				break;
+			case 1:
+				return appConfigObject.yelpStarImages[1];
+				break;
+			case 1.5:
+				return appConfigObject.yelpStarImages[15];
+				break;
+			case 2:
+				return appConfigObject.yelpStarImages[2];
+				break;
+			case 2.5:
+				return appConfigObject.yelpStarImages[25];
+				break;
+			case 3:
+				return appConfigObject.yelpStarImages[3];
+				break;
+			case 3.5:
+				return appConfigObject.yelpStarImages[35];
+				break;
+			case 4:
+				return appConfigObject.yelpStarImages[4];
+				break;
+			case 4.5:
+				return appConfigObject.yelpStarImages[45];
+				break;
+			case 5:
+				return appConfigObject.yelpStarImages[5];
+				break;
+		}
+	});
+
+	/**
 	 * Create infoWindow using template and binds it to model
 	 */
 	self.infoWindow = new google.maps.InfoWindow({

@@ -635,7 +635,7 @@ div.bigstars button.rateit-reset:active {
 .info-image {
 	border: 1px solid #c0baa2;
 	margin: 10px 0;
-	max-width: 100%;
+	max-width: 100% !important;
 }
 
 .foursquare-list {
