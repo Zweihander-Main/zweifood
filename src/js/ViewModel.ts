@@ -410,7 +410,7 @@ export default function(map): void {
 			ID
 		): void {
 			for (let i = 0, len = this.intercept.length; i < len; i++) {
-				if (this.intercept.ID === ID) {
+				if (this.intercept[i].ID === ID) {
 					this.intercept.splice(i, 1);
 				}
 			}
@@ -1476,7 +1476,7 @@ export default function(map): void {
 		/**
 		 * Success function passed with the jQuery call, parses through
 		 * results and calls success or failure depending on if parse
-		 * if successful
+		 * is successful
 		 * @param  {object} results results from call
 		 */
 		settings.success = function(results): void {
