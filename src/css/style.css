@@ -1,3 +1,4 @@
+@import '../vendor/bootstrap/css/bootstrap.min.css';
 /*
 Table of Contents
 1. Whole page CSS
@@ -1413,7 +1414,9 @@ html.sb-static .sb-slidebar,
 	display: none;
 	/* Optionally applied to control classes when Slidebars is disabled over a certain width. */
 }
-
+@import '../vendor/jquery-ui-1.11.4.custom/jquery-ui.min.css';
+@import '../vendor/jquery-ui-1.11.4.custom/jquery-ui.structure.min.css';
+@import '../vendor/jquery-ui-1.11.4.custom/jquery-ui.theme.min.css';
 @import 'font-awesome/css/font-awesome.css';
 @import 'jquery.rateit/scripts/rateit.css';
 @import 'perfect-scrollbar/css/perfect-scrollbar.css';
