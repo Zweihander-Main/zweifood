@@ -1,4 +1,4 @@
-/* global google, ko, $, WebFont */
+/* global google, $, ko */
 'use strict';
 
 // interface String {
@@ -12,6 +12,7 @@ interface App {
 }
 
 import './imports.ts';
+
 import 'jquery-ui';
 import 'jquery-ui/ui/widget';
 import 'jquery-ui/ui/version';
@@ -46,6 +47,7 @@ import '../vendor/slidebars.min.js';
 import 'jquery.rateit';
 import '../vendor/jquery.scrollintoview.custom.js';
 import ResizeSensor from 'css-element-queries/src/ResizeSensor.js';
+import WebFont from 'webfontloader';
 
 import appConfigObject from './config.ts';
 import { preload, throttle, checkNested } from './util.ts';
@@ -1357,7 +1359,7 @@ const app: App = ((): App => {
 	 * removes loading screen.
 	 */
 	function waitUntilEverythingLoaded(): void {
-		const waitForEntriesLength = (): Promise<() => void> => {
+		const waitForAllLoadedVariables = (): Promise<() => void> => {
 			const poll = (resolve): void => {
 				if (
 					imagesPreloaded === true &&
@@ -1370,7 +1372,7 @@ const app: App = ((): App => {
 			return new Promise(poll);
 		};
 
-		waitForEntriesLength().then(() => {
+		waitForAllLoadedVariables().then(() => {
 			createMap();
 			$('#loading').fadeOut(500);
 		});
