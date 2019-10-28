@@ -1,6 +1,3 @@
-/* global oauthSignature */
-import 'fuzzyset.js';
-// import oauthSignature from 'oauth-signature'; //TODO
 import imageMarker1 from '../img/marker-1.png';
 import imageMarker2 from '../img/marker-2.png';
 import imageMarker3 from '../img/marker-3.png';
@@ -789,20 +786,7 @@ Object.defineProperties(appConfigObject, {
 			const self = this;
 
 			const returnObject = {};
-			const parameters = {
-				// oauth_consumer_key: self.searchAPIInfo.yelp.consumerKey,
-				// oauth_token: self.searchAPIInfo.yelp.token,
-				// oauth_nonce: nonce_generate(),
-				// oauth_timestamp: Math.floor(Date.now() / 1000),
-				// oauth_signature_method: 'HMAC-SHA1',
-				// oauth_version: '1.0',
-				// /**
-				//  * This is crucial to include for jsonp implementation in AJAX or
-				//  * else the oauth-signature will be wrong.
-				//  */
-				// callback: 'cb',
-				// actionlinks: true,
-			};
+			const parameters = {};
 
 			const settings = {
 				method: 'GET',
@@ -817,18 +801,6 @@ Object.defineProperties(appConfigObject, {
 			};
 
 			const basicExtraParameters = {
-				// bounds: function(lat, lng): string {
-				// 	return (
-				// 		lat -
-				// 		self.latLngAccuracy +
-				// 		',' +
-				// 		(lng - self.latLngAccuracy) +
-				// 		'|' +
-				// 		(lat + self.latLngAccuracy) +
-				// 		',' +
-				// 		(lng + self.latLngAccuracy)
-				// 	);
-				// },
 				latitude: function(lat, lng): string {
 					return lat;
 				},
@@ -838,18 +810,6 @@ Object.defineProperties(appConfigObject, {
 				term: 'food',
 				sort_by: 'distance',
 			};
-
-			// const allExtraParameters = {
-			// 	oauth_signature: function(url, fullParameters): string {
-			// 		return oauthSignature.generate(
-			// 			'GET',
-			// 			url,
-			// 			fullParameters,
-			// 			self.searchAPIInfo.yelp.consumerSecret,
-			// 			self.searchAPIInfo.yelp.tokenSecret
-			// 		);
-			// 	},
-			// };
 
 			const workerHandler = {
 				lat: ['location', 'coordinate', 'latitude'],

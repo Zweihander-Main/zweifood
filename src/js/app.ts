@@ -59,8 +59,7 @@ import yelpStars5 from '../img/yelpStars/small_5.png';
 // import 'bootstrap/js/src/modal';
 // import 'bootstrap/js/src/tooltip';
 import '../vendor/bootstrap/js/bootstrap.js'; // took out jquery version complaint
-// import PerfectScrollbar from 'perfect-scrollbar';
-import '../vendor/perfect-scrollbar/js/min/perfect-scrollbar.jquery.min.js';
+import perfectScrollbar from 'perfect-scrollbar';
 import '../vendor/slidebars.min.js';
 import 'jquery.rateit';
 import '../vendor/jQuery.doWhen.js';
@@ -97,7 +96,7 @@ const app: App = ((): App => {
 	 */
 	const perfectScrollbarUpdatePerfectScrollbar = throttle(
 		(jqueryObject): void => {
-			jqueryObject.perfectScrollbar('update');
+			jqueryObject.data('perfectScrollbar').update();
 		},
 		16,
 		{
@@ -612,7 +611,7 @@ const app: App = ((): App => {
 		 * populated by knockout.
 		 */
 		init: function(element): void {
-			$(element).perfectScrollbar();
+			$(element).data('perfectScrollbar', new perfectScrollbar(element));
 			$(element).bind('mouseenter', function(event) {
 				perfectScrollbarHoverHandler(event, element);
 			});

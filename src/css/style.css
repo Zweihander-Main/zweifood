@@ -1413,3 +1413,7 @@ html.sb-static .sb-slidebar,
 	display: none;
 	/* Optionally applied to control classes when Slidebars is disabled over a certain width. */
 }
+
+@import 'font-awesome/css/font-awesome.css';
+@import 'jquery.rateit/scripts/rateit.css';
+@import 'perfect-scrollbar/css/perfect-scrollbar.css';

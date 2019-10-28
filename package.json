@@ -110,6 +110,7 @@
 	"dependencies": {
 		"bootstrap": "^3.4.1",
 		"crypto-js": "^3.1.9-1",
+		"font-awesome": "^4.7.0",
 		"fuzzyset.js": "0.0.8",
 		"jquery": "^3.4.1",
 		"jquery-migrate": "^3.1.0",
@@ -119,6 +120,7 @@
 		"oauth-signature": "^1.5.0",
 		"perfect-scrollbar": "^1.4.0",
 		"popper.js": "^1.16.0",
+		"respond.js": "^1.4.2",
 		"vendor": "^1.7.0",
 		"webfontloader": "^1.6.28"
 	},
