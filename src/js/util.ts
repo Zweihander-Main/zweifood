@@ -3,6 +3,7 @@ interface String {
 }
 
 import appConfigObject from './config.ts';
+import FuzzySet from 'fuzzyset.js';
 
 /**
  * Function that converts a string to Proper Case.

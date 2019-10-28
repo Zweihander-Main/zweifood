@@ -3,7 +3,7 @@
  * Parses result data using fuzzySet plugin to find matches based on name of
  * location and within map bounds. Matches are sent back to main thread.
  */
-import FuzzySet from '../vendor/fuzzyset.js'; // Will be equivalent to importScripts when run using Parcel
+import FuzzySet from 'fuzzyset.js'; // Will be equivalent to importScripts when run using Parcel
 
 /**
  * Checks if a given set of coordinates are within a square distance of a

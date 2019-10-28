@@ -1,4 +1,4 @@
-/* global google, ko, $, ResizeSensor, WebFont */
+/* global google, ko, $, WebFont */
 'use strict';
 
 // interface String {
@@ -36,24 +36,6 @@ import 'jquery-ui/ui/effects/effect-puff';
 import 'jquery-ui/ui/effects/effect-scale';
 import 'jquery-ui/ui/effects/effect-size';
 import 'jquery-ui/ui/effects/effect-slide';
-import imageReticle from '../img/reticle.png';
-import imageMarker1 from '../img/marker-1.png';
-import imageMarker2 from '../img/marker-2.png';
-import imageMarker3 from '../img/marker-3.png';
-import imageMarker4 from '../img/marker-4.png';
-import imageMarkerEmpty from '../img/marker-empty.png';
-import imageMarkerHeart from '../img/marker-heart.png';
-import imageMarkerDefault from '../img/marker-default.png';
-import yelpStars0 from '../img/yelpStars/small_0.png';
-import yelpStars1 from '../img/yelpStars/small_1.png';
-import yelpStars15 from '../img/yelpStars/small_1_half.png';
-import yelpStars2 from '../img/yelpStars/small_2.png';
-import yelpStars25 from '../img/yelpStars/small_2_half.png';
-import yelpStars3 from '../img/yelpStars/small_3.png';
-import yelpStars35 from '../img/yelpStars/small_3_half.png';
-import yelpStars4 from '../img/yelpStars/small_4.png';
-import yelpStars45 from '../img/yelpStars/small_4_half.png';
-import yelpStars5 from '../img/yelpStars/small_5.png';
 
 // import 'bootstrap';
 // import 'bootstrap/js/src/modal';
@@ -63,7 +45,7 @@ import perfectScrollbar from 'perfect-scrollbar';
 import '../vendor/slidebars.min.js';
 import 'jquery.rateit';
 import '../vendor/jquery.scrollintoview.custom.js';
-import '../vendor/ResizeSensor.js';
+import ResizeSensor from 'css-element-queries/src/ResizeSensor.js';
 
 import appConfigObject from './config.ts';
 import { preload, throttle, checkNested } from './util.ts';
@@ -1229,7 +1211,7 @@ const app: App = ((): App => {
 
 			// Define reticle to be pegged at center of map
 			const reticleImage = {
-				url: imageReticle, // marker image
+				url: appConfigObject.markerImageReticle, // marker image
 				size: new google.maps.Size(16, 16), // marker size
 				origin: new google.maps.Point(0, 0), // marker origin
 				anchor: new google.maps.Point(8, 8),
@@ -1423,24 +1405,24 @@ const app: App = ((): App => {
 
 		preload(
 			[
-				imageMarker1,
-				imageMarker2,
-				imageMarker3,
-				imageMarker4,
-				imageMarkerEmpty,
-				imageMarkerHeart,
-				imageMarkerDefault,
-				imageReticle,
-				yelpStars0,
-				yelpStars1,
-				yelpStars15,
-				yelpStars2,
-				yelpStars25,
-				yelpStars3,
-				yelpStars35,
-				yelpStars4,
-				yelpStars45,
-				yelpStars5,
+				appConfigObject.markerImageURL1,
+				appConfigObject.markerImageURL2,
+				appConfigObject.markerImageURL3,
+				appConfigObject.markerImageURL4,
+				appConfigObject.markerImageURLEmpty,
+				appConfigObject.markerImageURLFav,
+				appConfigObject.markerImageURLDefault,
+				appConfigObject.markerImageReticle,
+				appConfigObject.yelpStarImages.yelpStars0,
+				appConfigObject.yelpStarImages.yelpStars1,
+				appConfigObject.yelpStarImages.yelpStars15,
+				appConfigObject.yelpStarImages.yelpStars2,
+				appConfigObject.yelpStarImages.yelpStars25,
+				appConfigObject.yelpStarImages.yelpStars3,
+				appConfigObject.yelpStarImages.yelpStars35,
+				appConfigObject.yelpStarImages.yelpStars4,
+				appConfigObject.yelpStarImages.yelpStars45,
+				appConfigObject.yelpStarImages.yelpStars5,
 			],
 			function() {
 				imagesPreloaded = true;

@@ -15,6 +15,7 @@ import yelpStars35 from '../img/yelpStars/small_3_half.png';
 import yelpStars4 from '../img/yelpStars/small_4.png';
 import yelpStars45 from '../img/yelpStars/small_4_half.png';
 import yelpStars5 from '../img/yelpStars/small_5.png';
+import imageReticle from '../img/reticle.png';
 
 /**
  * Config object which defines a lot of developer settings, map styles, and API
@@ -633,6 +634,10 @@ Object.defineProperties(appConfigObject, {
 				],
 			},
 		],
+		enumberable: true,
+	},
+	markerImageReticle: {
+		value: imageReticle,
 		enumberable: true,
 	},
 	markerImageURLDefault: {
