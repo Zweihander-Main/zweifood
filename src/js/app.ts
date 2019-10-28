@@ -62,7 +62,6 @@ import '../vendor/bootstrap/js/bootstrap.js'; // took out jquery version complai
 import perfectScrollbar from 'perfect-scrollbar';
 import '../vendor/slidebars.min.js';
 import 'jquery.rateit';
-import '../vendor/jQuery.doWhen.js';
 import '../vendor/jquery.scrollintoview.custom.js';
 import '../vendor/ResizeSensor.js';
 
@@ -955,14 +954,21 @@ const app: App = ((): App => {
 					 * entries. When they do, kill the affected panels.
 					 */
 					if (killOnMarkers === true) {
-						$.doWhen({
-							when: function() {
-								return (
+						const waitForEntriesLength = (): Promise<
+							() => void
+						> => {
+							const poll = (resolve): void => {
+								if (
 									bindingContext.$data.listableEntries()
 										.entries.length > 0
-								);
-							},
-						}).done(function() {
+								) {
+									resolve();
+								} else setTimeout(() => poll(resolve), 100);
+							};
+							return new Promise(poll);
+						};
+
+						waitForEntriesLength().then(() => {
 							errorsHandlerKillPanel(added, 200);
 						});
 					}
@@ -1369,15 +1375,20 @@ const app: App = ((): App => {
 	 * removes loading screen.
 	 */
 	function waitUntilEverythingLoaded(): void {
-		$.doWhen({
-			when: function() {
-				return (
+		const waitForEntriesLength = (): Promise<() => void> => {
+			const poll = (resolve): void => {
+				if (
 					imagesPreloaded === true &&
 					fontsPreloaded === true &&
 					googlePreloaded === true
-				);
-			},
-		}).done(function(): void {
+				) {
+					resolve();
+				} else setTimeout(() => poll(resolve), 100);
+			};
+			return new Promise(poll);
+		};
+
+		waitForEntriesLength().then(() => {
 			createMap();
 			$('#loading').fadeOut(500);
 		});
