@@ -1606,7 +1606,7 @@ export default function(map): void {
 	 */
 	self.workerHandler = function(workerObject, service, resultFunction): void {
 		if (self.workersAvailable === true) {
-			const worker = new Worker('/js/workerFillMarkerData.ts'); // TODO
+			const worker = new Worker('/js/workerFillMarkerData.ts');
 			worker.onmessage = function(e): void {
 				const returnObject = e.data;
 				for (let i = 0, len = returnObject.length; i < len; i++) {

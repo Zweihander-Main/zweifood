@@ -559,11 +559,15 @@
 									</div>
 									<!-- /ko -->
 									<p style="color:white" data-bind="visible: foursquareIsLoading">LOADING</p>
-									<!-- ko if: typeof(foursquare_photos()) !== "undefined" && $root.checkNested(foursquare_photos(), 'groups', '0', 'items', '0') -->
-									<h4>Foursquare Photos</h4>
-									<div class="info-window-photos" data-bind="foreach: foursquare_photos()['groups'][0]['items']">
-										<img data-bind="attr: {src: prefix + '300x500' + suffix}" alt="Foursquare Image">
-									</div>
+									<!-- ko if: typeof(foursquare_photos()) !== "undefined" && $root.checkNested(foursquare_photos(), 'groups') -->
+										<!-- ko foreach: foursquare_photos().groups -->
+											<!-- ko if: $root.checkNested($data, 'items', '0') -->
+											<h4 data-bind="text: 'Foursquare ' + $data.name.toProperCase()"></h4>
+											<div class="info-window-photos" data-bind="foreach: $data['items']">
+												<img data-bind="attr: {src: prefix + '300x500' + suffix}" alt="Foursquare Image">
+											</div>
+											<!-- /ko -->
+										<!-- /ko -->
 									<!-- /ko -->
 								</div>
 							</div>
@@ -593,12 +597,6 @@
 									</div>
 									<div data-bind="visible: foursquare_verified ">
 										Verified: <span data-bind="text: foursquare_verified"></span>
-									</div>
-									<div data-bind="visible: foursquare_tags().length > 0 ">
-										Tags:
-										<!-- ko foreach: foursquare_tags() -->
-										<span data-bind="text: $data"></span>,&nbsp;
-										<!-- /ko -->
 									</div>
 									<h4>Stats</h4>
 									<div data-bind="if: $root.checkNested(foursquare_likes(), 'count')">

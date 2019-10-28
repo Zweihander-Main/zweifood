@@ -1,11 +1,9 @@
-/* global importScripts, FuzzySet */
 /**
  * Worker - can only be run when using a server and not from local filesystem.
  * Parses result data using fuzzySet plugin to find matches based on name of
  * location and within map bounds. Matches are sent back to main thread.
  */
-importScripts('/vendor/fuzzyset.js'); // TODO
-const self = this;
+import FuzzySet from '../vendor/fuzzyset.js'; // Will be equivalent to importScripts when run using Parcel
 
 /**
  * Checks if a given set of coordinates are within a square distance of a
@@ -54,70 +52,64 @@ function matchBasedOnNameForWorker(
 	}
 }
 
-self.addEventListener(
-	'message',
-	function(e) {
-		const fuzzySetOfResultsNames = new FuzzySet([]);
-		const returnObject = [];
+onmessage = function(e) {
+	const fuzzySetOfResultsNames = new FuzzySet([]);
+	const returnObject = [];
 
-		/**
-		 * Parse through workerHandler object which is defined as:
-		 * model_prop: ['strings', 'of', 'server', 'object', 'prop']
-		 * This allows coords.long to get matched to lng.
-		 * Also creates the fuzzySet object to check against.
-		 */
-		const resultsArray = e.data.resultsArray.map(function(item) {
-			const newItem = item;
-			for (const name in e.data.workerHandler) {
-				if (e.data.workerHandler.hasOwnProperty(name)) {
-					for (
-						let i = 0, len = e.data.workerHandler[name].length;
-						i < len;
-						i++
-					) {
-						newItem[name] = newItem[e.data.workerHandler[name][i]];
-					}
+	/**
+	 * Parse through workerHandler object which is defined as:
+	 * model_prop: ['strings', 'of', 'server', 'object', 'prop']
+	 * This allows coords.long to get matched to lng.
+	 * Also creates the fuzzySet object to check against.
+	 */
+	const resultsArray = e.data.resultsArray.map(function(item) {
+		const newItem = item;
+		for (const name in e.data.workerHandler) {
+			if (e.data.workerHandler.hasOwnProperty(name)) {
+				for (
+					let i = 0, len = e.data.workerHandler[name].length;
+					i < len;
+					i++
+				) {
+					newItem[name] = newItem[e.data.workerHandler[name][i]];
 				}
 			}
-			fuzzySetOfResultsNames.add(item.name);
-			return newItem;
-		});
-
-		/**
-		 * Make sure locations are within the search point plus the search distance
-		 */
-		const narrowedDownLocations = e.data.locationsArray.filter(function(
-			item
-		) {
-			return checkIfMarkerIsWithinBounds(
-				e.data.initialPoint.lat,
-				e.data.initialPoint.lng,
-				item.lat,
-				item.lng,
-				e.data.maxDistance
-			);
-		});
-
-		/**
-		 * Scroll through narrowedDownLocations and match each one.
-		 * If a match exists, push it back to the return object.
-		 */
-		for (let i = 0; i < narrowedDownLocations.length; i++) {
-			const match = matchBasedOnNameForWorker(
-				fuzzySetOfResultsNames,
-				narrowedDownLocations[i].name,
-				e.data.minFuzzyMatch
-			);
-			if (typeof match === 'number') {
-				const correctResult = resultsArray[match];
-				correctResult.google_placeId =
-					narrowedDownLocations[i].google_placeId;
-				returnObject.push(correctResult);
-			}
 		}
-		self.postMessage(returnObject);
-		// Kill self
-		self.close();
-	},
-	false
-);
+		fuzzySetOfResultsNames.add(item.name);
+		return newItem;
+	});
+
+	/**
+	 * Make sure locations are within the search point plus the search distance
+	 */
+	const narrowedDownLocations = e.data.locationsArray.filter(function(item) {
+		return checkIfMarkerIsWithinBounds(
+			e.data.initialPoint.lat,
+			e.data.initialPoint.lng,
+			item.lat,
+			item.lng,
+			e.data.maxDistance
+		);
+	});
+
+	/**
+	 * Scroll through narrowedDownLocations and match each one.
+	 * If a match exists, push it back to the return object.
+	 */
+	for (let i = 0; i < narrowedDownLocations.length; i++) {
+		const match = matchBasedOnNameForWorker(
+			fuzzySetOfResultsNames,
+			narrowedDownLocations[i].name,
+			e.data.minFuzzyMatch
+		);
+		if (typeof match === 'number') {
+			const correctResult = resultsArray[match];
+			correctResult.google_placeId =
+				narrowedDownLocations[i].google_placeId;
+			returnObject.push(correctResult);
+		}
+	}
+	postMessage(returnObject);
+	// Kill self
+	close();
+};

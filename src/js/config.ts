@@ -395,11 +395,6 @@ Object.defineProperties(appConfigObject, {
 					oType: 1,
 				},
 				{
-					server: 'tags',
-					model: 'foursquare_tags',
-					oType: 2,
-				},
-				{
 					server: 'shortUrl',
 					model: 'foursquare_shortUrl',
 					oType: 1,

@@ -182,9 +182,9 @@ export const allValuesSameInTwoArray = (a1, a2) => {
  * @param  {string} type Type of browser storage to check (ex localStorage)
  * @return {boolean}     Return if the type of storage is available
  */
-export const storageAvailable = (type) => {
+export const storageAvailable = (type: string): boolean => {
 	try {
-		let storage = window[type],
+		const storage = window[type],
 			x = '__storage_test__';
 		storage.setItem(x, x);
 		storage.removeItem(x);
@@ -200,8 +200,7 @@ export const storageAvailable = (type) => {
  */
 export const workersAvailable = (): boolean => {
 	if (typeof Worker !== 'undefined' && window.location.protocol !== 'file:') {
-		return false; //TODO temp change
-	} else {
-		return false;
+		return true;
 	}
+	return false;
 };
