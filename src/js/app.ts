@@ -38,10 +38,7 @@ import 'jquery-ui/ui/effects/effect-scale';
 import 'jquery-ui/ui/effects/effect-size';
 import 'jquery-ui/ui/effects/effect-slide';
 
-// import 'bootstrap';
-// import 'bootstrap/js/src/modal';
-// import 'bootstrap/js/src/tooltip';
-import '../vendor/bootstrap/js/bootstrap.js'; // took out jquery version complaint
+import 'bootstrap/dist/js/bootstrap.js';
 import perfectScrollbar from 'perfect-scrollbar';
 import '../vendor/slidebars.min.js';
 import 'jquery.rateit';
@@ -1035,7 +1032,7 @@ const app: App = ((): App => {
 			const value = valueAccessor().data;
 			const starter =
 				'<button type="button" class="btn btn-default ' +
-				'dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" ' +
+				'dropdown-toggle" data-display="static" data-toggle="dropdown" aria-haspopup="true" ' +
 				'aria-expanded="false"><span class="caret caret-dropdown">' +
 				'</span></button><ul class="dropdown-menu dropdown-menu-right">';
 			let toAdd = starter;

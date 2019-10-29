@@ -1,4 +1,5 @@
-@import '../vendor/bootstrap/css/bootstrap.min.css';
+@import 'bootstrap/dist/css/bootstrap.css';
+@import 'owp.glyphicons/glyphicons.css';
 /*
 Table of Contents
 1. Whole page CSS
@@ -26,6 +27,11 @@ body {
 .page-wrapper {
 	width: 100%;
 	padding: 0;
+}
+
+b,
+strong {
+	font-weight: 700;
 }
 
 * {
@@ -84,12 +90,14 @@ a:focus {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	height: 80px;
+	padding: 0rem 0.5rem;
 }
 
 .navbar-custom.navbar-header {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
+	align-items: initial;
 }
 
 .search-wrapper {
@@ -180,7 +188,7 @@ a:focus {
 }
 
 .nav-description {
-	margin: 6px 0 1px 0;
+	margin: 6px 0 0 0;
 	text-transform: uppercase;
 	color: #585858;
 	font-size: 12px;
@@ -306,7 +314,7 @@ a:focus {
 	height: 42px;
 	margin: 0 10px 0 0;
 	padding: 10px 10px 10px 10px;
-	top: 2px;
+	top: 4px;
 	cursor: pointer;
 }
 
@@ -319,7 +327,7 @@ a:focus {
 	border: 1px solid #585858;
 	display: inline-block;
 	font-size: 17px;
-	margin: 5px 10px 0 0;
+	margin: 5px 10px 10px 0;
 	padding: 8px 10px 10px 13px;
 	width: 42px;
 	height: 42px;
@@ -370,6 +378,7 @@ div.bigstars button.rateit-reset {
 	background: url(../img/star-reset.png);
 	width: 16px;
 	height: 16px;
+	float: none;
 }
 
 div.bigstars button.rateit-reset:hover {
@@ -587,10 +596,13 @@ div.bigstars button.rateit-reset:active {
 	background: none;
 	border: none;
 	border-radius: 0;
+	outline: 0;
+	box-shadow: none;
 }
 
 .dropdown-menu-right {
-	overflow: visible;
+	overflow-y: visible;
+	overflow-x: auto;
 	z-index: 999999999999999999;
 	border-radius: 0;
 	padding: 5px 20px 5px 20px;
@@ -605,6 +617,7 @@ div.bigstars button.rateit-reset:active {
 	border-left: 7px solid transparent;
 	border-right: 7px solid transparent;
 	border-top: 7px solid #fff;
+	font-size: 0.4rem;
 }
 
 .dropdown-small .caret-dropdown {
@@ -626,6 +639,7 @@ div.bigstars button.rateit-reset:active {
 	letter-spacing: 0.8px;
 	font: 700 42px 'Scheherazade', Georgia, Times, 'Times New Roman', serif;
 	line-height: 42px;
+	margin-top: 22px;
 	display: inline-block;
 }
 
@@ -648,7 +662,7 @@ div.bigstars button.rateit-reset:active {
 }
 
 .locu_item-name {
-	font-weight: bold;
+	font-weight: 700;
 }
 
 .locu_contents-group {
@@ -659,7 +673,7 @@ div.bigstars button.rateit-reset:active {
 	font-style: italic;
 }
 
-.info-window-nav li a {
+.info-window-nav .nav-link {
 	color: white;
 	border-radius: 0;
 	text-transform: uppercase;
@@ -669,27 +683,28 @@ div.bigstars button.rateit-reset:active {
 
 .info-window-template h4 {
 	margin: 1em 0 0.2em 0;
+	font-size: 1.25rem;
 }
 
-.info-window-nav li.active a,
-.info-window-nav li a:hover,
-.info-window-nav li.active a:hover {
+.info-window-nav .nav-link.active,
+.info-window-nav .nav-link:hover,
+.info-window-nav .nav-link.active:hover {
 	color: white;
 	background-color: #c0baa2;
 	border-radius: 0;
 	border: 1px solid #c0baa2 !important;
 }
 
-.info-window-nav li.active a,
-.info-window-nav li a:focus,
-.info-window-nav li.active a:focus {
+.info-window-nav .nav-link.active,
+.info-window-nav .nav-link:focus,
+.info-window-nav .nav-link.active:focus {
 	color: white;
 	background-color: #d1c9b2;
 	border-radius: 0;
 	border: 1px solid #d1c9b2 !important;
 }
 
-.info-window-nav li {
+.info-window-nav .nav-item {
 	border-radius: 0;
 	border-left-color: white;
 	border-right-color: white;
@@ -1021,7 +1036,7 @@ div.bigstars button.rateit-reset:active {
 		padding: 9px 10px 10px 12px;
 	}
 	.nav-block-options .logo-button {
-		padding: 9px 10px 10px 11px;
+		padding: 9px 10px 10px 12px;
 		margin: 5px 0 10px 13px;
 	}
 	.nav-block-locations,
@@ -1039,6 +1054,7 @@ div.bigstars button.rateit-reset:active {
 		margin: 0 0 106px 0;
 		bottom: 0;
 		left: initial;
+		padding: 0.5rem 0.1rem;
 	}
 	.navbar-header {
 		visibility: hidden;

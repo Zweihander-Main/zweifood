@@ -77,7 +77,7 @@
 					<div class="modal-footer">
 						<button
 							type="button"
-							class="btn btn-default"
+							class="btn btn-light"
 							data-dismiss="modal"
 						>
 							Close
@@ -97,7 +97,7 @@
 					aria-hidden="true"
 				></span>
 			</div>
-			<h5 class="settings-description">Search for location</h5>
+			<h6 class="settings-description">Search for location</h6>
 			<input
 				type="search"
 				id="place-search"
@@ -105,16 +105,16 @@
 				data-bind="addressAutocomplete: optionsToggled"
 			/>
 			<span class="settings-divider"></span>
-			<h5 class="settings-description">Get Current Browser Location</h5>
+			<h6 class="settings-description">Get Current Browser Location</h6>
 			<span
 				class="filter-button filter-button-single"
 				data-bind="click: getNavWithCallback"
 				>Get Current Location</span
 			>
 			<span class="settings-divider"></span>
-			<h5 class="settings-description">
+			<h6 class="settings-description">
 				Opacity of Filtered/Unkown Results
-			</h5>
+			</h6>
 			<div
 				class="settings-amount-slider"
 				data-bind="koSlider: {value: lowMarkerOpacity, step: 0.01, min: 0, max: 1}"
@@ -124,9 +124,9 @@
 				data-bind="text: lowMarkerOpacity"
 			></div>
 			<span class="settings-divider"></span>
-			<h5 class="settings-description">
+			<h6 class="settings-description">
 				Maximum Amount of Markers on Map
-			</h5>
+			</h6>
 			<div
 				class="settings-amount-slider"
 				data-bind="koSlider: {value: maxMarkerLimit, step: 100, min: 1000, max: 10000}"
@@ -410,17 +410,17 @@
 		<script type="text/template" id="info-window-template-container">
 			<div id="info-window-template" class="info-window-template info-window-loaded" data-bind="with: currentlySelectedLocation(), koStyleInfoWindow: true, setResizeListener: $root.currentlySelectedLocation()">
 				<ul class="nav nav-tabs nav-justified info-window-nav">
-					<li role="presentation" class="active"><a data-toggle="tab" href="#info-window-tabs-info">Info</a></li>
-					<li role="presentation"><a data-toggle="tab" href="#info-window-tabs-reviews" data-bind="click: function() {$parent.getDetailedAPIData('yelp', $data);} ">Reviews</a></li>
-					<li role="presentation"><a data-toggle="tab" href="#info-window-tabs-photos" data-bind="click: function() {$parent.getDetailedAPIData('foursquare', $data);}">Photos</a></li>
-					<li role="presentation"><a data-toggle="tab" href="#info-window-tabs-menu" data-bind="click: function() {$parent.getDetailedAPIData('locu', $data);}">Menu</a></li>
-					<li role="presentation"><a data-toggle="tab" href="#info-window-tabs-foursquare" data-bind="click: function() {$parent.getDetailedAPIData('foursquare', $data);}">Foursquare</a></li>
+					<li role="presentation" class="nav-item"><a class="nav-link active" role="tab" aria-selected="true" data-toggle="tab" href="#info-window-tabs-info">Info</a></li>
+					<li role="presentation" class="nav-item"><a class="nav-link" role="tab" aria-selected="false" data-toggle="tab" href="#info-window-tabs-reviews" data-bind="click: function() {$parent.getDetailedAPIData('yelp', $data);} ">Reviews</a></li>
+					<li role="presentation" class="nav-item"><a class="nav-link" role="tab" aria-selected="false" data-toggle="tab" href="#info-window-tabs-photos" data-bind="click: function() {$parent.getDetailedAPIData('foursquare', $data);}">Photos</a></li>
+					<li role="presentation" class="nav-item"><a class="nav-link" role="tab" aria-selected="false" data-toggle="tab" href="#info-window-tabs-menu" data-bind="click: function() {$parent.getDetailedAPIData('locu', $data);}">Menu</a></li>
+					<li role="presentation" class="nav-item"><a class="nav-link" role="tab" aria-selected="false" data-toggle="tab" href="#info-window-tabs-foursquare" data-bind="click: function() {$parent.getDetailedAPIData('foursquare', $data);}">Foursquare</a></li>
 				</ul>
 				<div class="tab-content">
-					<div id="info-window-tabs-info" class="tab-pane fade in active">
+					<div id="info-window-tabs-info" class="tab-pane fade in active show">
 						<div class="container-fluid">
 							<div class="row">
-								<div class="col-lg-9">
+								<div class="col-xl-9">
 									<p style="color:white" data-bind="visible: googleIsLoading">LOADING</p>
 									<div data-bind="visible: google_name">
 										<h2 class="info-window-title-header" data-bind="text: google_name"></h2>
@@ -447,7 +447,7 @@
 										<br>
 									</div>
 								</div>
-								<div class="col-lg-3 text-right">
+								<div class="col-xl-3 text-right">
 									<div data-bind="visible: yelp_imageURL">
 										<img class="info-image" data-bind="attr: {src: yelp_imageURL}" alt="Yelp Image">
 									</div>
@@ -457,7 +457,7 @@
 								</div>
 							</div>
 							<div class="row">
-								<div class="col-xs-12">
+								<div class="col-sm-12">
 									<h4>Detailed Info</h4>
 									<div data-bind="visible: locu_cuisines && locu_cuisines.length > 0">
 										Cuisine Style: <span data-bind="text: locu_cuisines"></span>
@@ -506,7 +506,7 @@
 					<div id="info-window-tabs-reviews" class="tab-pane fade in">
 						<div class="container-fluid">
 							<div class="row">
-								<div class="col-xs-12">
+								<div class="col-sm-12">
 									<!-- ko if:typeof(yelp_reviews()) !== "undefined" && yelp_reviews().length > 0 -->
 									<h4>Yelp Reviews</h4>
 									<div data-bind="foreach: yelp_reviews">
@@ -528,7 +528,7 @@
 					<div id="info-window-tabs-photos" class="tab-pane fade in">
 						<div class="container-fluid">
 							<div class="row">
-								<div class="col-xs-12">
+								<div class="col-sm-12">
 									<!-- ko if:typeof(google_photos()) !== "undefined" && google_photos().length > 0 -->
 									<h4>Google Photos</h4>
 									<div class="info-window-photos" data-bind="foreach: google_photos">
@@ -553,7 +553,7 @@
 					<div id="info-window-tabs-menu" class="tab-pane fade in">
 						<div class="container-fluid">
 							<div class="row">
-								<div class="col-xs-12">
+								<div class="col-sm-12">
 									<p style="color:white" data-bind="visible: locuIsLoading">LOADING</p>
 									<div>
 										<div data-bind="template: {name: 'locu_menu_template', data: locu_menus}"></div>
@@ -565,7 +565,7 @@
 					<div id="info-window-tabs-foursquare" class="tab-pane fade in">
 						<div class="container-fluid">
 							<div class="row">
-								<div class="col-xs-12">
+								<div class="col-sm-12">
 									<p style="color:white" data-bind="visible: foursquareIsLoading">LOADING</p>
 									<!-- ko if: foursquare_id() -->
 									<h4>Location Info</h4>
