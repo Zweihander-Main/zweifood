@@ -767,19 +767,17 @@ Object.defineProperties(appConfigObject, {
 	searchAPIInfo: {
 		value: {
 			yelp: {
-				APIKey:
-					'***REMOVED***',
+				APIKey: process.env.YELP_API_KEY,
 				baseURL:
 					'https://cors-anywhere.herokuapp.com/https://api.yelp.com/v3/businesses',
 			},
 			locu: {
 				baseURL: 'https://api.locu.com/v1_0/venue/',
-				APIKey: '***REMOVED***',
+				APIKey: process.env.LOCU_API_KEY,
 			},
 			foursquare: {
-				clientID: '***REMOVED***',
-				clientSecret:
-					'***REMOVED***',
+				clientID: process.env.FOURSQUARE_CLIENT_ID,
+				clientSecret: process.env.FOURSQUARE_CLIENT_SECRET,
 				baseURL: 'https://api.foursquare.com/v2/venues/',
 			},
 		},

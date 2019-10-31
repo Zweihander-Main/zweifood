@@ -910,13 +910,15 @@ const app: App = ((): App => {
 					const killOnMarkers = error.killOnMarkers;
 					const customMessage = error.customMessage;
 					const textStatus = error.textStatus;
-					let toAdd = '<div class="panel ';
+					let toAdd = '<div class="card ';
 					toAdd +=
-						isVerbose === true ? 'panel-warning' : 'panel-danger';
+						isVerbose === true
+							? 'bg-warning'
+							: 'bg-danger text-white';
 					toAdd +=
-						'"><div class="panel-heading"><h3 class="panel-title">';
+						'"><div class="card-header"><h3 class="card-title">';
 					toAdd += customMessage;
-					toAdd += '</h3></div><div class="panel-body">';
+					toAdd += '</h3></div><div class="card-body">';
 					toAdd += textStatus;
 					toAdd += '</div></div>';
 					$('#error-container').append(toAdd);

@@ -712,9 +712,10 @@ div.bigstars button.rateit-reset:active {
 
 /* 6. Errors */
 
-.error-container .panel {
+.error-container .card {
 	border-radius: 0;
 	display: none;
+	margin-top: 15px;
 }
 
 .error-container {
@@ -726,30 +727,34 @@ div.bigstars button.rateit-reset:active {
 	width: 300px;
 }
 
-.error-container .panel-heading {
+.error-container .card-header .card-title {
+	font-size: 1.25rem;
+}
+
+.error-container .card-header {
 	color: white;
 	border-radius: 0;
 	border: 0;
 }
 
-.error-container .panel-body {
+.error-container .card-body {
 	background-color: #212121;
 	color: #fff;
 }
 
-.error-container .panel-warning {
+.error-container .card.bg-warning {
 	border-color: #c0baa2;
 }
 
-.error-container .panel-warning .panel-heading {
+.error-container .card.bg-warning .card-header {
 	background-color: #c0baa2;
 }
 
-.error-container .panel-danger {
+.error-container .card.bg-warning {
 	border-color: #c0a2a2;
 }
 
-.error-container .panel-danger .panel-heading {
+.error-container .card.bg-warning .card-header {
 	background-color: #c0a2a2;
 }
 
