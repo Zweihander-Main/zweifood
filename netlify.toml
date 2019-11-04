@@ -1,4 +1,7 @@
 [build]
   base = "."
   publish="build"
-  functions = "./functions"
+  functions = "./.netlify/functions"
+
+[dev]
+  port = 3000 # Port that the dev server will be listening on

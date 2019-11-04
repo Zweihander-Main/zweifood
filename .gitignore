@@ -97,3 +97,6 @@ CURRENT.md
 
 #parcel
 .cache
+
+# Local Netlify folder
+.netlify

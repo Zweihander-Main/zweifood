@@ -763,22 +763,26 @@ Object.defineProperties(appConfigObject, {
 		},
 		enumberable: true,
 	},
-	// Should be on a server in an ideal world
 	searchAPIInfo: {
 		value: {
 			yelp: {
 				APIKey: process.env.YELP_API_KEY,
 				baseURL:
-					'https://cors-anywhere.herokuapp.com/https://api.yelp.com/v3/businesses',
+					'http://localhost:3000/.netlify/functions/apifetch?url=' +
+					encodeURIComponent(process.env.YELP_URL),
 			},
 			locu: {
-				baseURL: 'https://api.locu.com/v1_0/venue/',
 				APIKey: process.env.LOCU_API_KEY,
+				baseURL:
+					'http://localhost:3000/.netlify/functions/apifetch?url=' +
+					encodeURIComponent(process.env.LOCU_URL),
 			},
 			foursquare: {
 				clientID: process.env.FOURSQUARE_CLIENT_ID,
 				clientSecret: process.env.FOURSQUARE_CLIENT_SECRET,
-				baseURL: 'https://api.foursquare.com/v2/venues/',
+				baseURL:
+					'http://localhost:3000/.netlify/functions/apifetch?url=' +
+					encodeURIComponent(process.env.FOURSQUARE_URL),
 			},
 		},
 		enumberable: true,
