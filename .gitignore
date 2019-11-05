@@ -99,4 +99,5 @@ CURRENT.md
 .cache
 
 # Local Netlify folder
-.netlify
+.netlify/*
+!/.netlify/functions

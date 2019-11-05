@@ -1,0 +1,23 @@
+{
+	"name": "apifetch",
+	"version": "1.0.0",
+	"description": "apifetch",
+	"main": "apifetch.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"private": true,
+	"keywords": [
+		"netlify",
+		"serverless",
+		"js"
+	],
+	"author": "Zweihänder",
+	"license": "MIT",
+	"dependencies": {
+		"request": "^2.88.0"
+	},
+	"devDependencies": {
+		"dotenv": "^8.2.0"
+	}
+}
