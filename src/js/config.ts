@@ -19,8 +19,7 @@ import imageReticle from '../img/reticle.png';
 
 /**
  * Config object which defines a lot of developer settings, map styles, and API
- * information. API information was chose to be listed here to make it easy to
- * add new ones. Object uses defineProperties for granular control, particularly
+ * information. Object uses defineProperties for granular control, particularly
  * where API settings for actually calling the APIs is listed.
  * @type {Object}
  */
@@ -766,22 +765,22 @@ Object.defineProperties(appConfigObject, {
 	searchAPIInfo: {
 		value: {
 			yelp: {
-				APIKey: process.env.YELP_API_KEY,
+				APIKey: 'test',
 				baseURL:
-					'http://localhost:3000/.netlify/functions/apifetch?url=' +
+					process.env.LOCAL_API_FORWARDER +
 					encodeURIComponent(process.env.YELP_URL),
 			},
 			locu: {
-				APIKey: process.env.LOCU_API_KEY,
+				APIKey: '',
 				baseURL:
-					'http://localhost:3000/.netlify/functions/apifetch?url=' +
+					process.env.LOCAL_API_FORWARDER +
 					encodeURIComponent(process.env.LOCU_URL),
 			},
 			foursquare: {
-				clientID: process.env.FOURSQUARE_CLIENT_ID,
-				clientSecret: process.env.FOURSQUARE_CLIENT_SECRET,
+				clientID: '',
+				clientSecret: '',
 				baseURL:
-					'http://localhost:3000/.netlify/functions/apifetch?url=' +
+					process.env.LOCAL_API_FORWARDER +
 					encodeURIComponent(process.env.FOURSQUARE_URL),
 			},
 		},
@@ -825,7 +824,6 @@ Object.defineProperties(appConfigObject, {
 
 			returnObject.settings = settings;
 			returnObject.basicExtraParameters = basicExtraParameters;
-			// returnObject.allExtraParameters = allExtraParameters;
 			returnObject.basic_URL =
 				self.searchAPIInfo.yelp.baseURL + '/search';
 			returnObject.detailed_URL = self.searchAPIInfo.yelp.baseURL + '/';

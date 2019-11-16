@@ -104,14 +104,12 @@
 				class="place-search"
 				data-bind="addressAutocomplete: optionsToggled"
 			/>
-			<span class="settings-divider"></span>
 			<h6 class="settings-description">Get Current Browser Location</h6>
 			<span
 				class="filter-button filter-button-single"
 				data-bind="click: getNavWithCallback"
 				>Get Current Location</span
 			>
-			<span class="settings-divider"></span>
 			<h6 class="settings-description">
 				Opacity of Filtered/Unkown Results
 			</h6>
@@ -123,7 +121,6 @@
 				class="settings-amount-box"
 				data-bind="text: lowMarkerOpacity"
 			></div>
-			<span class="settings-divider"></span>
 			<h6 class="settings-description">
 				Maximum Amount of Markers on Map
 			</h6>
@@ -145,6 +142,34 @@
 					:Verbose Error Messages</span
 				>
 			</div>
+			<h6 class="settings-description">Yelp API Key</h6>
+			<input
+				type="text"
+				id="yelp-api-key"
+				class="api-key-input"
+				data-bind=""
+			/>
+			<h6 class="settings-description">Locu API Key</h6>
+			<input
+				type="text"
+				id="locu-api-key"
+				class="api-key-input"
+				data-bind=""
+			/>
+			<h6 class="settings-description">Foursquare Client ID</h6>
+			<input
+				type="text"
+				id="foursquare-client-id"
+				class="api-key-input"
+				data-bind=""
+			/>
+			<h6 class="settings-description">Foursquare Client Secret</h6>
+			<input
+				type="text"
+				id="foursquare-client-secret"
+				class="api-key-input"
+				data-bind=""
+			/>
 		</div>
 		<!-- Map and Nav -->
 		<div id="sb-site" class="wrapper">

@@ -783,7 +783,8 @@ div.bigstars button.rateit-reset:active {
 	margin: 20px 0 0 0;
 }
 
-.place-search {
+.place-search,
+.api-key-input {
 	width: 100%;
 	color: black;
 }

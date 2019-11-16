@@ -34,6 +34,7 @@ export default function(map): void {
 	self.lowMarkerOpacity = ko.observable(appConfigObject.lowMarkerOpacity);
 	self.APIMappingsForModel = appConfigObject.APIMappingsForModel;
 	self.APIConfiguredSearchTypes = appConfigObject.configuredSearchTypes;
+	self.APIInfo = appConfigObject.searchAPIInfo;
 	// Set default marker image object based on config object
 	self.defaultMarkerImage = {
 		size: new google.maps.Size(
@@ -1419,9 +1420,6 @@ export default function(map): void {
 		 * basicExtraParameters parameters to parse through for call,
 		 * 						can include functions which will be fed
 		 * 						lat, lng parameters
-		 * allExtraParameters   object of parameters to add at the end,
-		 * 					    if function, will be fed url and all
-		 * 					    previous parameters
 		 * basic_url            url for basic searches
 		 * detailed_url         url for detailed searches
 		 * extraSlash           optional, adds extra slash after detailed id
@@ -1434,6 +1432,7 @@ export default function(map): void {
 		 */
 		const configObject = appConfigObject[service + '_searchAPIProperties'];
 		const settings = configObject.settings;
+		const returnType = configObject[APIType + '_returnType'];
 		let lat, lng, initialPoint;
 		settings.url = configObject[APIType + '_URL'];
 		// Just call the ID of the model
@@ -1442,9 +1441,8 @@ export default function(map): void {
 			if (configObject.extraSlash === true) {
 				settings.url += '/';
 			}
-		}
-		// Create search request that searches nearby the model
-		if (APIType === 'basic') {
+		} else {
+			// Create search request that searches nearby the model
 			lat = selectedPlace.google_geometry().location.lat();
 			lng = selectedPlace.google_geometry().location.lng();
 			initialPoint = {
@@ -1465,14 +1463,6 @@ export default function(map): void {
 				}
 			}
 		}
-		// For oauth
-		for (const name1 in configObject.allExtraParameters) {
-			settings.data[name1] = configObject.allExtraParameters[name1](
-				settings.url,
-				settings.data
-			);
-		}
-
 		/**
 		 * Success function passed with the jQuery call, parses through
 		 * results and calls success or failure depending on if parse
@@ -1485,20 +1475,13 @@ export default function(map): void {
 			 * Parse through the results until the array of result objects
 			 *  is found
 			 */
-			if (typeof configObject[APIType + '_returnType'] === 'object') {
-				for (
-					let i = 0,
-						len = configObject[APIType + '_returnType'].length;
-					i < len;
-					i++
-				) {
-					theResult =
-						theResult[configObject[APIType + '_returnType'][i]];
+
+			if (typeof returnType === 'object') {
+				for (let i = 0, len = returnType.length; i < len; i++) {
+					theResult = theResult[returnType[i]];
 				}
-			} else if (
-				typeof configObject[APIType + '_returnType'] !== 'undefined'
-			) {
-				theResult = theResult[configObject[APIType + '_returnType']];
+			} else if (typeof returnType !== 'undefined') {
+				theResult = theResult[returnType];
 			} else {
 				theResult = results;
 			}
