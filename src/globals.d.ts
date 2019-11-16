@@ -4,3 +4,4 @@ declare global {
 		toProperCase(): string;
 	}
 }
+declare module '*.png';

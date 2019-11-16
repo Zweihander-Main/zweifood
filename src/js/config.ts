@@ -1,3 +1,5 @@
+/// <reference types="jquery" />
+
 import imageMarker1 from '../img/marker-1.png';
 import imageMarker2 from '../img/marker-2.png';
 import imageMarker3 from '../img/marker-3.png';
@@ -16,6 +18,50 @@ import yelpStars4 from '../img/yelpStars/small_4.png';
 import yelpStars45 from '../img/yelpStars/small_4_half.png';
 import yelpStars5 from '../img/yelpStars/small_5.png';
 import imageReticle from '../img/reticle.png';
+
+/**
+ * Object with the following properties:
+ * settings 			settings for jQuery Ajax call
+ * basicExtraParameters parameters to parse through for call,
+ * 						can include functions which will be fed
+ * 						lat, lng parameters
+ * basicURL            URL for basic searches
+ * detailedURL         URL for detailed searches
+ * extraSlash           optional, adds extra slash after detailed id
+ * basicReturnType     define where the results array for parsing is located
+ * 						in the results
+ * detailedReturnType  define where the results array for parsing is located
+ * 						in the results
+ * workerHandler        object to be parsed by the worker for API
+ *  					specific instructions
+ * @type {object}
+ */
+export interface ApiConfigObject {
+	settings: {
+		[key: string]:
+			| string
+			| number
+			| boolean
+			| { [key: string]: string | number | boolean }
+			| ((xhr: JQueryXHR) => void);
+	};
+	basicExtraParameters: {
+		[key: string]:
+			| string
+			| number
+			| boolean
+			| ((lat: string, lng: string) => string | number);
+	};
+	basicURL: string;
+	detailedURL: string;
+	extraSlash?: boolean;
+	basicReturnType: string | number | Array<string | number>;
+	detailedReturnType: string | number | Array<string | number>;
+	workerHandler: {
+		lat: Array<string>;
+		lng: Array<string>;
+	};
+}
 
 /**
  * Config object which defines a lot of developer settings, map styles, and API
@@ -372,6 +418,7 @@ export const API_MAPPINGS_FOR_MODEL = {
 		},
 	],
 };
+
 export const MAP_STYLE = [
 	{
 		featureType: 'all',
@@ -651,7 +698,7 @@ export const DEFAULT_MIN_RATING_BUTTON_FILTER = 0;
 export const DEFAULT_OPEN_BUTTON_FILTER = false;
 export const DEFAULT_FAVORITE_BUTTON_FILTER = false;
 
-// neccessary for sending to worker
+// necessary for sending to worker
 export const DISTANCE_BETWEEN_TWO_POINTS_IN_METERS = (
 	lat1,
 	lon1,
@@ -694,8 +741,8 @@ const SEARCH_API_INFO = {
 };
 
 // Information for return object can be found in callAPIInfo function
-export const YELP_SEARCH_API_PROPERTIES = (): object => {
-	const returnObject = {};
+export const YELP_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
+	const returnObject = {} as ApiConfigObject;
 	const parameters = {};
 
 	const settings = {
@@ -718,7 +765,7 @@ export const YELP_SEARCH_API_PROPERTIES = (): object => {
 			return lng;
 		},
 		term: 'food',
-		sort_by: 'distance',
+		sort_by: 'distance', // eslint-disable-line @typescript-eslint/camelcase
 	};
 
 	const workerHandler = {
@@ -728,18 +775,18 @@ export const YELP_SEARCH_API_PROPERTIES = (): object => {
 
 	returnObject.settings = settings;
 	returnObject.basicExtraParameters = basicExtraParameters;
-	returnObject.basic_URL = SEARCH_API_INFO.yelp.baseURL + '/search';
-	returnObject.detailed_URL = SEARCH_API_INFO.yelp.baseURL + '/';
-	returnObject.basic_returnType = 'businesses';
+	returnObject.basicURL = SEARCH_API_INFO.yelp.baseURL + '/search';
+	returnObject.detailedURL = SEARCH_API_INFO.yelp.baseURL + '/';
+	returnObject.basicReturnType = 'businesses';
 	returnObject.workerHandler = workerHandler;
 
 	return returnObject;
 };
 
-export const LOCU_SEARCH_API_PROPERTIES = (): object => {
-	const returnObject = {};
+export const LOCU_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
+	const returnObject = {} as ApiConfigObject;
 	const parameters = {
-		api_key: SEARCH_API_INFO.locu.APIKey,
+		api_key: SEARCH_API_INFO.locu.APIKey, // eslint-disable-line @typescript-eslint/camelcase
 	};
 
 	const settings = {
@@ -766,25 +813,27 @@ export const LOCU_SEARCH_API_PROPERTIES = (): object => {
 	};
 
 	const workerHandler = {
+		lat: [],
 		lng: ['long'],
 	};
 
 	returnObject.settings = settings;
 	returnObject.basicExtraParameters = basicExtraParameters;
-	returnObject.basic_URL = SEARCH_API_INFO.locu.baseURL + 'search/';
-	returnObject.detailed_URL = SEARCH_API_INFO.locu.baseURL;
+	returnObject.basicURL = SEARCH_API_INFO.locu.baseURL + 'search/';
+	returnObject.detailedURL = SEARCH_API_INFO.locu.baseURL;
 	returnObject.extraSlash = true;
-	returnObject.basic_returnType = 'objects';
-	returnObject.detailed_returnType = ['objects', 0];
+	returnObject.basicReturnType = 'objects';
+	returnObject.detailedReturnType = ['objects', 0];
 	returnObject.workerHandler = workerHandler;
 
 	return returnObject;
 };
-export const FOURSQUARE_SEARCH_API_PROPERTIES = (): object => {
-	const returnObject = {};
+
+export const FOURSQUARE_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
+	const returnObject = {} as ApiConfigObject;
 	const parameters = {
-		client_id: SEARCH_API_INFO.foursquare.clientID,
-		client_secret: SEARCH_API_INFO.foursquare.clientSecret,
+		client_id: SEARCH_API_INFO.foursquare.clientID, // eslint-disable-line @typescript-eslint/camelcase
+		client_secret: SEARCH_API_INFO.foursquare.clientSecret, // eslint-disable-line @typescript-eslint/camelcase
 		v: '20150711',
 	};
 
@@ -820,10 +869,10 @@ export const FOURSQUARE_SEARCH_API_PROPERTIES = (): object => {
 
 	returnObject.settings = settings;
 	returnObject.basicExtraParameters = basicExtraParameters;
-	returnObject.basic_URL = SEARCH_API_INFO.foursquare.baseURL + 'search';
-	returnObject.detailed_URL = SEARCH_API_INFO.foursquare.baseURL;
-	returnObject.basic_returnType = ['response', 'venues'];
-	returnObject.detailed_returnType = ['response', 'venue'];
+	returnObject.basicURL = SEARCH_API_INFO.foursquare.baseURL + 'search';
+	returnObject.detailedURL = SEARCH_API_INFO.foursquare.baseURL;
+	returnObject.basicReturnType = ['response', 'venues'];
+	returnObject.detailedReturnType = ['response', 'venue'];
 	returnObject.workerHandler = workerHandler;
 
 	return returnObject;

@@ -778,7 +778,7 @@ export default function(map): void {
 				lat: item.google_geometry().location.lat(),
 				lng: item.google_geometry().location.lng(),
 				name: item.google_name(),
-				google_placeId: item.google_placeId,
+				google_placeId: item.google_placeId, //eslint-disable-line @typescript-eslint/camelcase
 			};
 		});
 	};
@@ -1413,29 +1413,14 @@ export default function(map): void {
 		clonedMarkedLocations,
 		callback
 	): void {
-		/**
-		 * Object with the following properties:
-		 * settings 			settings for jQuery Ajax call
-		 * basicExtraParameters parameters to parse through for call,
-		 * 						can include functions which will be fed
-		 * 						lat, lng parameters
-		 * basic_url            URL for basic searches
-		 * detailed_url         URL for detailed searches
-		 * extraSlash           optional, adds extra slash after detailed id
-		 * basic_returnType     string or array of strings that define where
-		 * 						the results array for parsing is located
-		 * 						in the results
-		 * workerHandler        object to be parsed by the worker for API
-		 *  					specific instructions
-		 * @type {object}
-		 */
+		// See config for documentation on interface
 		const configObject = config[
 			service.toUpperCase() + '_SEARCH_API_PROPERTIES'
-		]();
+		]() as config.ApiConfigObject;
 		const settings = configObject.settings;
-		const returnType = configObject[APIType + '_returnType'];
+		const returnType = configObject[APIType + 'ReturnType'];
 		let lat, lng, initialPoint;
-		settings.url = configObject[APIType + '_URL'];
+		settings.url = configObject[APIType + 'URL'];
 		// Just call the ID of the model
 		if (APIType !== 'basic') {
 			settings.url += selectedPlace[service + '_id']();
@@ -1450,17 +1435,12 @@ export default function(map): void {
 				lat: lat,
 				lng: lng,
 			};
-			for (const name2 in configObject.basicExtraParameters) {
-				if (
-					typeof configObject.basicExtraParameters[name2] ===
-					'function'
-				) {
-					settings.data[name2] = configObject.basicExtraParameters[
-						name2
-					](lat, lng);
+			for (const name in configObject.basicExtraParameters) {
+				const value = configObject.basicExtraParameters[name];
+				if (typeof value === 'function') {
+					settings.data[name] = value(lat, lng);
 				} else {
-					settings.data[name2] =
-						configObject.basicExtraParameters[name2];
+					settings.data[name] = value;
 				}
 			}
 		}
