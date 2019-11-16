@@ -337,6 +337,8 @@ a:focus {
 .filter-button-button {
 	margin: 0px 10px 0 0;
 	padding: 6px 10px 10px 13px;
+	top: 1px;
+	position: relative;
 }
 
 .logo-button:hover {

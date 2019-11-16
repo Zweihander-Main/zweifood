@@ -1,6 +1,6 @@
 /* global google, ko*/
 
-import appConfigObject from './config.ts';
+import * as config from './config';
 ///////////////////////
 //Section III: Model //
 ///////////////////////
@@ -58,9 +58,9 @@ export default function(currentViewModel, searchType): void {
 			opacity:
 				self.isListed() === false
 					? currentViewModel.lowMarkerOpacity()
-					: appConfigObject.highMarkerOpacity,
+					: config.HIGH_MARKER_OPACITY,
 			icon: currentViewModel.markerImageCreator(),
-			shape: appConfigObject.defaultMarkerShape,
+			shape: config.DEFAULT_MARKER_SHAPE,
 		})
 	);
 
@@ -98,7 +98,7 @@ export default function(currentViewModel, searchType): void {
 	self.disposableArray.push(
 		self.isListed.subscribe(function(newValue) {
 			if (newValue) {
-				self.marker().setOpacity(appConfigObject.highMarkerOpacity);
+				self.marker().setOpacity(config.HIGH_MARKER_OPACITY);
 				self.marker(self.marker());
 			} else {
 				self.marker().setOpacity(currentViewModel.lowMarkerOpacity());
@@ -166,34 +166,34 @@ export default function(currentViewModel, searchType): void {
 	self.yelp_ratingImgURL = ko.pureComputed(function() {
 		switch (self.yelp_rating()) {
 			case 0:
-				return appConfigObject.yelpStarImages[0];
+				return config.YELP_STAR_IMAGES[0];
 				break;
 			case 1:
-				return appConfigObject.yelpStarImages[1];
+				return config.YELP_STAR_IMAGES[1];
 				break;
 			case 1.5:
-				return appConfigObject.yelpStarImages[15];
+				return config.YELP_STAR_IMAGES[15];
 				break;
 			case 2:
-				return appConfigObject.yelpStarImages[2];
+				return config.YELP_STAR_IMAGES[2];
 				break;
 			case 2.5:
-				return appConfigObject.yelpStarImages[25];
+				return config.YELP_STAR_IMAGES[25];
 				break;
 			case 3:
-				return appConfigObject.yelpStarImages[3];
+				return config.YELP_STAR_IMAGES[3];
 				break;
 			case 3.5:
-				return appConfigObject.yelpStarImages[35];
+				return config.YELP_STAR_IMAGES[35];
 				break;
 			case 4:
-				return appConfigObject.yelpStarImages[4];
+				return config.YELP_STAR_IMAGES[4];
 				break;
 			case 4.5:
-				return appConfigObject.yelpStarImages[45];
+				return config.YELP_STAR_IMAGES[45];
 				break;
 			case 5:
-				return appConfigObject.yelpStarImages[5];
+				return config.YELP_STAR_IMAGES[5];
 				break;
 		}
 	});

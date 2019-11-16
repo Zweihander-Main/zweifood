@@ -2,7 +2,7 @@ interface String {
 	toProperCase(): string;
 }
 
-import appConfigObject from './config.ts';
+import * as config from './config';
 import FuzzySet from 'fuzzyset.js';
 
 /**
@@ -156,7 +156,7 @@ export const matchBasedOnName = (arrayOfResults, nameToMatch, nameOfName) => {
 	}
 	let match = setToMatch.get(nameToMatch);
 	// If there was a match, it'll be at match[0][1], confidence at match[0][0]
-	if (match !== null && match[0][0] > appConfigObject.minFuzzyMatch) {
+	if (match !== null && match[0][0] > config.MIN_FUZZY_MATCH) {
 		return setToMatch.values().indexOf(match[0][1]);
 	} else {
 		return false;

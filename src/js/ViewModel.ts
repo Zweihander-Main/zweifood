@@ -1,4 +1,4 @@
-/* global google, ko, $, ResizeSensor, WebFont */
+/* global google, ko, $ */
 import {
 	storageAvailable,
 	workersAvailable,
@@ -7,9 +7,17 @@ import {
 	throttle,
 	allValuesSameInTwoArray,
 	matchBasedOnName,
-} from './util.ts';
-import appConfigObject from './config.ts';
-import LocationModel from './LocationModel.ts';
+} from './util';
+import * as config from './config';
+import {
+	MAX_MARKER_LIMIT,
+	LOW_MARKER_OPACITY,
+	DEFAULT_PRICE_BUTTON_FILTER,
+	DEFAULT_MIN_RATING_BUTTON_FILTER,
+	DEFAULT_OPEN_BUTTON_FILTER,
+	DEFAULT_FAVORITE_BUTTON_FILTER,
+} from './config'; // For observable wrapped data
+import LocationModel from './LocationModel';
 
 ////////////////////////////
 // Section IV: View Model //
@@ -30,24 +38,23 @@ export default function(map): void {
 	self.storageAvailable = storageAvailable('localStorage');
 	self.workersAvailable = workersAvailable();
 	// Get config variables that can be changed
-	self.maxMarkerLimit = ko.observable(appConfigObject.maxMarkerLimit);
-	self.lowMarkerOpacity = ko.observable(appConfigObject.lowMarkerOpacity);
-	self.APIMappingsForModel = appConfigObject.APIMappingsForModel;
-	self.APIConfiguredSearchTypes = appConfigObject.configuredSearchTypes;
-	self.APIInfo = appConfigObject.searchAPIInfo;
+	self.maxMarkerLimit = ko.observable(MAX_MARKER_LIMIT);
+	self.lowMarkerOpacity = ko.observable(LOW_MARKER_OPACITY);
+	self.APIMappingsForModel = config.API_MAPPINGS_FOR_MODEL;
+	self.APIConfiguredSearchTypes = config.CONFIGURED_SEARCH_TYPES;
 	// Set default marker image object based on config object
 	self.defaultMarkerImage = {
 		size: new google.maps.Size(
-			appConfigObject.markerImageSize[0],
-			appConfigObject.markerImageSize[1]
+			config.MARKER_IMAGE_SIZE[0],
+			config.MARKER_IMAGE_SIZE[1]
 		),
 		origin: new google.maps.Point(
-			appConfigObject.markerImageOrigin[0],
-			appConfigObject.markerImageOrigin[1]
+			config.MARKER_IMAGE_ORIGIN[0],
+			config.MARKER_IMAGE_ORIGIN[1]
 		),
 		anchor: new google.maps.Point(
-			appConfigObject.markerImageAnchor[0],
-			appConfigObject.markerImageAnchor[1]
+			config.MARKER_IMAGE_ANCHOR[0],
+			config.MARKER_IMAGE_ANCHOR[1]
 		),
 	};
 
@@ -89,17 +96,13 @@ export default function(map): void {
 	self.sortType = ko.observable('count');
 	self.searchQuery = ko.observable();
 	self.priceButtonFilter = ko.observableArray(
-		appConfigObject.defaultPriceButtonFilter
+		DEFAULT_PRICE_BUTTON_FILTER.slice()
 	);
 	self.minRatingButtonFilter = ko.observable(
-		appConfigObject.defaultMinRatingButtonFilter
+		DEFAULT_MIN_RATING_BUTTON_FILTER
 	);
-	self.openButtonFilter = ko.observable(
-		appConfigObject.defaultOpenButtonFilter
-	);
-	self.favoriteButtonFilter = ko.observable(
-		appConfigObject.defaultFavoriteButtonFilter
-	);
+	self.openButtonFilter = ko.observable(DEFAULT_OPEN_BUTTON_FILTER);
+	self.favoriteButtonFilter = ko.observable(DEFAULT_FAVORITE_BUTTON_FILTER);
 
 	/**
 	 * Initial HTML that gets parsed through knockout applyBindings and sets
@@ -285,13 +288,13 @@ export default function(map): void {
 				const y1 = left.google_geometry().location.lng();
 				const y2 = right.google_geometry().location.lng();
 				const y3 = self.mainMapCenter().lng();
-				const dist1 = appConfigObject.distanceBetweenTwoPointsInMeters(
+				const dist1 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
 					x1,
 					y1,
 					x3,
 					y3
 				);
-				const dist2 = appConfigObject.distanceBetweenTwoPointsInMeters(
+				const dist2 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
 					x2,
 					y2,
 					x3,
@@ -535,24 +538,24 @@ export default function(map): void {
 	self.markerImageCreator = function(isFavorite, priceLevel): void {
 		const markerObject = self.defaultMarkerImage;
 		if (isFavorite === true) {
-			markerObject.url = appConfigObject.markerImageURLFav;
+			markerObject.url = config.MARKER_IMAGE_URL_FAV;
 			return markerObject;
 		}
 		switch (priceLevel) {
 			case 1:
-				markerObject.url = appConfigObject.markerImageURL1;
+				markerObject.url = config.MARKER_IMAGE_URL_1;
 				return markerObject;
 			case 2:
-				markerObject.url = appConfigObject.markerImageURL2;
+				markerObject.url = config.MARKER_IMAGE_URL_2;
 				return markerObject;
 			case 3:
-				markerObject.url = appConfigObject.markerImageURL3;
+				markerObject.url = config.MARKER_IMAGE_URL_3;
 				return markerObject;
 			case 4:
-				markerObject.url = appConfigObject.markerImageURL4;
+				markerObject.url = config.MARKER_IMAGE_URL_4;
 				return markerObject;
 			default:
-				markerObject.url = appConfigObject.markerImageURLEmpty;
+				markerObject.url = config.MARKER_IMAGE_URL_EMPTY;
 				return markerObject;
 		}
 	};
@@ -720,16 +723,12 @@ export default function(map): void {
 					? -1
 					: 1;
 			});
-			for (
-				let i = 0;
-				i < appConfigObject.markerLimitRemoveBulkAmount;
-				i++
-			) {
+			for (let i = 0; i < config.MARKER_LIMIT_REMOVAL_BULK_AMOUNT; i++) {
 				newValue[i].dispose();
 			}
 			self.markedLocations.splice(
 				0,
-				appConfigObject.markerLimitRemoveBulkAmount
+				config.MARKER_LIMIT_REMOVAL_BULK_AMOUNT
 			);
 		},
 		1000,
@@ -967,9 +966,9 @@ export default function(map): void {
 				resultsArray: results,
 				locationsArray: clonedMarkedLocations,
 				initialPoint: initialPoint,
-				maxDistance: appConfigObject.latLngAccuracy,
+				maxDistance: config.LAT_LNG_ACCURACY,
 				service: service,
-				minFuzzyMatch: appConfigObject.minFuzzyMatch,
+				minFuzzyMatch: config.MIN_FUZZY_MATCH,
 				workerHandler: workerHandler,
 			};
 
@@ -1396,12 +1395,12 @@ export default function(map): void {
 	/**
 	 * Function that can call the API's defined in the config object. Uses
 	 * jQuery.ajax to handle success and error.
-	 * Was easier to create one function than 3+ seperate ones as it makes
+	 * Was easier to create one function than 3+ separate ones as it makes
 	 * adding API's easier and making success/modifying cases consistent.
 	 * @param  {string}   APIType               type of search
-	 * @param  {string}   service               name of api to call
+	 * @param  {string}   service               name of API to call
 	 * @param  {object}   selectedPlace         model to update
-	 * @param  {object}   clonedMarkedLocations clone of listable locations
+	 * @param  {object}   clonedMarkedLocations clone of list-able locations
 	 *                                          for worker object
 	 * @param  {Function} callback              callback function that is
 	 *                                          called when the initial call
@@ -1416,21 +1415,23 @@ export default function(map): void {
 	): void {
 		/**
 		 * Object with the following properties:
-		 * settings 			settings for jQuery ajax call
+		 * settings 			settings for jQuery Ajax call
 		 * basicExtraParameters parameters to parse through for call,
 		 * 						can include functions which will be fed
 		 * 						lat, lng parameters
-		 * basic_url            url for basic searches
-		 * detailed_url         url for detailed searches
+		 * basic_url            URL for basic searches
+		 * detailed_url         URL for detailed searches
 		 * extraSlash           optional, adds extra slash after detailed id
 		 * basic_returnType     string or array of strings that define where
 		 * 						the results array for parsing is located
 		 * 						in the results
-		 * workerHandler        object to be parsed by the worker for api
+		 * workerHandler        object to be parsed by the worker for API
 		 *  					specific instructions
 		 * @type {object}
 		 */
-		const configObject = appConfigObject[service + '_searchAPIProperties'];
+		const configObject = config[
+			service.toUpperCase() + '_SEARCH_API_PROPERTIES'
+		]();
 		const settings = configObject.settings;
 		const returnType = configObject[APIType + '_returnType'];
 		let lat, lng, initialPoint;
@@ -1534,7 +1535,7 @@ export default function(map): void {
 
 		/**
 		 * Always executed function passed with jQuery call to manage
-		 * removing model from api calls management object
+		 * removing model from API calls management object
 		 * @param  {object} jqXHR      jqXHR object from jQuery
 		 * @param  {string} textStatus textStatus string from jQuery
 		 */
@@ -1554,11 +1555,11 @@ export default function(map): void {
 	};
 
 	/**
-	 * Take a google photo object and get its URL
-	 * @param  {object} photoObject google photo object from API
+	 * Take a Google photo object and get its URL
+	 * @param  {object} photoObject Google photo object from API
 	 * @param  {object} parameter   parameter to ask for from API ie
 	 *                              {maxWidth: 300}
-	 * @return {string}             url of photo or empty string
+	 * @return {string}             URL of photo or empty string
 	 */
 	self.getGooglePhotoURL = function(photoObject, parameter): string {
 		if (typeof photoObject.getUrl === 'function') {
@@ -1579,7 +1580,7 @@ export default function(map): void {
 	};
 
 	/**
-	 * Handles creating web workers, recieving data from them, and
+	 * Handles creating web workers, receiving data from them, and
 	 * ending them. Updates model for every matched location.
 	 * @param  {object} workerObject     successAPIFunction worker object to
 	 *                                   be passed to the worker
@@ -1693,7 +1694,7 @@ export default function(map): void {
 	 * Function to change position of map relative to center/marker by a given
 	 * number of pixels.
 	 * @param {object} map     Google map object
-	 * @param {object} latlng  Optional google LatLng object of center point,
+	 * @param {object} latlng  Optional Google LatLng object of center point,
 	 *                         will default to center of map otherwise
 	 * @param {number} offsetx X pixels to offset by
 	 * @param {number} offsety Y pixels to offset by
@@ -1802,8 +1803,8 @@ export default function(map): void {
 	};
 
 	/**
-	 * Checks if the infoWindow needs to be moved. Checks every 100ms
-	 * unless the native google method moves the map in which case waits
+	 * Checks if the infoWindow needs to be moved. Checks every 100 ms
+	 * unless the native Google method moves the map in which case waits
 	 * longer. If the user drags the map or the infoWindow closes, stops
 	 * the checking.
 	 * @param  {object} theElement element from binding handler - hopefully
@@ -1851,10 +1852,10 @@ export default function(map): void {
 	 */
 	self.resetFilters = function(): void {
 		self.searchQuery('');
-		self.priceButtonFilter(appConfigObject.defaultPriceButtonFilter);
+		self.priceButtonFilter(DEFAULT_PRICE_BUTTON_FILTER.slice());
 		self.minRatingButtonFilter(-1);
-		self.openButtonFilter(appConfigObject.defaultOpenButtonFilter);
-		self.favoriteButtonFilter(appConfigObject.defaultFavoriteButtonFilter);
+		self.openButtonFilter(DEFAULT_OPEN_BUTTON_FILTER);
+		self.favoriteButtonFilter(DEFAULT_FAVORITE_BUTTON_FILTER);
 	};
 
 	self.initializeCurrentDetailedAPIInfoBeingFetched();

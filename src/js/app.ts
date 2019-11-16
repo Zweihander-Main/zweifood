@@ -46,9 +46,9 @@ import '../vendor/jquery.scrollintoview.custom.js';
 import ResizeSensor from 'css-element-queries/src/ResizeSensor.js';
 import WebFont from 'webfontloader';
 
-import appConfigObject from './config.ts';
-import { preload, throttle, checkNested } from './util.ts';
-import ViewModel from './ViewModel.ts';
+import * as config from './config';
+import { preload, throttle, checkNested } from './util';
+import ViewModel from './ViewModel';
 /**
  * App contains utility functions, the view model, model definitions, and
  * success/fail functions for google maps (that create the map and viewmodel).
@@ -333,8 +333,8 @@ const app: App = ((): App => {
 					map.setCenter(place.geometry.location);
 					const defaultZoom =
 						window.innerWidth < 992
-							? appConfigObject.defaultMobileZoom
-							: appConfigObject.defaultZoom;
+							? config.DEFAULT_MOBILE_ZOOM
+							: config.DEFAULT_ZOOM;
 					map.setZoom(defaultZoom);
 				}
 			});
@@ -1190,15 +1190,15 @@ const app: App = ((): App => {
 		} else {
 			// Setup default options from config object
 			const defaultLatLng = new google.maps.LatLng(
-					appConfigObject.defaultLat,
-					appConfigObject.defaultLng
+					config.DEFAULT_LAT,
+					config.DEFAULT_LNG
 				),
 				defaultZoom =
 					window.innerWidth < 992
-						? appConfigObject.defaultMobileZoom
-						: appConfigObject.defaultZoom,
+						? config.DEFAULT_MOBILE_ZOOM
+						: config.DEFAULT_ZOOM,
 				mapElement = document.getElementById('mapDiv'),
-				defaultStyle = appConfigObject.mapStyle;
+				defaultStyle = config.MAP_STYLE;
 
 			const mapOptions = {
 				center: defaultLatLng,
@@ -1212,7 +1212,7 @@ const app: App = ((): App => {
 
 			// Define reticle to be pegged at center of map
 			const reticleImage = {
-				url: appConfigObject.markerImageReticle, // marker image
+				url: config.MARKER_IMAGE_RETICLE, // marker image
 				size: new google.maps.Size(16, 16), // marker size
 				origin: new google.maps.Point(0, 0), // marker origin
 				anchor: new google.maps.Point(8, 8),
@@ -1393,11 +1393,11 @@ const app: App = ((): App => {
 				],
 			},
 			timeout: 10000,
-			active: function() {
+			active: (): void => {
 				fontsPreloaded = true;
 			},
 			// Fails to load, proceed anyway
-			inactive: function() {
+			inactive: (): void => {
 				fontsPreloaded = true;
 				console.warn('Fonts were not loaded.');
 			},
@@ -1406,24 +1406,24 @@ const app: App = ((): App => {
 
 		preload(
 			[
-				appConfigObject.markerImageURL1,
-				appConfigObject.markerImageURL2,
-				appConfigObject.markerImageURL3,
-				appConfigObject.markerImageURL4,
-				appConfigObject.markerImageURLEmpty,
-				appConfigObject.markerImageURLFav,
-				appConfigObject.markerImageURLDefault,
-				appConfigObject.markerImageReticle,
-				appConfigObject.yelpStarImages.yelpStars0,
-				appConfigObject.yelpStarImages.yelpStars1,
-				appConfigObject.yelpStarImages.yelpStars15,
-				appConfigObject.yelpStarImages.yelpStars2,
-				appConfigObject.yelpStarImages.yelpStars25,
-				appConfigObject.yelpStarImages.yelpStars3,
-				appConfigObject.yelpStarImages.yelpStars35,
-				appConfigObject.yelpStarImages.yelpStars4,
-				appConfigObject.yelpStarImages.yelpStars45,
-				appConfigObject.yelpStarImages.yelpStars5,
+				config.MARKER_IMAGE_URL_1,
+				config.MARKER_IMAGE_URL_2,
+				config.MARKER_IMAGE_URL_3,
+				config.MARKER_IMAGE_URL_4,
+				config.MARKER_IMAGE_URL_EMPTY,
+				config.MARKER_IMAGE_URL_FAV,
+				config.MARKER_IMAGE_URL_DEFAULT,
+				config.MARKER_IMAGE_RETICLE,
+				config.YELP_STAR_IMAGES[0],
+				config.YELP_STAR_IMAGES[1],
+				config.YELP_STAR_IMAGES[15],
+				config.YELP_STAR_IMAGES[2],
+				config.YELP_STAR_IMAGES[25],
+				config.YELP_STAR_IMAGES[3],
+				config.YELP_STAR_IMAGES[35],
+				config.YELP_STAR_IMAGES[4],
+				config.YELP_STAR_IMAGES[45],
+				config.YELP_STAR_IMAGES[5],
 			],
 			function() {
 				imagesPreloaded = true;
