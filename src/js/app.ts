@@ -51,9 +51,9 @@ import { preload, throttle, checkNested } from './util';
 import ViewModel from './ViewModel';
 /**
  * App contains utility functions, the view model, model definitions, and
- * success/fail functions for google maps (that create the map and viewmodel).
- * Kept as anonymous function to minimize any global namespace problems.
- * Success/fail functions plus returned for google maps API to call. Preload
+ * success/fail functions for Google maps (that create the map and view model).
+ * Kept as anonymous function to minimize any global name space problems.
+ * Success/fail functions plus returned for Google maps API to call. Preload
  * functions called right after maps API starts loading.
  */
 /**
@@ -71,7 +71,7 @@ const app: App = ((): App => {
 	/**
 	 * Function to throttle perfectScrollbar updating - called when list of elements
 	 * populating scrollbar is changed
-	 * @param {object} jQueryObject   jQuery object that perfectscrollbar is
+	 * @param {object} jQueryObject   jQuery object that perfectScrollbar is
 	 *                                attached to
 	 */
 	const perfectScrollbarUpdatePerfectScrollbar = throttle(
@@ -85,7 +85,7 @@ const app: App = ((): App => {
 	);
 
 	/**
-	 * Used in dropdown bindingHandler to check all input values - neccessary
+	 * Used in dropdown bindingHandler to check all input values - necessary
 	 * to check for deeply nested objects
 	 * @param  {string/object/array} input     Input to check from dropdown
 	 *                                         handler

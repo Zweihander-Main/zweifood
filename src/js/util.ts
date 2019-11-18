@@ -64,7 +64,7 @@ export const _now: number =
  *                              edge rather than on trailing edge
  * @return {function}           debounced function
  */
-export const debounce = (func, wait, immediate) => {
+export const debounce = (func, wait, immediate?) => {
 	let timeout, args, context, timestamp, result;
 	const later = function(): void {
 		const last = _now() - timestamp;
@@ -146,7 +146,7 @@ export const throttle = (func, wait, options) => {
  *                                 the index of the matched string if a fuzzy
  *                                 match has been made
  */
-export const matchBasedOnName = (arrayOfResults, nameToMatch, nameOfName) => {
+export const matchBasedOnName = (arrayOfResults, nameToMatch, nameOfName?) => {
 	if (typeof nameOfName === 'undefined') {
 		nameOfName = 'name';
 	}

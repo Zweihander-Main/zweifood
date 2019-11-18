@@ -10,6 +10,7 @@ import {
 } from './util';
 import * as config from './config';
 import {
+	API_KEYS,
 	MAX_MARKER_LIMIT,
 	LOW_MARKER_OPACITY,
 	DEFAULT_PRICE_BUTTON_FILTER,
@@ -24,7 +25,7 @@ import LocationModel from './LocationModel';
 ////////////////////////////
 
 /**
- * View Model for initialized google map
+ * View Model for initialized Google map
  * @param {object} map Google map viewModel is to use
  */
 export default function(map): void {
@@ -42,6 +43,10 @@ export default function(map): void {
 	self.lowMarkerOpacity = ko.observable(LOW_MARKER_OPACITY);
 	self.APIMappingsForModel = config.API_MAPPINGS_FOR_MODEL;
 	self.APIConfiguredSearchTypes = config.CONFIGURED_SEARCH_TYPES;
+	for (const type of self.APIConfiguredSearchTypes) {
+		self['APIKeys_' + type] = ko.observable(API_KEYS[type]);
+		self['APIURLs_' + type] = config.API_URLS[type];
+	}
 	// Set default marker image object based on config object
 	self.defaultMarkerImage = {
 		size: new google.maps.Size(
@@ -74,7 +79,7 @@ export default function(map): void {
 	self.favoriteArray = ko.observableArray([]);
 	// Array of current API calls - used to throttle calls when scrolling
 	self.getRestaurantsFromGoogleMapsAPICallArray = [];
-	// Object to control API calls from non-google services
+	// Object to control API calls from non-Google services
 	self.currentDetailedAPIInfoBeingFetched = {};
 	// Observable that is set when an error comes up
 	self.errors = ko.observable(false);
@@ -118,7 +123,7 @@ export default function(map): void {
 	 * new opacity
 	 */
 	self.lowMarkerOpacity.subscribe(function(newValue) {
-		newValue = Number(newValue).toFixed(2) / 1;
+		newValue = +Number(newValue).toFixed(2);
 		ko.utils.arrayForEach(self.markedLocations(), function(item) {
 			if (item.isListed() === false) {
 				item.marker().setOpacity(newValue);
@@ -563,7 +568,7 @@ export default function(map): void {
 	/**
 	 * Get browser location and send it to panning function
 	 */
-	self.getNavWithCallback = function(): void {
+	self.getNavWithCallback = function(): void | false {
 		if (navigator.geolocation) {
 			return navigator.geolocation.getCurrentPosition(
 				self.mapPanFromNavigation
@@ -612,14 +617,14 @@ export default function(map): void {
 	};
 
 	/**
-	 * Takes a model and returns just the data in javascript object format
+	 * Takes a model and returns just the data in JavaScript object format
 	 * Knockout's built in function for this was having trouble
-	 * @param  {object} model model to convert into javascript object
+	 * @param  {object} model model to convert into JavaScript object
 	 *                        without function
-	 * @return {object}       javascript object representation of model
+	 * @return {object}       JavaScript object representation of model
 	 *                        (without functions/ect.)
 	 */
-	self.modelDeconstructor = function(model): void {
+	self.modelDeconstructor = function(model): object {
 		const returnModel = {};
 		for (const prop in self.APIMappingsForModel) {
 			const currentType = self.APIMappingsForModel[prop];
@@ -638,10 +643,10 @@ export default function(map): void {
 	};
 
 	/**
-	 * Takes the model, data from the api server, and updates the
+	 * Takes the model, data from the API server, and updates the
 	 * observables of that model with the data from the server
 	 * @param  {object} model  model to update
-	 * @param  {string} type   which api type/source was used
+	 * @param  {string} type   which API type/source was used
 	 * @param  {object} result result from server, mapped using config object
 	 */
 	self.modelUpdater = function(model, type, result): void {
@@ -689,7 +694,7 @@ export default function(map): void {
 
 	/**
 	 * Takes a model and adds in API searchType and isLoading observables
-	 * for all api types
+	 * for all API types
 	 * @param  {object} model model to add observables to
 	 */
 	self.modelSearchTypeConstructor = function(model): void {
@@ -739,10 +744,10 @@ export default function(map): void {
 
 	/**
 	 * Called when a model is created, iterates locationModelNumber when
-	 * called. Allows for sorting models by when they were recieved
+	 * called. Allows for sorting models by when they were received
 	 * @return {number} number to assign model
 	 */
-	self.getLocationModelNumber = function(): void {
+	self.getLocationModelNumber = function(): number {
 		self.locationModelNumber++;
 		return self.locationModelNumber - 1;
 	};
@@ -880,10 +885,10 @@ export default function(map): void {
 	};
 
 	/**
-	 * Called everytime the bounds change to check all the markedLocations
+	 * Called every-time the bounds change to check all the markedLocations
 	 * markers to see if they're on the map. Sets the isInViewOnMap of those
 	 * marker.
-	 * @param  {object} currentBounds map.getBounds() from google API
+	 * @param  {object} currentBounds map.getBounds() from Google API
 	 */
 	self.checkIfOnMap = function(currentBounds): void {
 		ko.utils.arrayForEach(self.markedLocations(), function(item) {
@@ -1015,11 +1020,12 @@ export default function(map): void {
 				customTextStatus = textStatus;
 				killOnMarkers = false;
 		}
-		const errorObject = {};
-		errorObject.customMessage = customMessage;
-		errorObject.textStatus = customTextStatus;
-		errorObject.verbose = verbose;
-		errorObject.killOnMarkers = killOnMarkers;
+		const errorObject = {
+			customMessage,
+			textStatus: customTextStatus,
+			verbose,
+			killOnMarkers,
+		};
 		self.errors(errorObject);
 		if (errorThrown) {
 			console.warn(errorThrown);
@@ -1030,7 +1036,7 @@ export default function(map): void {
 	 * Function to call a type of API's detailed data (used when switching
 	 * tabs in infoWindow). Will check if a basic call is already in
 	 * progress and will schedule the call after the basic data comes back.
-	 * This is neccessary as all detailed calls will tend to require an ID
+	 * This is necessary as all detailed calls will tend to require an ID
 	 * which is acquired from the basic call.
 	 * @param  {string} service       name of API to call
 	 * @param  {object} selectedPlace model to update with data
@@ -1307,7 +1313,7 @@ export default function(map): void {
 	 *                                  finished. Needs to be synced like
 	 *                                  that as this could be fetching
 	 *                                  data for a radar place which has
-	 *                                  no discernable information to match
+	 *                                  no discernible information to match
 	 *                                  against for the other APIs.
 	 */
 	self.getDetailedGooglePlacesAPIInfo = function(
@@ -1364,31 +1370,40 @@ export default function(map): void {
 	 * private. Is not very memory efficient but doesn't need to be for
 	 * this use case.
 	 * @param {string}    type          type of search
-	 * @param {string}    service       api being searched
+	 * @param {string}    service       API being searched
 	 * @return {function} setSearchType constructed function to pass
 	 */
 	self.setAPIResultSearchType = function(
 		type,
 		service
-	): (result: object, override: string) => object {
+	): {
+		setSearchType: (
+			result: { searchType: (a: string) => (b: string) => void },
+			override: string
+		) => void;
+	} {
 		const inputs = {
-			type: type,
-			service: service,
+			type,
+			service,
 		};
 		/**
 		 * Set the search type of a model
 		 * @param {object} result   model to be set
 		 * @param {string} override override if not found for matching
 		 */
-		function setSearchType(result, override): object {
-			const toSet = inputs.type.toProperCase();
+		const setSearchType = (
+			result: { searchType: (a: string) => (b: string) => void }, //TODO
+			override: string
+		): void => {
+			let toSet = inputs.type.toProperCase();
 			if (override) {
 				toSet = override;
 			}
 			result.searchType(inputs.service)(toSet);
-		}
+		};
+
 		return {
-			setSearchType: setSearchType,
+			setSearchType,
 		};
 	};
 
@@ -1419,26 +1434,31 @@ export default function(map): void {
 		]() as config.ApiConfigObject;
 		const settings = configObject.settings;
 		const returnType = configObject[APIType + 'ReturnType'];
-		let lat, lng, initialPoint;
+		const keyData = self['APIKeys_' + service]();
+		// TODO iterate keyData and check for empty strings
+		let initialPoint;
 		settings.url = configObject[APIType + 'URL'];
-		// Just call the ID of the model
 		if (APIType !== 'basic') {
+			// Just call the ID of the model
 			settings.url += selectedPlace[service + '_id']();
 			if (configObject.extraSlash === true) {
 				settings.url += '/';
 			}
 		} else {
 			// Create search request that searches nearby the model
-			lat = selectedPlace.google_geometry().location.lat();
-			lng = selectedPlace.google_geometry().location.lng();
 			initialPoint = {
-				lat: lat,
-				lng: lng,
+				lat: selectedPlace.google_geometry().location.lat(),
+				lng: selectedPlace.google_geometry().location.lng(),
 			};
 			for (const name in configObject.basicExtraParameters) {
 				const value = configObject.basicExtraParameters[name];
 				if (typeof value === 'function') {
-					settings.data[name] = value(lat, lng);
+					const returnedValue = value(keyData, initialPoint);
+					if (name === 'beforeSend') {
+						settings[name] = returnedValue;
+					} else {
+						settings.data[name] = returnedValue;
+					} //TODO implement this in instructions
 				} else {
 					settings.data[name] = value;
 				}
@@ -1497,9 +1517,13 @@ export default function(map): void {
 		 * be shown to the user
 		 * @param  {object} jqXHR       jqXHR object from jQuery
 		 * @param  {string} textStatus  textStatus string from jQuery
-		 * @param  {object} errorThrown error object from jQuery
+		 * @param  {string} errorThrown error string from jQuery
 		 */
-		settings.error = function(jqXHR, textStatus, errorThrown): void {
+		settings.error = function(
+			jqXHR: JQueryXHR,
+			textStatus: string,
+			errorThrown: string
+		): void {
 			self.currentDetailedAPIInfoBeingFetched.interceptIDRemove(
 				selectedPlace
 			);
@@ -1516,8 +1540,6 @@ export default function(map): void {
 		/**
 		 * Always executed function passed with jQuery call to manage
 		 * removing model from API calls management object
-		 * @param  {object} jqXHR      jqXHR object from jQuery
-		 * @param  {string} textStatus textStatus string from jQuery
 		 */
 		settings.complete = function(): void {
 			self.currentDetailedAPIInfoBeingFetched.removeID(
@@ -1797,7 +1819,7 @@ export default function(map): void {
 		model,
 		xModifier
 	): void {
-		let time = 100;
+		let time: number | false = 100;
 		if (self.regularInfoWindowPan() === true) {
 			time = 600;
 			self.regularInfoWindowPan(false);
