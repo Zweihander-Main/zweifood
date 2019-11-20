@@ -131,6 +131,7 @@
 		"@babel/core": "^7.6.4",
 		"@babel/preset-env": "^7.6.3",
 		"@babel/register": "^7.6.2",
+		"@types/googlemaps": "^3.38.0",
 		"@types/jquery": "^3.3.31",
 		"@types/knockout": "^3.4.66",
 		"@typescript-eslint/eslint-plugin": "^2.6.0",

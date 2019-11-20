@@ -679,7 +679,7 @@ export const DEFAULT_MARKER_SHAPE = {
 		19,
 	],
 	type: 'poly',
-};
+} as google.maps.MarkerShape;
 export const YELP_STAR_IMAGES = {
 	0: yelpStars0,
 	1: yelpStars1,
