@@ -25,9 +25,9 @@ export interface Point {
 	lng: number;
 }
 /**
- * Object with the following properties:
+ * Object with the following properties: //TODO
  * settings 			settings for jQuery Ajax call
- * basicExtraParameters parameters to parse through for call,
+ * basicOnlyParameters parameters to parse through for call,
  * 						can include functions which will be fed
  * 						lat, lng parameters
  * basicURL            URL for basic searches
@@ -41,26 +41,18 @@ export interface Point {
  *  					specific instructions
  * @type {object}
  */
+
 export interface ApiConfigObject {
-	settings: {
-		[key: string]:
-			| string
-			| number
-			| boolean
-			| { [key: string]: string | number | boolean }
-			| ((
-					xhr: JQueryXHR,
-					textStatus?: string,
-					errorThrown?: string
-			  ) => void);
+	settings: JQuery.AjaxSettings;
+	apiParameters: {
+		[key: string]: (apiInfo: {
+			[key: string]: string;
+		}) => string | ((jqXHR: JQueryXHR) => false | void);
+		beforeSend: (apiInfo: {
+			[key: string]: string;
+		}) => (jqXHR: JQueryXHR) => false | void;
 	};
-	basicExtraParameters: {
-		[key: string]:
-			| string
-			| number
-			| boolean
-			| ((apiInfo: any, point: Point) => string | number | any); // TODO
-	};
+	basicOnlyParameters: JQuery.PlainObject;
 	basicURL: string;
 	detailedURL: string;
 	extraSlash?: boolean;
@@ -731,9 +723,14 @@ export const DISTANCE_BETWEEN_TWO_POINTS_IN_METERS = (
 
 export const CONFIGURED_SEARCH_TYPES = ['yelp', 'locu', 'foursquare'];
 const CALL_API_TIMEOUT = 60000;
+
+/**
+ * If set, will override any keys stored in localStorage and force
+ * client-side calls
+ */
 export const API_KEYS = {
 	yelp: {
-		APIKey: 'test',
+		APIKey: '',
 	},
 	locu: {
 		APIKey: '',
@@ -744,6 +741,12 @@ export const API_KEYS = {
 	},
 };
 
+export const LOCAL_API_FORWARDER_URL =
+	process.env.LOCAL_API_FORWARDER || '/.netlify/functions/apifetch?url='; //TODO test without local_API_forwarder
+
+export const REMOTE_API_CORS_FORWARDER_URL =
+	'https://cors-anywhere.herokuapp.com/';
+
 export const API_URLS = {
 	yelp: process.env.YELP_URL,
 	locu: process.env.LOCU_URL,
@@ -752,26 +755,18 @@ export const API_URLS = {
 
 // Information for return object can be found in callAPIInfo function
 export const YELP_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
-	const returnObject = {} as ApiConfigObject;
-
 	const workerHandler = {
 		lat: ['location', 'coordinate', 'latitude'],
 		lng: ['location', 'coordinate', 'longitude'],
 	};
 
-	returnObject.settings = {
+	const settings = {
 		method: 'GET',
 		timeout: CALL_API_TIMEOUT,
 		data: {},
 	};
 
-	returnObject.basicExtraParameters = {
-		latitude: (apiInfo, point): string => {
-			return point.lat;
-		},
-		longitude: (apiInfo, point): string => {
-			return point.lng;
-		},
+	const apiParameters = {
 		beforeSend: (apiInfo) => {
 			return (xhr): void => {
 				xhr.setRequestHeader(
@@ -780,26 +775,37 @@ export const YELP_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 				);
 			};
 		},
+	};
+
+	const basicOnlyParameters = {
+		latitude: (point): number => {
+			return point.lat;
+		},
+		longitude: (point): number => {
+			return point.lng;
+		},
 		term: 'food',
 		sort_by: 'distance', // eslint-disable-line @typescript-eslint/camelcase
 	};
 
-	returnObject.basicURL = API_URLS.yelp + '/search';
-	returnObject.detailedURL = API_URLS.yelp + '/';
-	returnObject.basicReturnType = 'businesses';
-	returnObject.workerHandler = workerHandler;
-
-	return returnObject;
+	return {
+		basicURL: '/search',
+		detailedURL: '/',
+		basicReturnType: 'businesses',
+		workerHandler: workerHandler,
+		settings,
+		apiParameters,
+		basicOnlyParameters,
+	};
 };
 
 export const LOCU_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
-	const returnObject = {} as ApiConfigObject;
 	const workerHandler = {
 		lat: [],
 		lng: ['long'],
 	};
 
-	returnObject.settings = {
+	const settings = {
 		timeout: CALL_API_TIMEOUT,
 		method: 'GET',
 		data: {},
@@ -807,8 +813,15 @@ export const LOCU_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 		dataType: 'jsonp',
 	};
 
-	returnObject.basicExtraParameters = {
-		bounds: (apiInfo, point): string => {
+	const apiParameters = {
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		api_key: (apiInfo): string => {
+			return apiInfo.APIKey;
+		},
+	};
+
+	const basicOnlyParameters = {
+		bounds: (point): string => {
 			return (
 				point.lat +
 				LAT_LNG_ACCURACY +
@@ -820,25 +833,24 @@ export const LOCU_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 				(point.lng + LAT_LNG_ACCURACY)
 			);
 		},
-		api_key: (apiInfo) => {
-			return apiInfo.APIKey;
-		},
 	};
 
-	returnObject.basicURL = API_URLS.locu + 'search/';
-	returnObject.detailedURL = API_URLS.locu;
-	returnObject.extraSlash = true;
-	returnObject.basicReturnType = 'objects';
-	returnObject.detailedReturnType = ['objects', 0];
-	returnObject.workerHandler = workerHandler;
-
-	return returnObject;
+	return {
+		basicURL: 'search/',
+		detailedURL: '',
+		extraSlash: true,
+		basicReturnType: 'objects',
+		detailedReturnType: ['objects', 0],
+		workerHandler,
+		settings,
+		apiParameters,
+		basicOnlyParameters,
+	};
 };
 
 export const FOURSQUARE_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
-	const returnObject = {} as ApiConfigObject;
 	const parameters = {
-		v: '20150711', //TODO
+		v: '20150711',
 	};
 
 	const settings = {
@@ -849,29 +861,32 @@ export const FOURSQUARE_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 		dataType: 'jsonp',
 	};
 
-	const basicExtraParameters = {
-		radius: (lat, lng): number => {
+	const basicOnlyParameters = {
+		radius: (point): number => {
 			return DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
-				lat,
-				lng,
-				lat + LAT_LNG_ACCURACY,
-				lng + LAT_LNG_ACCURACY
+				point.lat,
+				point.lng,
+				point.lat + LAT_LNG_ACCURACY,
+				point.lng + LAT_LNG_ACCURACY
 			);
 		},
-		ll: (lat, lng): string => {
-			return lat + ',' + lng;
-		},
-		client_id: (apiInfo) => {
-			// eslint-disable-line @typescript-eslint/camelcase
-			return apiInfo.clientID;
-		},
-		client_secret: (apiInfo) => {
-			// eslint-disable-line @typescript-eslint/camelcase
-			return apiInfo.clientSecret;
+		ll: (point): string => {
+			return point.lat + ',' + point.lng;
 		},
 		limit: 50,
 		categoryId: '4d4b7105d754a06374d81259', //food
 		intent: 'checkin',
+	};
+
+	const apiParameters = {
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		client_id: (apiInfo): string => {
+			return apiInfo.clientID;
+		},
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		client_secret: (apiInfo): string => {
+			return apiInfo.clientSecret;
+		},
 	};
 
 	const workerHandler = {
@@ -879,13 +894,14 @@ export const FOURSQUARE_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 		lng: ['location', 'lng'],
 	};
 
-	returnObject.settings = settings;
-	returnObject.basicExtraParameters = basicExtraParameters;
-	returnObject.basicURL = API_URLS.foursquare + 'search';
-	returnObject.detailedURL = API_URLS.foursquare;
-	returnObject.basicReturnType = ['response', 'venues'];
-	returnObject.detailedReturnType = ['response', 'venue'];
-	returnObject.workerHandler = workerHandler;
-
-	return returnObject;
+	return {
+		settings,
+		basicURL: 'search',
+		detailedURL: '',
+		basicReturnType: ['response', 'venues'],
+		detailedReturnType: ['response', 'venue'],
+		workerHandler,
+		basicOnlyParameters,
+		apiParameters,
+	};
 };

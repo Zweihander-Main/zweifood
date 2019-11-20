@@ -10,7 +10,6 @@ import {
 } from './util';
 import * as config from './config';
 import {
-	API_KEYS,
 	MAX_MARKER_LIMIT,
 	LOW_MARKER_OPACITY,
 	DEFAULT_PRICE_BUTTON_FILTER,
@@ -43,9 +42,14 @@ export default function(map): void {
 	self.lowMarkerOpacity = ko.observable(LOW_MARKER_OPACITY);
 	self.APIMappingsForModel = config.API_MAPPINGS_FOR_MODEL;
 	self.APIConfiguredSearchTypes = config.CONFIGURED_SEARCH_TYPES;
-	for (const type of self.APIConfiguredSearchTypes) {
-		self['APIKeys_' + type] = ko.observable(API_KEYS[type]);
-		self['APIURLs_' + type] = config.API_URLS[type];
+	for (const service of self.APIConfiguredSearchTypes) {
+		self['APIKeys_' + service] = { ...config.API_KEYS[service] };
+		const keyEntries = Object.entries(self['APIKeys_' + service]);
+		for (let i = 0, len = keyEntries.length; i < len; i++) {
+			const [propName, keyValue] = keyEntries[i];
+			self['APIKeys_' + service][propName] = ko.observable(keyValue);
+		}
+		self['APIURLs_' + service] = config.API_URLS[service];
 	}
 	// Set default marker image object based on config object
 	self.defaultMarkerImage = {
@@ -135,7 +139,7 @@ export default function(map): void {
 		numeric: 2,
 	});
 
-	// When map center changes, save it to localstorage
+	// When map center changes, save it to localStorage
 	self.mainMapCenter.subscribe(function(newValue) {
 		self.setLocalStorage(
 			'mapCenter',
@@ -146,6 +150,25 @@ export default function(map): void {
 			})
 		);
 	});
+
+	// When user inputs new API keys, save them client-side to localStorage
+	for (const service of self.APIConfiguredSearchTypes) {
+		const entries = Object.entries(self['APIKeys_' + service]);
+		for (let i = 0; i < entries.length; ++i) {
+			const [key, value] = entries[i] as [
+				string,
+				KnockoutObservable<string>
+			];
+			value.subscribe(function(newValue) {
+				self.setLocalStorage(`APIKeys_${service}|||${key}`, newValue);
+			});
+
+			// Prevent frequent calls to localStorage
+			value.extend({
+				rateLimit: 2000,
+			});
+		}
+	}
 
 	/**
 	 * Subscribe to markedLocations to start removing locations if the
@@ -1434,35 +1457,71 @@ export default function(map): void {
 		]() as config.ApiConfigObject;
 		const settings = configObject.settings;
 		const returnType = configObject[APIType + 'ReturnType'];
-		const keyData = self['APIKeys_' + service]();
-		// TODO iterate keyData and check for empty strings
+		const keyData = Object.entries(self['APIKeys_' + service]).reduce(
+			(acc, [key, value]: [string, KnockoutObservable<string>]) => {
+				acc[key] = value();
+				return acc;
+			},
+			{}
+		);
+		const interpolatedKeyData = { ...keyData };
+		let url = self['APIURLs_' + service];
+		const missingAPIKeys = Object.values(keyData).includes('');
+		if (missingAPIKeys) {
+			const apiKeys = Object.keys(keyData);
+			for (let i = 0, len = apiKeys.length; i < len; i++) {
+				const apiParam = apiKeys[i];
+				interpolatedKeyData[
+					apiParam
+				] = `<<<${service}|||${apiParam}>>>`;
+			}
+		}
+
+		for (const name in configObject.apiParameters) {
+			const value = configObject.apiParameters[name];
+			const returnedValue = value(interpolatedKeyData);
+			if (name === 'beforeSend') {
+				settings[name] = returnedValue as ((
+					jqXHR: JQueryXHR
+				) => false | void);
+			} else {
+				settings.data[name] = returnedValue;
+			} //TODO implement this in instructions
+		}
+
 		let initialPoint;
-		settings.url = configObject[APIType + 'URL'];
 		if (APIType !== 'basic') {
 			// Just call the ID of the model
-			settings.url += selectedPlace[service + '_id']();
+			url += configObject[APIType + 'URL'];
+			url += selectedPlace[service + '_id']();
 			if (configObject.extraSlash === true) {
-				settings.url += '/';
+				url += '/';
 			}
 		} else {
 			// Create search request that searches nearby the model
+			url += configObject['basicURL'];
 			initialPoint = {
 				lat: selectedPlace.google_geometry().location.lat(),
 				lng: selectedPlace.google_geometry().location.lng(),
 			};
-			for (const name in configObject.basicExtraParameters) {
-				const value = configObject.basicExtraParameters[name];
+			for (const name in configObject.basicOnlyParameters) {
+				const value = configObject.basicOnlyParameters[name];
 				if (typeof value === 'function') {
-					const returnedValue = value(keyData, initialPoint);
-					if (name === 'beforeSend') {
-						settings[name] = returnedValue;
-					} else {
-						settings.data[name] = returnedValue;
-					} //TODO implement this in instructions
+					const returnedValue = value(initialPoint);
+					settings.data[name] = returnedValue;
 				} else {
 					settings.data[name] = value;
 				}
 			}
+		}
+
+		if (missingAPIKeys) {
+			settings.url =
+				config.LOCAL_API_FORWARDER_URL + encodeURIComponent(url);
+		} else if (settings.dataType !== 'jsonp') {
+			settings.url = config.REMOTE_API_CORS_FORWARDER_URL + url;
+		} else {
+			settings.url = url;
 		}
 		/**
 		 * Success function passed with the jQuery call, parses through
@@ -1663,6 +1722,18 @@ export default function(map): void {
 						typeof mapCenter.zoom === 'number'
 					) {
 						self.mainMap.setZoom(mapCenter.zoom);
+					}
+				}
+			}
+			for (const service of self.APIConfiguredSearchTypes) {
+				const keys = Object.keys(self['APIKeys_' + service]);
+				for (let i = 0; i < keys.length; ++i) {
+					const key = keys[i];
+					const value = localStorage.getItem(
+						`APIKeys_${service}|||${key}`
+					);
+					if (value) {
+						self['APIKeys_' + service][key](value);
 					}
 				}
 			}

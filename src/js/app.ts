@@ -1147,7 +1147,7 @@ const app: App = ((): App => {
 	ko.extenders.numeric = function(target, precision): number {
 		const result = ko.computed({
 			read: function() {
-				const num = Number(target()).toFixed(precision) / 1;
+				const num = +Number(target()).toFixed(precision);
 				return num;
 			},
 			write: target,
