@@ -23,7 +23,7 @@ export default class LocationModel {
 	disposableArray: Array<KnockoutSubscription>;
 	listenerStorage: Array<google.maps.MapsEventListener>;
 	marker: KnockoutObservable<google.maps.Marker>;
-	isItOpenRightNow: KnockoutComputed<'Open' | 'Closed'>;
+	isItOpenRightNow: ko.PureComputed<'Open' | 'Closed'>;
 	infoWindow: google.maps.InfoWindow;
 
 	constructor(currentViewModel, searchType) {
@@ -54,12 +54,12 @@ export default class LocationModel {
 		 * Sends the model to have all observables and properties added as
 		 * defined by the config object
 		 */
-		this.parentViewModel.modelConstructor(this);
+		this.addObservables();
 
 		/**
 		 * Create yelpIsLoading, yelpSearchType, locuIsLoading, ect.
 		 */
-		this.parentViewModel.modelSearchTypeConstructor(this);
+		this.addSearchTypes();
 
 		/**
 		 * Create marker within model, set it as an observable (which will
@@ -293,5 +293,111 @@ export default class LocationModel {
 		ko.utils.arrayForEach(this.listenerStorage, function(item) {
 			google.maps.event.removeListener(item);
 		});
+	}
+
+	/**
+	 * Adds observables as defined in config object
+	 */
+	private addObservables(): void {
+		for (const prop in config.API_MAPPINGS_FOR_MODEL) {
+			const currentType = config.API_MAPPINGS_FOR_MODEL[prop];
+			for (let i = 0, len = currentType.length; i < len; i++) {
+				if (currentType[i].oType === 1) {
+					this[currentType[i].model] = ko.observable();
+				} else if (currentType[i].oType === 2) {
+					this[currentType[i].model] = ko.observableArray([]);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Takes a model and adds in API searchType and isLoading observables
+	 * for all API types
+	 */
+	private addSearchTypes(): void {
+		for (
+			let i = 0, len = config.CONFIGURED_SEARCH_TYPES.length;
+			i < len;
+			i++
+		) {
+			this[
+				config.CONFIGURED_SEARCH_TYPES[i].toLowerCase() + 'SearchType'
+			] = ko.observable('None');
+			this[
+				config.CONFIGURED_SEARCH_TYPES[i].toLowerCase() + 'IsLoading'
+			] = ko.observable(false);
+		}
+	}
+
+	/**
+	 * Takes model and returns just the data in JavaScript object format
+	 * Knockout's built in function for this was having trouble
+	 * @return {object}       JavaScript object representation of model
+	 *                        (without functions/ect.)
+	 */
+	toJSON(): GenericJSON {
+		const returnModel = {};
+		for (const prop in config.API_MAPPINGS_FOR_MODEL) {
+			const currentType = config.API_MAPPINGS_FOR_MODEL[prop];
+			for (let i = 0, len = currentType.length; i < len; i++) {
+				if (currentType[i].oType === 0) {
+					returnModel[currentType[i].model] = this[
+						currentType[i].model
+					];
+				} else {
+					returnModel[currentType[i].model] = this[
+						currentType[i].model
+					]();
+				}
+			}
+		}
+		return returnModel;
+	}
+
+	/**
+	 * Takes the model, data from the API server, and updates the
+	 * observables of that model with the data from the server
+	 * @param  {string} type   which API type/source was used
+	 * @param  {object} result result from server, mapped using config object
+	 */
+	update(type, result): void {
+		const currentType = config.API_MAPPINGS_FOR_MODEL[type];
+		for (let i = 0, len = currentType.length; i < len; i++) {
+			if (typeof result[currentType[i].server] !== 'undefined') {
+				if (currentType[i].oType !== 0) {
+					this[currentType[i].model](result[currentType[i].server]);
+				} else {
+					this[currentType[i].model] = result[currentType[i].server];
+				}
+			}
+		}
+	}
+
+	/**
+	 * Takes a model from localStorage and rebuilds it using the saved data
+	 * @param  {object} blueprint data from localStorage
+	 * @param  {object} location  google_geometry.location object from
+	 *                            localStorage
+	 */
+	rebuild(blueprint, location): void {
+		for (const prop in config.API_MAPPINGS_FOR_MODEL) {
+			const currentType = config.API_MAPPINGS_FOR_MODEL[prop];
+			for (let i = 0, len = currentType.length; i < len; i++) {
+				if (
+					currentType[i].oType !== 0 &&
+					currentType[i].model !== 'google_geometry'
+				) {
+					this[currentType[i].model](blueprint[currentType[i].model]);
+				} else if (currentType[i].model === 'google_geometry') {
+					const geometryBlueprint = blueprint[currentType[i].model];
+					geometryBlueprint.location = location;
+					this[currentType[i].model](geometryBlueprint);
+				} else {
+					this[currentType[i].model] =
+						blueprint[currentType[i].model];
+				}
+			}
+		}
 	}
 }

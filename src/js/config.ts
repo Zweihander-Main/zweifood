@@ -81,6 +81,7 @@ export const DEFAULT_MOBILE_ZOOM = 12;
 export const MARKER_LIMIT_REMOVAL_BULK_AMOUNT = 1000;
 export const LAT_LNG_ACCURACY = 0.001;
 export const MIN_FUZZY_MATCH = 0.5;
+
 /**
  * Define server to model mappings - oType is observable type
  * oType 0 means no observable
