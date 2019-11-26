@@ -19,12 +19,119 @@ export default class LocationModel {
 	hasBeenOpened: boolean;
 	modelNumber: number;
 	isFavorite: KnockoutObservable<boolean>;
-
 	disposableArray: Array<KnockoutSubscription>;
 	listenerStorage: Array<google.maps.MapsEventListener>;
 	marker: KnockoutObservable<google.maps.Marker>;
 	isItOpenRightNow: ko.PureComputed<'Open' | 'Closed'>;
+	google_roundedRating: ko.PureComputed<number>;
+	yelp_ratingImgURL: ko.PureComputed<string>;
 	infoWindow: google.maps.InfoWindow;
+
+	google_placeId: string;
+	google_name: KnockoutObservable<string>;
+	google_geometry: KnockoutObservable<google.maps.places.PlaceGeometry>;
+	google_rating: KnockoutObservable<number>;
+	google_vicinity: KnockoutObservable<string>;
+	google_priceLevel: KnockoutObservable<number>;
+	google_adrAddress: KnockoutObservable<string>;
+	google_formattedPhone: KnockoutObservable<string>;
+	google_singleLocAttributionsArray: KnockoutObservableArray<string>;
+	google_openingHoursObject: KnockoutObservable<
+		google.maps.places.OpeningHours
+	>; // TODO Deprecated
+	google_photos: KnockoutObservable<google.maps.places.PlacePhoto>;
+	google_reviews: KnockoutObservableArray<google.maps.places.PlaceReview>;
+	google_totalRatings: KnockoutObservable<number>;
+	google_UTCOffset: KnockoutObservable<number>; // TODO Deprecated
+	google_URL: KnockoutObservable<string>;
+	google_website: KnockoutObservable<string>;
+	yelp_id: KnockoutObservable<string>;
+	yelp_isPermaClosed: KnockoutObservable<boolean>;
+	yelp_name: KnockoutObservable<string>;
+	yelp_imageURL: KnockoutObservable<string>;
+	yelp_URL: KnockoutObservable<string>;
+	yelp_displayPhone: KnockoutObservable<string>;
+	yelp_reviewCount: KnockoutObservable<number>;
+	yelp_rating: KnockoutObservable<number>;
+	yelp_categories: KnockoutObservableArray<{ alias: string; title: string }>;
+	yelp_reviews: KnockoutObservableArray<string>; //TODO deprecated
+	yelp_location: KnockoutObservable<{
+		address1: string;
+		address2: string;
+		address3: string;
+		city: string;
+		country: string;
+		display_address: Array<string>;
+		state: string;
+		zip_code: string;
+	}>;
+	locu_id: KnockoutObservable<string>;
+	locu_name: KnockoutObservable<string>;
+	locu_websiteURL: KnockoutObservable<string>;
+	locu_hasMenu: KnockoutObservable<boolean>;
+	locu_phone: KnockoutObservable<string>;
+	locu_resourceURI: KnockoutObservable<string>;
+	locu_streetAddress: KnockoutObservable<string>;
+	locu_locality: KnockoutObservable<string>;
+	locu_region: KnockoutObservable<string>;
+	locu_postalCode: KnockoutObservable<string>;
+	locu_country: KnockoutObservable<string>;
+	locu_lat: KnockoutObservable<number>;
+	locu_long: KnockoutObservable<number>;
+	locu_cuisines: KnockoutObservable<string>;
+	locu_facebookURL: KnockoutObservable<string>;
+	locu_twitterID: KnockoutObservable<string>;
+	locu_similarVenues: KnockoutObservable<string>; // TODO remove
+	locu_menus: KnockoutObservableArray<GenericJSON>;
+	foursquare_id: KnockoutObservable<string>;
+	foursquare_name: KnockoutObservable<string>;
+	foursquare_contact: KnockoutObservable<{
+		twitter?: string;
+		phone?: string;
+		formattedPhone?: string;
+	}>;
+	foursquare_location: KnockoutObservable<{
+		address?: string;
+		crossStreet?: string;
+		city?: string;
+		state?: string;
+		postalCode?: string;
+		country?: string;
+		lat?: number;
+		lng?: number;
+		distance?: number;
+	}>;
+	foursquare_verified: KnockoutObservable<boolean>;
+	foursquare_stats: KnockoutObservable<{
+		checkinsCount: number;
+		usersCount: number;
+		tipCount: number;
+	}>;
+	foursquare_url: KnockoutObservable<string>;
+	foursquare_price: KnockoutObservable<{
+		tier: number;
+		message: string;
+	}>;
+	foursquare_rating: KnockoutObservable<number>;
+	foursquare_hereNow: KnockoutObservable<{
+		count: number;
+	}>;
+	foursquare_storeId: KnockoutObservable<string>;
+	foursquare_description: KnockoutObservable<string>;
+	foursquare_createdAt: KnockoutObservable<number>;
+	foursquare_tips: KnockoutObservable<{
+		count: number;
+	}>;
+	foursquare_shortUrl: KnockoutObservable<string>;
+	foursquare_canonicalUrl: KnockoutObservable<string>;
+	foursquare_photos: KnockoutObservable<{
+		count: number;
+		groups: Array<GenericJSON>;
+	}>;
+	foursquare_likes: KnockoutObservable<{
+		count: number;
+	}>;
+	foursquare_phrases: KnockoutObservable<string>;
 
 	constructor(currentViewModel, searchType) {
 		this.parentViewModel = currentViewModel;
