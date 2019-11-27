@@ -18,6 +18,23 @@ import {
 	DEFAULT_FAVORITE_BUTTON_FILTER,
 } from './config'; // For observable wrapped data
 import LocationModel from './LocationModel';
+import DetailedAPILock from './DetailedAPILock';
+
+interface OptMarkerImage {
+	anchor?: google.maps.Point;
+	labelOrigin?: google.maps.Point;
+	origin?: google.maps.Point;
+	scaledSize?: google.maps.Size;
+	size?: google.maps.Size;
+	url?: string;
+}
+interface ErrorInterface {
+	customMessage: string;
+	textStatus: string;
+	verbose: boolean;
+	killOnMarkers: boolean;
+}
+type SortType = 'count' | 'alpha' | 'rating' | 'distance';
 
 ////////////////////////////
 // Section IV: View Model //
@@ -27,443 +44,374 @@ import LocationModel from './LocationModel';
  * View Model for initialized Google map
  * @param {object} map Google map viewModel is to use
  */
-export default function(map): void {
-	const self = this;
-	// Initialize
-	self.mainMap = map;
-	// Keep track of map center for saving - is set by createMap
-	self.mainMapCenter = ko.observable();
-	self.service = new google.maps.places.PlacesService(self.mainMap);
-	// Check if localStorage and web workers are available
-	self.storageAvailable = storageAvailable('localStorage');
-	self.workersAvailable = workersAvailable();
-	// Get config variables that can be changed
-	self.maxMarkerLimit = ko.observable(MAX_MARKER_LIMIT);
-	self.lowMarkerOpacity = ko.observable(LOW_MARKER_OPACITY);
-	self.APIMappingsForModel = config.API_MAPPINGS_FOR_MODEL;
-	self.APIConfiguredSearchTypes = config.CONFIGURED_SEARCH_TYPES;
-	for (const service of self.APIConfiguredSearchTypes) {
-		self['APIKeys_' + service] = { ...config.API_KEYS[service] };
-		const keyEntries = Object.entries(self['APIKeys_' + service]);
-		for (let i = 0, len = keyEntries.length; i < len; i++) {
-			const [propName, keyValue] = keyEntries[i];
-			self['APIKeys_' + service][propName] = ko.observable(keyValue);
-		}
-		self['APIURLs_' + service] = config.API_URLS[service];
-	}
-	// Set default marker image object based on config object
-	self.defaultMarkerImage = {
-		size: new google.maps.Size(
-			config.MARKER_IMAGE_SIZE[0],
-			config.MARKER_IMAGE_SIZE[1]
-		),
-		origin: new google.maps.Point(
-			config.MARKER_IMAGE_ORIGIN[0],
-			config.MARKER_IMAGE_ORIGIN[1]
-		),
-		anchor: new google.maps.Point(
-			config.MARKER_IMAGE_ANCHOR[0],
-			config.MARKER_IMAGE_ANCHOR[1]
-		),
-	};
 
-	// Array of models
-	self.markedLocations = ko.observableArray([]);
-	// Model number which iterates when a new model is created
-	self.locationModelNumber = 0;
-	// Set when a model is selected
-	self.currentlySelectedLocation = ko.observable();
-	// Set to currentlySelectedLocation when an item needs to be scrolled to
-	self.scrolledItem = ko.observable();
-	// Controls if an item needs to be scrolled to - handled by bindinghandler
-	self.shouldScroll = ko.observable(false);
-	// Array of attributions found while radar and nearby searching
-	self.attributionsArray = ko.observableArray([]);
-	// Array of all favorite models
-	self.favoriteArray = ko.observableArray([]);
-	// Array of current API calls - used to throttle calls when scrolling
-	self.getRestaurantsFromGoogleMapsAPICallArray = [];
-	// Object to control API calls from non-Google services
-	self.currentDetailedAPIInfoBeingFetched = {};
-	// Observable that is set when an error comes up
-	self.errors = ko.observable(false);
-	// User set variable to show more verbose errors
-	self.verboseErrors = ko.observable(false);
-	// Bring the checkNested function into the viewModel
-	self.checkNested = checkNested;
-	// Track the states of the menus in mobile UI mode
-	self.markerToggled = ko.observable(false);
-	self.optionsToggled = ko.observable(false);
-	// Stop the infoWindow move checker for the native Google method
-	self.regularInfoWindowPan = ko.observable(false);
-	// Stop the infoWindow move checker if the user drags
-	self.userDrag = ko.observable(false);
-	// Track the status of the infoWindow move checker
-	self.currentInfoWindowCheck = undefined;
+export default class ViewModel {
+	mainMap: google.maps.Map;
+	mainMapCenter: KnockoutObservable<google.maps.LatLng>;
+	service: google.maps.places.PlacesService;
+	storageAvailable: boolean;
+	workersAvailable: boolean;
+	maxMarkerLimit: KnockoutObservable<number>;
+	lowMarkerOpacity: KnockoutObservable<number>;
 
-	// Variables for sort types and filter types
-	self.sortType = ko.observable('count');
-	self.searchQuery = ko.observable();
-	self.priceButtonFilter = ko.observableArray(
-		DEFAULT_PRICE_BUTTON_FILTER.slice()
-	);
-	self.minRatingButtonFilter = ko.observable(
-		DEFAULT_MIN_RATING_BUTTON_FILTER
-	);
-	self.openButtonFilter = ko.observable(DEFAULT_OPEN_BUTTON_FILTER);
-	self.favoriteButtonFilter = ko.observable(DEFAULT_FAVORITE_BUTTON_FILTER);
+	APIKeys_yelp: KnockoutObservable<{ [key: string]: string }>;
+	APIKeys_locu: KnockoutObservable<{ [key: string]: string }>;
+	APIKeys_foursquare: KnockoutObservable<{ [key: string]: string }>;
 
-	/**
-	 * Initial HTML that gets parsed through knockout applyBindings and sets
-	 * up template for infoWindow
-	 * @type {String}
-	 */
-	self.infoWindowHTMLTemplate =
-		'<div class = "info-window-template" ' +
-		'data-bind = "infoWindowTemplate: true"></div>';
+	defaultMarkerImage: OptMarkerImage;
 
-	/**
-	 * Subscribe to lowMarkerOpacity user set variable to set all markers to
-	 * new opacity
-	 */
-	self.lowMarkerOpacity.subscribe(function(newValue) {
-		newValue = +Number(newValue).toFixed(2);
-		ko.utils.arrayForEach(self.markedLocations(), function(item) {
-			if (item.isListed() === false) {
-				item.marker().setOpacity(newValue);
+	markedLocations: KnockoutObservableArray<LocationModel>;
+	locationModelNumber: number;
+	currentlySelectedLocation: KnockoutObservable<LocationModel>;
+	scrolledItem: KnockoutObservable<LocationModel>;
+	shouldScroll: KnockoutObservable<boolean>;
+	attributionsArray: KnockoutObservableArray<string>;
+	favoriteArray: KnockoutObservableArray<LocationModel>;
+	getRestaurantsFromGoogleMapsAPICallArray: Array<boolean>;
+	currentDetailedAPIInfoBeingFetched: DetailedAPILock;
+	errors: KnockoutObservable<boolean | ErrorInterface>;
+	verboseErrors: KnockoutObservable<boolean>;
+	checkNested: (obj, level, ...rest) => boolean; //TODO
+	markerToggled: KnockoutObservable<boolean>;
+	optionsToggled: KnockoutObservable<boolean>;
+	regularInfoWindowPan: KnockoutObservable<boolean>;
+	userDrag: KnockoutObservable<boolean>;
+	currentInfoWindowCheck: NodeJS.Timeout;
+	sortType: KnockoutObservable<SortType>;
+	searchQuery: KnockoutObservable<string>;
+	priceButtonFilter: KnockoutObservableArray<boolean>;
+	minRatingButtonFilter: KnockoutObservable<number>;
+	openButtonFilter: KnockoutObservable<boolean>;
+	favoriteButtonFilter: KnockoutObservable<boolean>;
+	infoWindowHTMLTemplate: string;
+	idArray: ko.PureComputed<{
+		all: Array<string>;
+		nearby: Array<string>;
+	}>;
+	priceButtonFilterHasChanged: ko.PureComputed<boolean>;
+	listableEntries: ko.PureComputed<{
+		entries: Array<LocationModel>;
+		allNames: Array<string>;
+	}>;
+	sortedEntries: ko.PureComputed<Array<LocationModel>>;
+
+	constructor(map) {
+		// Initialize
+		this.mainMap = map;
+		// Keep track of map center for saving - is set by createMap
+		this.mainMapCenter = ko.observable(undefined);
+		this.service = new google.maps.places.PlacesService(this.mainMap);
+		// Check if localStorage and web workers are available
+		this.storageAvailable = storageAvailable('localStorage');
+		this.workersAvailable = workersAvailable();
+		// Get config variables that can be changed
+		this.maxMarkerLimit = ko.observable(MAX_MARKER_LIMIT);
+		this.lowMarkerOpacity = ko.observable(LOW_MARKER_OPACITY);
+		for (const service of config.CONFIGURED_SEARCH_TYPES) {
+			this['APIKeys_' + service] = { ...config.API_KEYS[service] };
+			const keyEntries = Object.entries(this['APIKeys_' + service]);
+			for (let i = 0, len = keyEntries.length; i < len; i++) {
+				const [propName, keyValue] = keyEntries[i];
+				this['APIKeys_' + service][propName] = ko.observable(keyValue);
 			}
-		});
-	});
-
-	self.lowMarkerOpacity.extend({
-		numeric: 2,
-	});
-
-	// When map center changes, save it to localStorage
-	self.mainMapCenter.subscribe(function(newValue) {
-		self.setLocalStorage(
-			'mapCenter',
-			JSON.stringify({
-				lat: newValue.lat(),
-				lng: newValue.lng(),
-				zoom: self.mainMap.getZoom(),
-			})
-		);
-	});
-
-	// When user inputs new API keys, save them client-side to localStorage
-	for (const service of self.APIConfiguredSearchTypes) {
-		const entries = Object.entries(self['APIKeys_' + service]);
-		for (let i = 0; i < entries.length; ++i) {
-			const [key, value] = entries[i] as [
-				string,
-				KnockoutObservable<string>
-			];
-			value.subscribe(function(newValue) {
-				self.setLocalStorage(`APIKeys_${service}|||${key}`, newValue);
-			});
-
-			// Prevent frequent calls to localStorage
-			value.extend({
-				rateLimit: 2000,
-			});
+			this['APIURLs_' + service] = config.API_URLS[service];
 		}
-	}
-
-	/**
-	 * Subscribe to markedLocations to start removing locations if the
-	 * maxMarkerLimit is exceeded
-	 */
-	self.markedLocations.subscribe(function(newValue) {
-		if (newValue.length > self.maxMarkerLimit()) {
-			self.removeMultipleLocations(newValue);
-		}
-	});
-
-	// Subscribe to favoriteArray to save it to localStorage at intervals
-	self.favoriteArray.subscribe(function(newValue) {
-		const favoritesArray = [];
-		ko.utils.arrayForEach(newValue, function(item) {
-			favoritesArray.push(self.modelDeconstructor(item));
-		});
-		const favoritesString = JSON.stringify(favoritesArray);
-		if (favoritesArray.length !== 0) {
-			self.setLocalStorage('favoritesArray', favoritesString);
-		} else {
-			self.setLocalStorage('favoritesArray', '[]');
-		}
-	});
-
-	// Prevent frequent calls to localStorage
-	self.favoriteArray.extend({
-		rateLimit: 2000,
-	});
-
-	/**
-	 * Subscribe to currentlySelectedLocation and call scrollToItem on
-	 * change. Stop the infoWindow move listener.
-	 */
-	self.currentlySelectedLocation.subscribe(
-		debounce(function(newValue) {
-			if (typeof newValue !== 'undefined') {
-				self.scrollToItem();
-				self.userDrag(false);
-			}
-		}, 5)
-	);
-
-	// Computed array of all IDs and nearby/places search only ids
-	self.idArray = ko.pureComputed(function() {
-		const returnArray = {
-			all: [],
-			nearby: [],
+		// Set default marker image object based on config object
+		this.defaultMarkerImage = {
+			size: new google.maps.Size(
+				config.MARKER_IMAGE_SIZE[0],
+				config.MARKER_IMAGE_SIZE[1]
+			),
+			origin: new google.maps.Point(
+				config.MARKER_IMAGE_ORIGIN[0],
+				config.MARKER_IMAGE_ORIGIN[1]
+			),
+			anchor: new google.maps.Point(
+				config.MARKER_IMAGE_ANCHOR[0],
+				config.MARKER_IMAGE_ANCHOR[1]
+			),
 		};
-		ko.utils.arrayMap(self.markedLocations(), function(item) {
-			if (
-				item.googleSearchType() === 'Nearby' ||
-				item.googleSearchType() === 'Places'
-			) {
-				returnArray.nearby.push(item.google_placeId);
-			}
-			returnArray.all.push(item.google_placeId);
-		});
-		return returnArray;
-	});
 
-	// Computed check if priceButtonFilter has changed
-	self.priceButtonFilterHasChanged = ko.pureComputed(function() {
-		return !allValuesSameInTwoArray(self.priceButtonFilter(), [
-			true,
-			true,
-			true,
-			true,
-			true,
-		]);
-	});
+		// Array of models
+		this.markedLocations = ko.observableArray([]);
+		// Model number which iterates when a new model is created
+		this.locationModelNumber = 0;
+		// Set when a model is selected
+		this.currentlySelectedLocation = ko.observable(undefined);
+		// Set to currentlySelectedLocation when an item needs to be scrolled to
+		this.scrolledItem = ko.observable(undefined);
+		// Controls if an item needs to be scrolled to - handled by bindinghandler
+		this.shouldScroll = ko.observable(false);
+		// Array of attributions found while radar and nearby searching
+		this.attributionsArray = ko.observableArray([]);
+		// Array of all favorite models
+		this.favoriteArray = ko.observableArray([]);
+		// Array of current API calls - used to throttle calls when scrolling
+		this.getRestaurantsFromGoogleMapsAPICallArray = [];
+		// Object to control API calls from non-Google services
+		this.currentDetailedAPIInfoBeingFetched = new DetailedAPILock(this);
+		// Observable that is set when an error comes up
+		this.errors = ko.observable(false);
+		// User set variable to show more verbose errors
+		this.verboseErrors = ko.observable(false);
+		// Bring the checkNested function into the viewModel
+		this.checkNested = checkNested;
+		// Track the states of the menus in mobile UI mode
+		this.markerToggled = ko.observable(false);
+		this.optionsToggled = ko.observable(false);
+		// Stop the infoWindow move checker for the native Google method
+		this.regularInfoWindowPan = ko.observable(false);
+		// Stop the infoWindow move checker if the user drags
+		this.userDrag = ko.observable(false);
+		// Track the status of the infoWindow move checker
+		this.currentInfoWindowCheck = undefined;
 
-	/**
-	 * Computed object, returns markedLocations that are Nearby/Places
-	 * searched and not filtered. Returns both an array of filtered models
-	 * and an array of the names of those models.
-	 */
-	self.listableEntries = ko.computed(function() {
-		const returnArray = {
-			entries: [],
-			allNames: [],
-		};
-		returnArray.entries = ko.utils.arrayFilter(
-			self.markedLocations(),
-			function(item) {
-				if (
-					(item.googleSearchType() === 'Nearby' ||
-						item.googleSearchType() === 'Places') &&
-					item.isInViewOnMap() === true &&
-					self.isSearchFiltered(item) === false &&
-					self.isButtonFiltered(item) === false
-				) {
-					item.isListed(true);
-					returnArray.allNames.push(item.google_name());
-					return true;
-				} else {
-					item.isListed(false);
-					return false;
-				}
-			}
+		// Variables for sort types and filter types
+		this.sortType = ko.observable('count' as SortType);
+		this.searchQuery = ko.observable('');
+		this.priceButtonFilter = ko.observableArray(
+			DEFAULT_PRICE_BUTTON_FILTER.slice()
 		);
-		return returnArray;
-	});
+		this.minRatingButtonFilter = ko.observable(
+			DEFAULT_MIN_RATING_BUTTON_FILTER
+		);
+		this.openButtonFilter = ko.observable(DEFAULT_OPEN_BUTTON_FILTER);
+		this.favoriteButtonFilter = ko.observable(
+			DEFAULT_FAVORITE_BUTTON_FILTER
+		);
 
-	/**
-	 * Computed array, takes listableEntries computed entries array and
-	 * sorts it according to sortType observable
-	 */
-	self.sortedEntries = ko.pureComputed(function() {
-		const returnArray = self.listableEntries().entries;
-		if (self.sortType() === 'count') {
-			returnArray.sort(function(left, right) {
-				return left.modelNumber < right.modelNumber ? -1 : 1;
-			});
-		} else if (self.sortType() === 'alpha') {
-			returnArray.sort(function(left, right) {
-				return left.google_name() === right.google_name()
-					? 0
-					: left.google_name() < right.google_name()
-					? -1
-					: 1;
-			});
-		} else if (self.sortType() === 'rating') {
-			// Sort undefined to the end of the list
-			returnArray.sort(function(left, right) {
-				if (typeof left.google_rating() === 'undefined') {
-					if (typeof right.google_rating() === 'undefined') {
-						return 0;
-					} else {
-						return 1;
-					}
-				} else if (typeof right.google_rating() === 'undefined') {
-					return -1;
-				} else {
-					return left.google_rating() < right.google_rating()
-						? 1
-						: -1;
+		/**
+		 * Initial HTML that gets parsed through knockout applyBindings and sets
+		 * up template for infoWindow
+		 * @type {String}
+		 */
+		this.infoWindowHTMLTemplate =
+			'<div class = "info-window-template" ' +
+			'data-bind = "infoWindowTemplate: true"></div>';
+
+		/**
+		 * Subscribe to lowMarkerOpacity user set variable to set all markers to
+		 * new opacity
+		 */
+		this.lowMarkerOpacity.subscribe((newValue) => {
+			newValue = +Number(newValue).toFixed(2);
+			ko.utils.arrayForEach(this.markedLocations(), (item) => {
+				if (item.isListed() === false) {
+					item.marker().setOpacity(newValue);
 				}
 			});
-		} else if (self.sortType() === 'distance') {
-			returnArray.sort(function(left, right) {
-				const x1 = left.google_geometry().location.lat();
-				const x2 = right.google_geometry().location.lat();
-				const x3 = self.mainMapCenter().lat();
-				const y1 = left.google_geometry().location.lng();
-				const y2 = right.google_geometry().location.lng();
-				const y3 = self.mainMapCenter().lng();
-				const dist1 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
-					x1,
-					y1,
-					x3,
-					y3
-				);
-				const dist2 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
-					x2,
-					y2,
-					x3,
-					y3
-				);
-				return dist1 === dist2 ? 0 : dist1 < dist2 ? -1 : 1;
-			});
-		}
-		return returnArray;
-	});
+		});
 
-	// Limit resorting, slows down too much otherwise
-	self.listableEntries.extend({
-		rateLimit: 50,
-	});
+		this.lowMarkerOpacity.extend({
+			numeric: 2,
+		});
 
-	/**
-	 * Function to setup informational API calls tracker object
-	 * Object is structured as:
-	 * {service: {
-	 * 			type of call (basic/detailed/ect.): [models]
-	 * 			}
-	 * 	}
-	 */
-	self.initializeCurrentDetailedAPIInfoBeingFetched = function(): void {
-		/**
-		 * Find if model is currently being fetched using service and method
-		 * @param  {string} service name of api service
-		 * @param  {string} type    type of call (basic/detailed/ect.)
-		 * @param  {object} ID      model to lookup
-		 * @return {number}         index of model or -1 if not found
-		 */
-		self.currentDetailedAPIInfoBeingFetched.findID = function(
-			service,
-			type,
-			ID
-		): number {
-			return this[service][type].indexOf(ID);
-		};
-		/**
-		 * Push model to array when it's being called using service and
-		 * method
-		 * @param  {string} service name of api service
-		 * @param  {string} type    type of call
-		 * @param  {object} ID      model to push in
-		 */
-		self.currentDetailedAPIInfoBeingFetched.pushID = function(
-			service,
-			type,
-			ID
-		): void {
-			this[service][type].push(ID);
-			this[service][type][this[service][type].length - 1][
-				service + 'IsLoading'
-			](true);
-		};
-		/**
-		 * Remove model from array after particular service/method call is
-		 * finished. Also check if in intercept array in which case, call
-		 * intercept array function (for example, a detailed intercept
-		 * would be waiting for a basic call first)
-		 * @param  {string} service name of api service
-		 * @param  {string} type    type of call
-		 * @param  {object} ID      model to remove
-		 */
-		self.currentDetailedAPIInfoBeingFetched.removeID = function(
-			service,
-			type,
-			ID
-		): void {
-			const index = this.findID(service, type, ID);
-			if (index > -1) {
-				this[service][type][index][service + 'IsLoading'](false);
-				this[service][type].splice(index, 1);
-			}
-			for (let i = 0, len = this.intercept.length; i < len; i++) {
-				if (this.intercept[i].ID === ID) {
-					self.getDetailedAPIData(
-						this.intercept[i].service,
-						this.intercept[i].ID
+		// When map center changes, save it to localStorage
+		this.mainMapCenter.subscribe((newValue) => {
+			this.setLocalStorage(
+				'mapCenter',
+				JSON.stringify({
+					lat: newValue.lat(),
+					lng: newValue.lng(),
+					zoom: this.mainMap.getZoom(),
+				})
+			);
+		});
+
+		// When user inputs new API keys, save them client-side to localStorage
+		for (const service of config.CONFIGURED_SEARCH_TYPES) {
+			const entries = Object.entries(this['APIKeys_' + service]);
+			for (let i = 0; i < entries.length; ++i) {
+				const [key, value] = entries[i] as [
+					string,
+					KnockoutObservable<string>
+				];
+				value.subscribe((newValue) => {
+					this.setLocalStorage(
+						`APIKeys_${service}|||${key}`,
+						newValue
 					);
-					this.intercept.splice(i, 1);
-				}
+				});
+
+				// Prevent frequent calls to localStorage
+				value.extend({
+					rateLimit: 2000,
+				});
 			}
-		};
-		// Intercept array for when a call is waiting on another call
-		self.currentDetailedAPIInfoBeingFetched.intercept = [];
-		/**
-		 * Push a call that is waiting for another call
-		 * @param  {string} service name of api service
-		 * @param  {string} type    type of call to be called when previous
-		 *                          call is finished
-		 * @param  {object} ID      model to call
-		 * @return {}               returns if call is already in place
-		 */
-		self.currentDetailedAPIInfoBeingFetched.interceptIDPush = function(
-			service,
-			type,
-			ID
-		): void {
-			for (let i = 0, len = this.intercept.length; i < len; i++) {
-				if (this.intercept.ID === ID) {
-					return;
-				}
-			}
-			this.intercept.push({
-				ID: ID,
-				type: type,
-				service: service,
-			});
-		};
-		/**
-		 * Remove call from intercept array (for a failed previous call)
-		 * @param  {object} ID      model to remove
-		 */
-		self.currentDetailedAPIInfoBeingFetched.interceptIDRemove = function(
-			ID
-		): void {
-			for (let i = 0, len = this.intercept.length; i < len; i++) {
-				if (this.intercept[i].ID === ID) {
-					this.intercept.splice(i, 1);
-				}
-			}
-		};
-		// Setup arrays for basic and detailed calls for all services
-		for (
-			let i = 0, len = self.APIConfiguredSearchTypes.length;
-			i < len;
-			i++
-		) {
-			self.currentDetailedAPIInfoBeingFetched[
-				self.APIConfiguredSearchTypes[i]
-			] = {
-				basic: [],
-				detailed: [],
-			};
 		}
-		self.currentDetailedAPIInfoBeingFetched.google = {
-			detailed: [],
-		};
-	};
+
+		/**
+		 * Subscribe to markedLocations to start removing locations if the
+		 * maxMarkerLimit is exceeded
+		 */
+		this.markedLocations.subscribe((newValue) => {
+			if (newValue.length > this.maxMarkerLimit()) {
+				this.removeMultipleLocations(newValue);
+			}
+		});
+
+		// Subscribe to favoriteArray to save it to localStorage at intervals
+		this.favoriteArray.subscribe((newValue) => {
+			const favoritesArray = [];
+			ko.utils.arrayForEach(newValue, (item) => {
+				favoritesArray.push(item.toJSON());
+			});
+			const favoritesString = JSON.stringify(favoritesArray);
+			if (favoritesArray.length !== 0) {
+				this.setLocalStorage('favoritesArray', favoritesString);
+			} else {
+				this.setLocalStorage('favoritesArray', '[]');
+			}
+		});
+
+		// Prevent frequent calls to localStorage
+		this.favoriteArray.extend({
+			rateLimit: 2000,
+		});
+
+		/**
+		 * Subscribe to currentlySelectedLocation and call scrollToItem on
+		 * change. Stop the infoWindow move listener.
+		 */
+		this.currentlySelectedLocation.subscribe(
+			debounce((newValue) => {
+				if (typeof newValue !== 'undefined') {
+					this.scrollToItem();
+					this.userDrag(false);
+				}
+			}, 5)
+		);
+
+		// Computed array of all IDs and nearby/places search only ids
+		this.idArray = ko.pureComputed(() => {
+			const returnArray = {
+				all: [],
+				nearby: [],
+			};
+			ko.utils.arrayMap(this.markedLocations(), (item) => {
+				if (
+					item.googleSearchType() === 'Nearby' ||
+					item.googleSearchType() === 'Places'
+				) {
+					returnArray.nearby.push(item.google_placeId);
+				}
+				returnArray.all.push(item.google_placeId);
+			});
+			return returnArray;
+		});
+
+		// Computed check if priceButtonFilter has changed
+		this.priceButtonFilterHasChanged = ko.pureComputed(() => {
+			return !allValuesSameInTwoArray(this.priceButtonFilter(), [
+				true,
+				true,
+				true,
+				true,
+				true,
+			]);
+		});
+
+		/**
+		 * Computed object, returns markedLocations that are Nearby/Places
+		 * searched and not filtered. Returns both an array of filtered models
+		 * and an array of the names of those models.
+		 */
+		this.listableEntries = ko.computed(() => {
+			const returnArray = {
+				entries: [],
+				allNames: [],
+			};
+			returnArray.entries = ko.utils.arrayFilter(
+				this.markedLocations(),
+				(item) => {
+					if (
+						(item.googleSearchType() === 'Nearby' ||
+							item.googleSearchType() === 'Places') &&
+						item.isInViewOnMap() === true &&
+						this.isSearchFiltered(item) === false &&
+						this.isButtonFiltered(item) === false
+					) {
+						item.isListed(true);
+						returnArray.allNames.push(item.google_name());
+						return true;
+					} else {
+						item.isListed(false);
+						return false;
+					}
+				}
+			);
+			return returnArray;
+		});
+
+		/**
+		 * Computed array, takes listableEntries computed entries array and
+		 * sorts it according to sortType observable
+		 */
+		this.sortedEntries = ko.pureComputed(() => {
+			const returnArray = this.listableEntries().entries;
+			if (this.sortType() === 'count') {
+				returnArray.sort((left, right) => {
+					return left.modelNumber < right.modelNumber ? -1 : 1;
+				});
+			} else if (this.sortType() === 'alpha') {
+				returnArray.sort((left, right) => {
+					return left.google_name() === right.google_name()
+						? 0
+						: left.google_name() < right.google_name()
+						? -1
+						: 1;
+				});
+			} else if (this.sortType() === 'rating') {
+				// Sort undefined to the end of the list
+				returnArray.sort((left, right) => {
+					if (typeof left.google_rating() === 'undefined') {
+						if (typeof right.google_rating() === 'undefined') {
+							return 0;
+						} else {
+							return 1;
+						}
+					} else if (typeof right.google_rating() === 'undefined') {
+						return -1;
+					} else {
+						return left.google_rating() < right.google_rating()
+							? 1
+							: -1;
+					}
+				});
+			} else if (this.sortType() === 'distance') {
+				returnArray.sort((left, right) => {
+					const x1 = left.google_geometry().location.lat();
+					const x2 = right.google_geometry().location.lat();
+					const x3 = this.mainMapCenter().lat();
+					const y1 = left.google_geometry().location.lng();
+					const y2 = right.google_geometry().location.lng();
+					const y3 = this.mainMapCenter().lng();
+					const dist1 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
+						x1,
+						y1,
+						x3,
+						y3
+					);
+					const dist2 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
+						x2,
+						y2,
+						x3,
+						y3
+					);
+					return dist1 === dist2 ? 0 : dist1 < dist2 ? -1 : 1;
+				});
+			}
+			return returnArray;
+		});
+
+		// Limit resorting, slows down too much otherwise
+		this.listableEntries.extend({
+			rateLimit: 50,
+		});
+
+		this.singleErrorMessages();
+		this.getLocalStorage();
+	}
 
 	/**
 	 * Called from model when it's listed to change the
@@ -471,37 +419,37 @@ export default function(map): void {
 	 * @param  {boolean} newValue isListed subscribed value
 	 * @param  {object} model     model which changed
 	 */
-	self.changeCurrentlySelectedItem = function(newValue, model): void {
+	changeCurrentlySelectedItem(newValue, model): void {
 		if (newValue === true) {
-			self.currentlySelectedLocation(model);
+			this.currentlySelectedLocation(model);
 		} else {
-			self.currentlySelectedLocation(undefined);
+			this.currentlySelectedLocation(undefined);
 		}
-	};
+	}
 
 	/**
 	 * Called from model when it's favorited to updated favoriteArray
 	 * @param  {boolean} newValue isFavorite subscribed value
 	 * @param  {object} model     model which changed
 	 */
-	self.changeFavoriteArray = function(newValue, model): void {
+	changeFavoriteArray(newValue, model): void {
 		if (newValue === true) {
-			self.favoriteArray.push(model);
+			this.favoriteArray.push(model);
 		} else {
-			self.favoriteArray.remove(model);
+			this.favoriteArray.remove(model);
 		}
-	};
+	}
 
 	/**
 	 * Function called when an infoWindow handles a closeclick
 	 * event - sets the currentlySelectedLocation to not selected
 	 */
-	self.markerCloseClick = function(): void {
-		if (typeof self.currentlySelectedLocation() !== 'undefined') {
-			self.currentlySelectedLocation().hasBeenOpened = false;
-			self.currentlySelectedLocation().isSelected(false);
+	markerCloseClick(): void {
+		if (typeof this.currentlySelectedLocation() !== 'undefined') {
+			this.currentlySelectedLocation().hasBeenOpened = false;
+			this.currentlySelectedLocation().isSelected(false);
 		}
-	};
+	}
 
 	/**
 	 * Function called when an infoWindow handles a domReady event - sets
@@ -509,51 +457,54 @@ export default function(map): void {
 	 * Called every time the marker is clicked as of API 3.23 as window
 	 * needs to be re-rendered
 	 */
-	self.markerDomReady = function(): void {
-		if (!self.currentlySelectedLocation().hasBeenOpened) {
+	markerDomReady(): void {
+		if (!this.currentlySelectedLocation().hasBeenOpened) {
 			ko.applyBindings(
-				self,
-				self.currentlySelectedLocation().infoWindow.getContent()
+				this,
+				this.currentlySelectedLocation().infoWindow.getContent() as Node
 			);
-			self.currentlySelectedLocation().hasBeenOpened = true;
+			this.currentlySelectedLocation().hasBeenOpened = true;
 		}
-	};
+	}
 
 	/**
 	 * Function called when an infoWindow handles a click event -
 	 * sets the markerList to scroll to this model,
 	 * starts the data fetching process with Google Places API, closes
 	 * previous info and opens this one, sets markerAnimation going
-	 * @param  {object} model model that contains infowindow
+	 * @param  {object} model model that contains infoWindow
 	 */
-	self.markerClick = function(model): void {
+	markerClick(model): void {
 		/* Change in API as of 3.23: infoWindow needs to be forced to
 												re-render if marker is re-clicked */
 		if (model.hasBeenOpened === true) {
 			model.hasBeenOpened = false;
 		}
-		self.shouldScroll(true);
-		self.getDetailedGooglePlacesAPIInfo(model, self.callSearchAPIs);
-		if (typeof self.currentlySelectedLocation() !== 'undefined') {
-			self.currentlySelectedLocation().infoWindow.close();
-			self.currentlySelectedLocation().isSelected(false);
+		this.shouldScroll(true);
+		this.getDetailedGooglePlacesAPIInfo(
+			model,
+			this.callSearchAPIs.bind(this)
+		);
+		if (typeof this.currentlySelectedLocation() !== 'undefined') {
+			this.currentlySelectedLocation().infoWindow.close();
+			this.currentlySelectedLocation().isSelected(false);
 		}
 		model.isSelected(true);
-		self.markerAnimation(model);
+		this.markerAnimation(model);
 		model.infoWindow.open(model.marker().map, model.marker());
-	};
+	}
 
 	/**
 	 * Function called from markerClick that animates one frame of bouncing
 	 * animation
 	 * @param  {model} loc  model with marker to animate
 	 */
-	self.markerAnimation = function(loc): void {
+	markerAnimation(loc): void {
 		loc.marker().setAnimation(google.maps.Animation.BOUNCE);
-		setTimeout(function() {
+		setTimeout(() => {
 			loc.marker().setAnimation(null);
 		}, 750);
-	};
+	}
 
 	/**
 	 * Called to pick an icon when isFavorite or priceLevel is changed
@@ -563,8 +514,8 @@ export default function(map): void {
 	 * @return {object}             markerObject that can be fed into icon
 	 *                              property of marker
 	 */
-	self.markerImageCreator = function(isFavorite, priceLevel): void {
-		const markerObject = self.defaultMarkerImage;
+	markerImageCreator(isFavorite, priceLevel): OptMarkerImage {
+		const markerObject = this.defaultMarkerImage;
 		if (isFavorite === true) {
 			markerObject.url = config.MARKER_IMAGE_URL_FAV;
 			return markerObject;
@@ -586,154 +537,41 @@ export default function(map): void {
 				markerObject.url = config.MARKER_IMAGE_URL_EMPTY;
 				return markerObject;
 		}
-	};
+	}
 
 	/**
 	 * Get browser location and send it to panning function
 	 */
-	self.getNavWithCallback = function(): void | false {
+	getNavWithCallback(): void | false {
 		if (navigator.geolocation) {
 			return navigator.geolocation.getCurrentPosition(
-				self.mapPanFromNavigation
+				this.mapPanFromNavigation.bind(this)
 			);
 		} else {
 			return false;
 		}
-	};
+	}
 
 	/**
 	 * Pan to given position from browser navigation. Close infoWindow
 	 * and options window.
 	 * @param  {object} position browser position coordinates
 	 */
-	self.mapPanFromNavigation = function(position): void {
-		self.mapPan(position.coords.latitude, position.coords.longitude);
-		self.markerCloseClick();
-		self.optionsToggled(false);
-	};
+	mapPanFromNavigation(position): void {
+		this.mapPan(position.coords.latitude, position.coords.longitude);
+		this.markerCloseClick();
+		this.optionsToggled(false);
+	}
 
 	/**
 	 * Pans to map to the given coordinates
 	 * @param  {number} lat latitude
 	 * @param  {number} lng longitude
 	 */
-	self.mapPan = function(lat, lng): void {
+	mapPan(lat, lng): void {
 		const userLatLng = new google.maps.LatLng(lat, lng);
-		self.mainMap.panTo(userLatLng);
-	};
-
-	/**
-	 * Takes a model and adds observables as defined in config object
-	 * @param  {object} model model to add observables to
-	 */
-	self.modelConstructor = function(model): void {
-		for (const prop in self.APIMappingsForModel) {
-			const currentType = self.APIMappingsForModel[prop];
-			for (let i = 0, len = currentType.length; i < len; i++) {
-				if (currentType[i].oType === 1) {
-					model[currentType[i].model] = ko.observable();
-				} else if (currentType[i].oType === 2) {
-					model[currentType[i].model] = ko.observableArray([]);
-				}
-			}
-		}
-	};
-
-	/**
-	 * Takes a model and returns just the data in JavaScript object format
-	 * Knockout's built in function for this was having trouble
-	 * @param  {object} model model to convert into JavaScript object
-	 *                        without function
-	 * @return {object}       JavaScript object representation of model
-	 *                        (without functions/ect.)
-	 */
-	self.modelDeconstructor = function(model): object {
-		const returnModel = {};
-		for (const prop in self.APIMappingsForModel) {
-			const currentType = self.APIMappingsForModel[prop];
-			for (let i = 0, len = currentType.length; i < len; i++) {
-				if (currentType[i].oType === 0) {
-					returnModel[currentType[i].model] =
-						model[currentType[i].model];
-				} else {
-					returnModel[currentType[i].model] = model[
-						currentType[i].model
-					]();
-				}
-			}
-		}
-		return returnModel;
-	};
-
-	/**
-	 * Takes the model, data from the API server, and updates the
-	 * observables of that model with the data from the server
-	 * @param  {object} model  model to update
-	 * @param  {string} type   which API type/source was used
-	 * @param  {object} result result from server, mapped using config object
-	 */
-	self.modelUpdater = function(model, type, result): void {
-		const currentType = self.APIMappingsForModel[type];
-		for (let i = 0, len = currentType.length; i < len; i++) {
-			if (typeof result[currentType[i].server] !== 'undefined') {
-				if (currentType[i].oType !== 0) {
-					model[currentType[i].model](result[currentType[i].server]);
-				} else {
-					model[currentType[i].model] = result[currentType[i].server];
-				}
-			}
-		}
-	};
-
-	/**
-	 * Takes a model from localStorage and rebuilds it using the saved data
-	 * @param  {object} model     model to update
-	 * @param  {object} blueprint data from localStorage
-	 * @param  {object} location  google_geometry.location object from
-	 *                            localStorage
-	 */
-	self.modelRebuilder = function(model, blueprint, location): void {
-		for (const prop in self.APIMappingsForModel) {
-			const currentType = self.APIMappingsForModel[prop];
-			for (let i = 0, len = currentType.length; i < len; i++) {
-				if (
-					currentType[i].oType !== 0 &&
-					currentType[i].model !== 'google_geometry'
-				) {
-					model[currentType[i].model](
-						blueprint[currentType[i].model]
-					);
-				} else if (currentType[i].model === 'google_geometry') {
-					const geometryBlueprint = blueprint[currentType[i].model];
-					geometryBlueprint.location = location;
-					model[currentType[i].model](geometryBlueprint);
-				} else {
-					model[currentType[i].model] =
-						blueprint[currentType[i].model];
-				}
-			}
-		}
-	};
-
-	/**
-	 * Takes a model and adds in API searchType and isLoading observables
-	 * for all API types
-	 * @param  {object} model model to add observables to
-	 */
-	self.modelSearchTypeConstructor = function(model): void {
-		for (
-			let i = 0, len = self.APIConfiguredSearchTypes.length;
-			i < len;
-			i++
-		) {
-			model[
-				self.APIConfiguredSearchTypes[i].toLowerCase() + 'SearchType'
-			] = ko.observable('None');
-			model[
-				self.APIConfiguredSearchTypes[i].toLowerCase() + 'IsLoading'
-			] = ko.observable(false);
-		}
-	};
+		this.mainMap.panTo(userLatLng);
+	}
 
 	/**
 	 * Function to remove references and dispose of multiple locations when
@@ -741,39 +579,45 @@ export default function(map): void {
 	 * subscriber
 	 * @param  {Array}  newValue       newValue of markedLocations array
 	 */
-	self.removeMultipleLocations = throttle(
-		function(newValue) {
-			//Push favorite to front
-			self.markedLocations.sort(function(left, right) {
-				return left.isFavorite() === true
-					? 1
-					: left.modelNumber < right.modelNumber
-					? -1
-					: 1;
-			});
-			for (let i = 0; i < config.MARKER_LIMIT_REMOVAL_BULK_AMOUNT; i++) {
-				newValue[i].dispose();
+	removeMultipleLocations(...args): void {
+		return throttle(
+			(newValue) => {
+				//Push favorite to front
+				this.markedLocations.sort((left, right) => {
+					return left.isFavorite() === true
+						? 1
+						: left.modelNumber < right.modelNumber
+						? -1
+						: 1;
+				});
+				for (
+					let i = 0;
+					i < config.MARKER_LIMIT_REMOVAL_BULK_AMOUNT;
+					i++
+				) {
+					newValue[i].dispose();
+				}
+				this.markedLocations.splice(
+					0,
+					config.MARKER_LIMIT_REMOVAL_BULK_AMOUNT
+				);
+			},
+			1000,
+			{
+				trailing: false,
 			}
-			self.markedLocations.splice(
-				0,
-				config.MARKER_LIMIT_REMOVAL_BULK_AMOUNT
-			);
-		},
-		1000,
-		{
-			trailing: false,
-		}
-	);
+		).apply(this, args);
+	}
 
 	/**
 	 * Called when a model is created, iterates locationModelNumber when
 	 * called. Allows for sorting models by when they were received
 	 * @return {number} number to assign model
 	 */
-	self.getLocationModelNumber = function(): number {
-		self.locationModelNumber++;
-		return self.locationModelNumber - 1;
-	};
+	getLocationModelNumber(): number {
+		this.locationModelNumber++;
+		return this.locationModelNumber - 1;
+	}
 
 	/**
 	 * Function called to set localStorage with desired properties -
@@ -781,27 +625,27 @@ export default function(map): void {
 	 * @param  {string} name                name of property to set
 	 * @param  {string} item)               value of property to set
 	 */
-	self.setLocalStorage = throttle(
-		function(name, item) {
-			if (self.storageAvailable === true) {
-				localStorage.setItem(name, item);
+	setLocalStorage(...args): (name: string, item: string) => void {
+		return throttle(
+			(name, item) => {
+				if (this.storageAvailable === true) {
+					localStorage.setItem(name, item);
+				}
+			},
+			1000,
+			{
+				trailing: false,
 			}
-		},
-		1000,
-		{
-			trailing: false,
-		}
-	);
+		).apply(this, args);
+	}
 
 	/**
 	 * Function to create a limited copy of some listableEntries properties
 	 * to pass to web workers
 	 * @return {array} array of limited-info models
 	 */
-	self.locationArrayForWorkers = function(): Array<object> {
-		return ko.utils.arrayMap(self.listableEntries().entries, function(
-			item
-		) {
+	locationArrayForWorkers(): Array<object> {
+		return ko.utils.arrayMap(this.listableEntries().entries, (item) => {
 			return {
 				lat: item.google_geometry().location.lat(),
 				lng: item.google_geometry().location.lng(),
@@ -809,7 +653,7 @@ export default function(map): void {
 				google_placeId: item.google_placeId, //eslint-disable-line @typescript-eslint/camelcase
 			};
 		});
-	};
+	}
 
 	/**
 	 * Function to check if a model is filtered by the current searchQuery
@@ -817,13 +661,13 @@ export default function(map): void {
 	 * @param  {object}  item model to check
 	 * @return {Boolean}      if the model is filtered by the query
 	 */
-	self.isSearchFiltered = function(item): boolean {
-		if (typeof self.searchQuery() !== 'undefined') {
+	isSearchFiltered(item): boolean {
+		if (typeof this.searchQuery() !== 'undefined') {
 			if (
 				item
 					.google_name()
 					.toLowerCase()
-					.indexOf(self.searchQuery().toLowerCase()) >= 0
+					.indexOf(this.searchQuery().toLowerCase()) >= 0
 			) {
 				return false;
 			} else {
@@ -832,7 +676,7 @@ export default function(map): void {
 		} else {
 			return false;
 		}
-	};
+	}
 
 	/**
 	 * Function to check if a model is filtered by the current button
@@ -841,11 +685,11 @@ export default function(map): void {
 	 * @return {Boolean}      if the model is filtered by the filters
 	 *                        selected
 	 */
-	self.isButtonFiltered = function(item): boolean {
-		if (self.priceButtonFilterHasChanged() === true) {
+	isButtonFiltered(item): boolean {
+		if (this.priceButtonFilterHasChanged() === true) {
 			if (typeof item.google_priceLevel() !== 'undefined') {
 				for (let i = 0; i < 5; i++) {
-					if (self.priceButtonFilter()[i] !== true) {
+					if (this.priceButtonFilter()[i] !== true) {
 						if (item.google_priceLevel() === i) {
 							return true;
 						}
@@ -853,47 +697,47 @@ export default function(map): void {
 				}
 				// 0 button should be the only one which filters undefined
 			} else {
-				if (self.priceButtonFilter()[0] !== true) {
+				if (this.priceButtonFilter()[0] !== true) {
 					return true;
 				}
 			}
 		}
-		if (self.minRatingButtonFilter() !== 0) {
+		if (this.minRatingButtonFilter() !== 0) {
 			if (typeof item.google_rating() !== 'undefined') {
-				if (item.google_rating() < self.minRatingButtonFilter()) {
+				if (item.google_rating() < this.minRatingButtonFilter()) {
 					return true;
 				}
 			} else {
 				return true;
 			}
 		}
-		if (self.openButtonFilter() !== false) {
+		if (this.openButtonFilter() !== false) {
 			if (item.isItOpenRightNow() !== 'Open') {
 				return true;
 			}
 		}
-		if (self.favoriteButtonFilter() !== false) {
+		if (this.favoriteButtonFilter() !== false) {
 			if (item.isFavorite() !== true) {
 				return true;
 			}
 		}
 
 		return false;
-	};
+	}
 
 	/**
 	 * If a location is selected and shouldScroll is enabled, scroll to that
 	 * location and keep scroll locked to it even if new models are added to
 	 * the marker list
 	 */
-	self.scrollToItem = function(): void {
+	scrollToItem(): void {
 		if (
-			typeof self.currentlySelectedLocation() !== 'undefined' &&
-			self.shouldScroll() === true
+			typeof this.currentlySelectedLocation() !== 'undefined' &&
+			this.shouldScroll() === true
 		) {
-			self.scrolledItem(self.currentlySelectedLocation());
+			this.scrolledItem(this.currentlySelectedLocation());
 		}
-	};
+	}
 
 	/**
 	 * Parse the initial HTML which will be inserted into an infoWindow
@@ -901,11 +745,11 @@ export default function(map): void {
 	 * is called on it
 	 * @return {object} HTML nodes of the initial insertion content
 	 */
-	self.makeInfoWindowContent = function(): void {
-		let html = self.infoWindowHTMLTemplate;
-		html = $.parseHTML(html)[0];
-		return html;
-	};
+	makeInfoWindowContent(): Node {
+		const html = this.infoWindowHTMLTemplate;
+		const returnNode = $.parseHTML(html)[0];
+		return returnNode;
+	}
 
 	/**
 	 * Called every-time the bounds change to check all the markedLocations
@@ -913,8 +757,8 @@ export default function(map): void {
 	 * marker.
 	 * @param  {object} currentBounds map.getBounds() from Google API
 	 */
-	self.checkIfOnMap = function(currentBounds): void {
-		ko.utils.arrayForEach(self.markedLocations(), function(item) {
+	checkIfOnMap(currentBounds): void {
+		ko.utils.arrayForEach(this.markedLocations(), (item) => {
 			if (
 				currentBounds.contains(item.google_geometry().location) ===
 				false
@@ -924,7 +768,7 @@ export default function(map): void {
 				item.isInViewOnMap(true);
 			}
 		});
-	};
+	}
 
 	/**
 	 * Compare a google_placeId to all markedLocations models and return
@@ -932,11 +776,11 @@ export default function(map): void {
 	 * @param  {string} iDToCompare google_placeId to use as comparison
 	 * @return {object/null}        return model if found, null if not
 	 */
-	self.compareIDs = function(iDToCompare): object | null {
-		return ko.utils.arrayFirst(self.markedLocations(), function(item) {
+	compareIDs(iDToCompare): LocationModel | null {
+		return ko.utils.arrayFirst(this.markedLocations(), (item) => {
 			return item.google_placeId === iDToCompare;
 		});
-	};
+	}
 
 	/**
 	 * Function to handle API success, parse through results, call workers.
@@ -954,14 +798,14 @@ export default function(map): void {
 	 *                                        being called and is defined
 	 *                                        in the config object
 	 */
-	self.successAPIFunction = function(
+	successAPIFunction(
 		results,
 		selectedPlace,
 		setResultSearchType,
 		service,
-		clonedMarkedLocations,
-		initialPoint,
-		workerHandler
+		clonedMarkedLocations?,
+		initialPoint?,
+		workerHandler?
 	): void {
 		let type;
 		if (typeof clonedMarkedLocations !== 'undefined') {
@@ -978,11 +822,11 @@ export default function(map): void {
 			// Match will be a number if there's been a match
 			if (typeof match === 'number') {
 				setResultSearchType(selectedPlace);
-				self.modelUpdater(selectedPlace, service, results[match]);
+				selectedPlace.update(service, results[match]);
 				results.splice(match, 1);
 			} else {
 				setResultSearchType(selectedPlace, 'Not Found');
-				self.failAPIFunction(
+				this.failAPIFunction(
 					service.toProperCase() + ' Search Problem',
 					'No Match Found',
 					undefined,
@@ -1000,12 +844,12 @@ export default function(map): void {
 				workerHandler: workerHandler,
 			};
 
-			self.workerHandler(workerArray, service, setResultSearchType);
+			this.workerHandler(workerArray, service, setResultSearchType);
 		} else {
 			setResultSearchType(selectedPlace);
-			self.modelUpdater(selectedPlace, service, results);
+			selectedPlace.update(service, results);
 		}
-	};
+	}
 
 	/**
 	 * Creates an error that is shown to the user (or not if verbose and
@@ -1016,15 +860,12 @@ export default function(map): void {
 	 * @param  {object} errorThrown   Error object thrown - optional
 	 * @param  {boolean} verbose      If the error is verbose or not
 	 */
-	self.failAPIFunction = function(
+	failAPIFunction(
 		customMessage,
 		textStatus,
-		errorThrown,
-		verbose
+		errorThrown?,
+		verbose = false
 	): void {
-		if (typeof verbose === 'undefined') {
-			verbose = false;
-		}
 		let customTextStatus, killOnMarkers;
 		switch (textStatus) {
 			case 'ZERO_RESULTS':
@@ -1049,11 +890,11 @@ export default function(map): void {
 			verbose,
 			killOnMarkers,
 		};
-		self.errors(errorObject);
+		this.errors(errorObject);
 		if (errorThrown) {
 			console.warn(errorThrown);
 		}
-	};
+	}
 
 	/**
 	 * Function to call a type of API's detailed data (used when switching
@@ -1064,39 +905,39 @@ export default function(map): void {
 	 * @param  {string} service       name of API to call
 	 * @param  {object} selectedPlace model to update with data
 	 */
-	self.getDetailedAPIData = function(service, selectedPlace): void {
+	getDetailedAPIData(service, selectedPlace): void {
 		if (selectedPlace.searchType(service)() === 'None') {
 			if (
-				self.currentDetailedAPIInfoBeingFetched.findID(
+				this.currentDetailedAPIInfoBeingFetched.findID(
 					service,
 					'basic',
 					selectedPlace
 				) === -1
 			) {
-				self.callBasicAPIData(service, selectedPlace);
+				this.callBasicAPIData(service, selectedPlace);
 			}
-			self.currentDetailedAPIInfoBeingFetched.interceptIDPush(
+			this.currentDetailedAPIInfoBeingFetched.interceptIDPush(
 				service,
 				'detailed',
 				selectedPlace
 			);
 		} else if (selectedPlace.searchType(service)() === 'Basic') {
 			if (
-				self.currentDetailedAPIInfoBeingFetched.findID(
+				this.currentDetailedAPIInfoBeingFetched.findID(
 					service,
 					'detailed',
 					selectedPlace
 				) === -1
 			) {
-				self.currentDetailedAPIInfoBeingFetched.pushID(
+				this.currentDetailedAPIInfoBeingFetched.pushID(
 					service,
 					'detailed',
 					selectedPlace
 				);
-				self.callAPIInfo('detailed', service, selectedPlace);
+				this.callAPIInfo('detailed', service, selectedPlace);
 			}
 		}
-	};
+	}
 
 	/**
 	 * Calls basic API's for all services when an infoWindow is opened.
@@ -1105,23 +946,23 @@ export default function(map): void {
 	 * or completed previously for a particular service.
 	 * @param  {object} currentLoc model to update with info
 	 */
-	self.callSearchAPIs = function(currentLoc): void {
-		const clonedMarkedLocations = ko.toJS(self.locationArrayForWorkers());
+	callSearchAPIs(currentLoc): void {
+		const clonedMarkedLocations = ko.toJS(this.locationArrayForWorkers());
 		for (
-			let i = 0, len = self.APIConfiguredSearchTypes.length;
+			let i = 0, len = config.CONFIGURED_SEARCH_TYPES.length;
 			i < len;
 			i++
 		) {
-			const currentServiceType = self.APIConfiguredSearchTypes[i];
+			const currentServiceType = config.CONFIGURED_SEARCH_TYPES[i];
 			if (currentLoc.searchType(currentServiceType)() === 'None') {
 				if (
-					self.currentDetailedAPIInfoBeingFetched.findID(
+					this.currentDetailedAPIInfoBeingFetched.findID(
 						currentServiceType,
 						'basic',
 						currentLoc
 					) === -1
 				) {
-					self.callBasicAPIData(
+					this.callBasicAPIData(
 						currentServiceType,
 						currentLoc,
 						clonedMarkedLocations
@@ -1129,7 +970,7 @@ export default function(map): void {
 				}
 			}
 		}
-	};
+	}
 
 	/**
 	 * Call basic API of a given service for a given model
@@ -1138,41 +979,38 @@ export default function(map): void {
 	 * @param  {object} clonedMarkedLocations clone of markedLocations for
 	 *                                        web workers
 	 */
-	self.callBasicAPIData = function(
+	callBasicAPIData(
 		service,
 		selectedPlace,
-		clonedMarkedLocations
+		clonedMarkedLocations = ko.toJS(this.locationArrayForWorkers())
 	): void {
-		if (typeof clonedMarkedLocations === 'undefined') {
-			clonedMarkedLocations = ko.toJS(self.locationArrayForWorkers());
-		}
-		self.currentDetailedAPIInfoBeingFetched.pushID(
+		this.currentDetailedAPIInfoBeingFetched.pushID(
 			service,
 			'basic',
 			selectedPlace
 		);
-		self.callAPIInfo(
+		this.callAPIInfo(
 			'basic',
 			service,
 			selectedPlace,
 			clonedMarkedLocations
 		);
-	};
+	}
 
 	/**
 	 * Adds any found attributions for generalized results to an attributions
 	 * array that displays in the credits modal
 	 * @param  {array} attributionsArray array of attributions found
 	 */
-	self.checkAndAddFullAttributions = function(attributionsArray): void {
+	checkAndAddFullAttributions(attributionsArray): void {
 		const attributionsToPush = [];
 		for (let z = 0, len = attributionsArray.length; z < len; z++) {
-			if (self.attributionsArray.indexOf(attributionsArray[z]) === -1) {
+			if (this.attributionsArray.indexOf(attributionsArray[z]) === -1) {
 				attributionsToPush.push(attributionsArray[z]);
 			}
 		}
-		self.attributionsArray.push(...attributionsToPush);
-	};
+		this.attributionsArray.push(...attributionsToPush);
+	}
 
 	/**
 	 * Process the results from a nearby Google search. Paginates if there
@@ -1183,30 +1021,23 @@ export default function(map): void {
 	 * @param  {number} callArrayIndex index of google call array of
 	 *                                 current set of calls
 	 */
-	self.processNearbyResults = function(
-		results,
-		status,
-		pagination,
-		callArrayIndex
-	): void {
+	processNearbyResults(results, status, pagination, callArrayIndex): void {
 		if (status !== google.maps.places.PlacesServiceStatus.OK) {
-			self.failAPIFunction('Google Maps Nearby Search Error', status);
+			this.failAPIFunction('Google Maps Nearby Search Error', status);
 			return;
 		} else {
 			// Add all markers and push at once into markedLocations for performance
 			const markerList = [];
 			for (let i = 0, len = results.length; i < len; i++) {
 				// If marker as nearby or places searchType doesn't exist
-				if (self.idArray().nearby.indexOf(results[i].place_id) === -1) {
+				if (!this.idArray().nearby.includes(results[i].place_id)) {
 					// If marker doesn't exist, create new
-					if (
-						self.idArray().all.indexOf(results[i].place_id) === -1
-					) {
-						const newLoc = new LocationModel(self, 'Nearby');
-						self.successAPIFunction(
+					if (!this.idArray().all.includes(results[i].place_id)) {
+						const newLoc = new LocationModel(this, 'Nearby');
+						this.successAPIFunction(
 							results[i],
 							newLoc,
-							function() {
+							() => {
 								return;
 							},
 							'google'
@@ -1214,31 +1045,31 @@ export default function(map): void {
 						markerList.push(newLoc);
 					} else {
 						// Marker exists as radar, simply update
-						const matchedLocation = self.compareIDs(
+						const matchedLocation = this.compareIDs(
 							results[i].place_id
 						);
 						if (matchedLocation) {
-							self.successAPIFunction(
+							this.successAPIFunction(
 								results[i],
 								matchedLocation,
-								self.setAPIResultSearchType('Nearby', 'google')
+								this.setAPIResultSearchType('Nearby', 'google')
 									.setSearchType,
 								'google'
 							);
 						}
 					}
 					if (results[i].html_attributions.length !== 0) {
-						self.checkAndAddFullAttributions(
+						this.checkAndAddFullAttributions(
 							results[i].html_attributions
 						);
 					}
 				}
 			}
-			self.markedLocations.push(...markerList);
+			this.markedLocations.push(...markerList);
 			if (pagination && pagination.hasNextPage) {
-				setTimeout(function() {
+				setTimeout(() => {
 					if (
-						self.getRestaurantsFromGoogleMapsAPICallArray[
+						this.getRestaurantsFromGoogleMapsAPICallArray[
 							callArrayIndex
 						] === true
 					) {
@@ -1247,16 +1078,16 @@ export default function(map): void {
 				}, 2000);
 			}
 		}
-	};
+	}
 
 	/**
 	 * Process the results from a radar Google search.
 	 * @param  {object} results results from server
 	 * @param  {object} status  status object from server
 	 */
-	self.processRadarResults = function(results, status): void {
+	processRadarResults(results, status): void {
 		if (status !== google.maps.places.PlacesServiceStatus.OK) {
-			self.failAPIFunction('Google Maps Radar Search Error', status);
+			this.failAPIFunction('Google Maps Radar Search Error', status);
 			return;
 		} else {
 			/**
@@ -1266,12 +1097,12 @@ export default function(map): void {
 			const markerList = [];
 			for (let i = 0, len = results.length; i < len; i++) {
 				// If marker doesn't exist yet, create
-				if (self.idArray().all.indexOf(results[i].place_id) === -1) {
-					const newLoc = new LocationModel(self, 'Radar');
-					self.successAPIFunction(
+				if (!this.idArray().all.includes(results[i].place_id)) {
+					const newLoc = new LocationModel(this, 'Radar');
+					this.successAPIFunction(
 						results[i],
 						newLoc,
-						function() {
+						() => {
 							return null;
 						},
 						'google'
@@ -1283,14 +1114,14 @@ export default function(map): void {
 				 * info to update
 				 */
 				if (results[i].html_attributions.length !== 0) {
-					self.checkAndAddFullAttributions(
+					this.checkAndAddFullAttributions(
 						results[i].html_attributions
 					);
 				}
 			}
-			self.markedLocations.push(...markerList);
+			this.markedLocations.push(...markerList);
 		}
-	};
+	}
 
 	/**
 	 * Function called to populate map markers with data from google -
@@ -1301,8 +1132,8 @@ export default function(map): void {
 	 *                                 continue. if not, map has panned and
 	 *                                 pagination should cancel.
 	 */
-	self.getRestaurantsFromGoogleMapsAPI = function(callArrayIndex): void {
-		const currentMapBounds = self.mainMap.getBounds();
+	getRestaurantsFromGoogleMapsAPI(callArrayIndex): void {
+		const currentMapBounds = this.mainMap.getBounds();
 
 		// Only search in current bounds and for restaurants
 		const request = {
@@ -1312,20 +1143,16 @@ export default function(map): void {
 		};
 
 		// Call radar and nearby search
-		// self.service.radarSearch(request, self.processRadarResults);
-		self.service.nearbySearch(request, function(
-			results,
-			status,
-			pagination
-		) {
-			self.processNearbyResults(
+		// this.service.radarSearch(request, this.processRadarResults);
+		this.service.nearbySearch(request, (results, status, pagination) => {
+			this.processNearbyResults(
 				results,
 				status,
 				pagination,
 				callArrayIndex
 			);
 		});
-	};
+	}
 
 	/**
 	 * Get detailed info on a place from google API when infoWindow is
@@ -1339,44 +1166,41 @@ export default function(map): void {
 	 *                                  no discernible information to match
 	 *                                  against for the other APIs.
 	 */
-	self.getDetailedGooglePlacesAPIInfo = function(
-		selectedPlace,
-		callback
-	): void {
+	getDetailedGooglePlacesAPIInfo(selectedPlace, callback): void {
 		if (
-			self.currentDetailedAPIInfoBeingFetched.findID(
+			this.currentDetailedAPIInfoBeingFetched.findID(
 				'google',
 				'detailed',
 				selectedPlace
 			) === -1
 		) {
-			self.currentDetailedAPIInfoBeingFetched.pushID(
+			this.currentDetailedAPIInfoBeingFetched.pushID(
 				'google',
 				'detailed',
 				selectedPlace
 			);
 
-			self.service.getDetails(
+			this.service.getDetails(
 				{
 					placeId: selectedPlace.google_placeId,
 				},
-				function(result, status) {
-					self.currentDetailedAPIInfoBeingFetched.removeID(
+				(result, status) => {
+					this.currentDetailedAPIInfoBeingFetched.removeID(
 						'google',
 						'detailed',
 						selectedPlace
 					);
 					if (status !== google.maps.places.PlacesServiceStatus.OK) {
-						self.failAPIFunction(
+						this.failAPIFunction(
 							'Google Places Search Error',
 							status
 						);
 						return;
 					}
-					self.successAPIFunction(
+					this.successAPIFunction(
 						result,
 						selectedPlace,
-						self.setAPIResultSearchType('Places', 'google')
+						this.setAPIResultSearchType('Places', 'google')
 							.setSearchType,
 						'google'
 					);
@@ -1384,7 +1208,7 @@ export default function(map): void {
 				}
 			);
 		}
-	};
+	}
 
 	/**
 	 * Function constructor object that takes in type and service to
@@ -1396,7 +1220,7 @@ export default function(map): void {
 	 * @param {string}    service       API being searched
 	 * @return {function} setSearchType constructed function to pass
 	 */
-	self.setAPIResultSearchType = function(
+	setAPIResultSearchType(
 		type,
 		service
 	): {
@@ -1428,7 +1252,7 @@ export default function(map): void {
 		return {
 			setSearchType,
 		};
-	};
+	}
 
 	/**
 	 * Function that can call the API's defined in the config object. Uses
@@ -1444,12 +1268,12 @@ export default function(map): void {
 	 *                                          called when the initial call
 	 *                                          is sent out
 	 */
-	self.callAPIInfo = function(
+	callAPIInfo(
 		APIType,
 		service,
 		selectedPlace,
-		clonedMarkedLocations,
-		callback
+		clonedMarkedLocations?,
+		callback = (): void => {}
 	): void {
 		// See config for documentation on interface
 		const configObject = config[
@@ -1457,7 +1281,7 @@ export default function(map): void {
 		]() as config.ApiConfigObject;
 		const settings = configObject.settings;
 		const returnType = configObject[APIType + 'ReturnType'];
-		const keyData = Object.entries(self['APIKeys_' + service]).reduce(
+		const keyData = Object.entries(this['APIKeys_' + service]).reduce(
 			(acc, [key, value]: [string, KnockoutObservable<string>]) => {
 				acc[key] = value();
 				return acc;
@@ -1465,7 +1289,7 @@ export default function(map): void {
 			{}
 		);
 		const interpolatedKeyData = { ...keyData };
-		let url = self['APIURLs_' + service];
+		let url = this['APIURLs_' + service];
 		const missingAPIKeys = Object.values(keyData).includes('');
 		if (missingAPIKeys) {
 			const apiKeys = Object.keys(keyData);
@@ -1529,7 +1353,7 @@ export default function(map): void {
 		 * is successful
 		 * @param  {object} results results from call
 		 */
-		settings.success = function(results): void {
+		settings.success = (results): void => {
 			let theResult = results;
 			/**
 			 * Parse through the results until the array of result objects
@@ -1547,21 +1371,21 @@ export default function(map): void {
 			}
 			//Success/fail in finding array of result objects
 			if (typeof theResult !== 'undefined') {
-				self.successAPIFunction(
+				this.successAPIFunction(
 					theResult,
 					selectedPlace,
-					self.setAPIResultSearchType(APIType, service).setSearchType,
+					this.setAPIResultSearchType(APIType, service).setSearchType,
 					service,
 					clonedMarkedLocations,
 					initialPoint,
 					configObject.workerHandler
 				);
 			} else {
-				self.currentDetailedAPIInfoBeingFetched.interceptIDRemove(
+				this.currentDetailedAPIInfoBeingFetched.interceptIDRemove(
 					selectedPlace
 				);
 				console.debug(results);
-				self.failAPIFunction(
+				this.failAPIFunction(
 					service.toProperCase() +
 						' ' +
 						APIType.toProperCase() +
@@ -1578,15 +1402,15 @@ export default function(map): void {
 		 * @param  {string} textStatus  textStatus string from jQuery
 		 * @param  {string} errorThrown error string from jQuery
 		 */
-		settings.error = function(
+		settings.error = (
 			jqXHR: JQueryXHR,
 			textStatus: string,
 			errorThrown: string
-		): void {
-			self.currentDetailedAPIInfoBeingFetched.interceptIDRemove(
+		): void => {
+			this.currentDetailedAPIInfoBeingFetched.interceptIDRemove(
 				selectedPlace
 			);
-			self.failAPIFunction(
+			this.failAPIFunction(
 				service.toProperCase() +
 					' ' +
 					APIType.toProperCase() +
@@ -1600,8 +1424,8 @@ export default function(map): void {
 		 * Always executed function passed with jQuery call to manage
 		 * removing model from API calls management object
 		 */
-		settings.complete = function(): void {
-			self.currentDetailedAPIInfoBeingFetched.removeID(
+		settings.complete = (): void => {
+			this.currentDetailedAPIInfoBeingFetched.removeID(
 				service,
 				APIType,
 				selectedPlace
@@ -1609,11 +1433,8 @@ export default function(map): void {
 		};
 
 		$.ajax(settings);
-
-		if (typeof callback === 'function') {
-			callback();
-		}
-	};
+		callback();
+	}
 
 	/**
 	 * Take a Google photo object and get its URL
@@ -1622,23 +1443,23 @@ export default function(map): void {
 	 *                              {maxWidth: 300}
 	 * @return {string}             URL of photo or empty string
 	 */
-	self.getGooglePhotoURL = function(photoObject, parameter): string {
+	getGooglePhotoURL(photoObject, parameter): string {
 		if (typeof photoObject.getUrl === 'function') {
 			return photoObject.getUrl(parameter);
 		} else {
 			return '';
 		}
-	};
+	}
 
 	/**
 	 * Declares input undefined, useful for ensuring web workers are
 	 * fully killed
 	 * @param  {object} toClear likely a web worker which has finished
 	 */
-	self.avoidMemeoryLeaksDueToEventListeners = function(toClear): void {
+	avoidMemeoryLeaksDueToEventListeners(toClear): void {
 		toClear = undefined;
 		return toClear;
-	};
+	}
 
 	/**
 	 * Handles creating web workers, receiving data from them, and
@@ -1649,35 +1470,31 @@ export default function(map): void {
 	 * @param  {function} resultFunction function to call to set search type
 	 *                                   when match is found
 	 */
-	self.workerHandler = function(workerObject, service, resultFunction): void {
-		if (self.workersAvailable === true) {
+	workerHandler(workerObject, service, resultFunction): void {
+		if (this.workersAvailable === true) {
 			const worker = new Worker('/js/workerFillMarkerData.ts');
-			worker.onmessage = function(e): void {
+			worker.onmessage = (e): void => {
 				const returnObject = e.data;
 				for (let i = 0, len = returnObject.length; i < len; i++) {
-					const matchedLocation = self.compareIDs(
+					const matchedLocation = this.compareIDs(
 						returnObject[i].google_placeId
 					);
 					resultFunction(matchedLocation);
-					self.modelUpdater(
-						matchedLocation,
-						service,
-						returnObject[i]
-					);
+					matchedLocation.update(service, returnObject[i]);
 				}
-				// Worker should kill itself but make sure
-				self.avoidMemeoryLeaksDueToEventListeners(worker);
+				// Worker should kill itthis but make sure
+				this.avoidMemeoryLeaksDueToEventListeners(worker);
 			};
 			worker.postMessage(workerObject);
 		}
-	};
+	}
 
 	/**
 	 * Retrieve data from localStorage, parse through, create models from it,
 	 * and set center of map if defined.
 	 */
-	self.getLocalStorage = function(): void {
-		if (self.storageAvailable === true) {
+	getLocalStorage(): void {
+		if (this.storageAvailable === true) {
 			if (localStorage.getItem('favoritesArray')) {
 				const favArray = JSON.parse(
 					localStorage.getItem('favoritesArray')
@@ -1687,7 +1504,7 @@ export default function(map): void {
 					const markerList = [];
 					for (let i = 0, len = favArray.length; i < len; i++) {
 						// Nearby will force it to refresh when clicked
-						const newLoc = new LocationModel(self, 'Nearby');
+						const newLoc = new LocationModel(this, 'Nearby');
 						const lat = Number(
 							favArray[i].google_geometry.location.lat
 						);
@@ -1695,18 +1512,14 @@ export default function(map): void {
 							favArray[i].google_geometry.location.lng
 						);
 						const passedGeometry = new google.maps.LatLng(lat, lng);
-						self.modelRebuilder(
-							newLoc,
-							favArray[i],
-							passedGeometry
-						);
+						newLoc.rebuild(favArray[i], passedGeometry);
 						newLoc.google_geometry(newLoc.google_geometry());
 						newLoc.isFavorite(true);
 						// Reset open/closed computed
 						newLoc.google_openingHoursObject(undefined);
 						markerList.push(newLoc);
 					}
-					self.markedLocations.push(...markerList);
+					this.markedLocations.push(...markerList);
 				}
 			}
 			if (localStorage.getItem('mapCenter')) {
@@ -1716,43 +1529,43 @@ export default function(map): void {
 					typeof mapCenter.lat !== 'undefined' &&
 					mapCenter.lat !== null
 				) {
-					self.mapPan(mapCenter.lat, mapCenter.lng);
+					this.mapPan(mapCenter.lat, mapCenter.lng);
 					if (
 						mapCenter.zoom !== null &&
 						typeof mapCenter.zoom === 'number'
 					) {
-						self.mainMap.setZoom(mapCenter.zoom);
+						this.mainMap.setZoom(mapCenter.zoom);
 					}
 				}
 			}
-			for (const service of self.APIConfiguredSearchTypes) {
-				const keys = Object.keys(self['APIKeys_' + service]);
+			for (const service of config.CONFIGURED_SEARCH_TYPES) {
+				const keys = Object.keys(this['APIKeys_' + service]);
 				for (let i = 0; i < keys.length; ++i) {
 					const key = keys[i];
 					const value = localStorage.getItem(
 						`APIKeys_${service}|||${key}`
 					);
 					if (value) {
-						self['APIKeys_' + service][key](value);
+						this['APIKeys_' + service][key](value);
 					}
 				}
 			}
 		}
-	};
+	}
 
 	/**
 	 * Let the user know if storage or workers aren't available.
 	 */
-	self.singleErrorMessages = function(): void {
-		if (self.storageAvailable !== true) {
-			self.failAPIFunction(
+	singleErrorMessages(): void {
+		if (this.storageAvailable !== true) {
+			this.failAPIFunction(
 				'Local Storage Problem',
 				'Local Storage support is not available. ' +
 					'Favorites will not save after page reload.'
 			);
 		}
-		if (self.workersAvailable !== true) {
-			self.failAPIFunction(
+		if (this.workersAvailable !== true) {
+			this.failAPIFunction(
 				'Web Workers Problem',
 				'Web Workers support is not available. App will function ' +
 					'normally but average data retrieval wait times will ' +
@@ -1761,7 +1574,7 @@ export default function(map): void {
 					'local file system.'
 			);
 		}
-	};
+	}
 
 	/**
 	 * Function to change position of map relative to center/marker by a given
@@ -1772,12 +1585,7 @@ export default function(map): void {
 	 * @param {number} offsetx X pixels to offset by
 	 * @param {number} offsety Y pixels to offset by
 	 */
-	const setResizeListenerMapRecenter = (
-		map,
-		latlng,
-		offsetx,
-		offsety
-	): void => {
+	static setResizeListenerMapRecenter(map, latlng, offsetx, offsety): void {
 		const point1 = map
 			.getProjection()
 			.fromLatLngToPoint(
@@ -1799,7 +1607,7 @@ export default function(map): void {
 					)
 				)
 		);
-	};
+	}
 
 	/**
 	 * Function to determine if the map needs to be moved to fit in the
@@ -1815,16 +1623,16 @@ export default function(map): void {
 	 *                            selector is the inner infoWindow rather than
 	 *                            the outer one
 	 */
-	const setResizeListenerCenterWindow = (
+	static setResizeListenerCenterWindow(
 		theElement,
 		model,
 		x,
 		y,
 		time,
 		xModifier
-	): void => {
+	): void {
 		setTimeout(
-			function() {
+			() => {
 				let xAmount = 0;
 				let yAmount = 0;
 				if (x === true) {
@@ -1863,7 +1671,7 @@ export default function(map): void {
 					}
 				}
 				if (xAmount !== 0 || yAmount !== 0) {
-					setResizeListenerMapRecenter(
+					ViewModel.setResizeListenerMapRecenter(
 						model.marker().map,
 						undefined,
 						xAmount,
@@ -1873,7 +1681,7 @@ export default function(map): void {
 			},
 			typeof time !== 'undefined' ? time : 0
 		);
-	};
+	}
 
 	/**
 	 * Checks if the infoWindow needs to be moved. Checks every 100 ms
@@ -1885,25 +1693,21 @@ export default function(map): void {
 	 * @param  {object} model      currently selected location
 	 * @param  {number} xModifier  size modifier for removing operating
 	 */
-	self.reCheckInfoWindowIsCentered = function(
-		theElement,
-		model,
-		xModifier
-	): void {
+	reCheckInfoWindowIsCentered(theElement, model, xModifier): void {
 		let time: number | false = 100;
-		if (self.regularInfoWindowPan() === true) {
+		if (this.regularInfoWindowPan() === true) {
 			time = 600;
-			self.regularInfoWindowPan(false);
+			this.regularInfoWindowPan(false);
 		}
 		if (
-			self.userDrag() === true ||
-			typeof self.currentlySelectedLocation() === 'undefined' ||
-			self.currentlySelectedLocation() !== model
+			this.userDrag() === true ||
+			typeof this.currentlySelectedLocation() === 'undefined' ||
+			this.currentlySelectedLocation() !== model
 		) {
 			time = false;
 		}
 		if (time !== false) {
-			setResizeListenerCenterWindow(
+			ViewModel.setResizeListenerCenterWindow(
 				theElement,
 				model,
 				true,
@@ -1911,11 +1715,11 @@ export default function(map): void {
 				0,
 				xModifier
 			);
-			self.currentInfoWindowCheck = setTimeout(function() {
-				self.reCheckInfoWindowIsCentered(theElement, model, xModifier);
+			this.currentInfoWindowCheck = setTimeout(() => {
+				this.reCheckInfoWindowIsCentered(theElement, model, xModifier);
 			}, time);
 		}
-	};
+	}
 
 	/**
 	 * Resets the filters when the reset filter button is clicked (on
@@ -1923,15 +1727,11 @@ export default function(map): void {
 	 * UI autocomplete bug (it's set to 0 by the binding handler);
 	 * @return {[type]} [description]
 	 */
-	self.resetFilters = function(): void {
-		self.searchQuery('');
-		self.priceButtonFilter(DEFAULT_PRICE_BUTTON_FILTER.slice());
-		self.minRatingButtonFilter(-1);
-		self.openButtonFilter(DEFAULT_OPEN_BUTTON_FILTER);
-		self.favoriteButtonFilter(DEFAULT_FAVORITE_BUTTON_FILTER);
-	};
-
-	self.initializeCurrentDetailedAPIInfoBeingFetched();
-	self.singleErrorMessages();
-	self.getLocalStorage();
+	resetFilters(): void {
+		this.searchQuery('');
+		this.priceButtonFilter(DEFAULT_PRICE_BUTTON_FILTER.slice());
+		this.minRatingButtonFilter(-1);
+		this.openButtonFilter(DEFAULT_OPEN_BUTTON_FILTER);
+		this.favoriteButtonFilter(DEFAULT_FAVORITE_BUTTON_FILTER);
+	}
 }

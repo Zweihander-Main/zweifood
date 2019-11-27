@@ -11,8 +11,6 @@ import * as config from './config';
  */
 export default class LocationModel {
 	private parentViewModel: any; // TODO
-	googleSearchType: KnockoutObservable<string>;
-	googleIsLoading: KnockoutObservable<boolean>;
 	isInViewOnMap: KnockoutObservable<boolean>;
 	isListed: KnockoutObservable<boolean>;
 	isSelected: KnockoutObservable<boolean>;
@@ -37,12 +35,11 @@ export default class LocationModel {
 	google_formattedPhone: KnockoutObservable<string>;
 	google_singleLocAttributionsArray: KnockoutObservableArray<string>;
 	google_openingHoursObject: KnockoutObservable<
-		google.maps.places.OpeningHours
-	>; // TODO Deprecated
+		google.maps.places.OpeningHours & { isOpen: () => boolean }
+	>;
 	google_photos: KnockoutObservable<google.maps.places.PlacePhoto>;
 	google_reviews: KnockoutObservableArray<google.maps.places.PlaceReview>;
 	google_totalRatings: KnockoutObservable<number>;
-	google_UTCOffset: KnockoutObservable<number>; // TODO Deprecated
 	google_URL: KnockoutObservable<string>;
 	google_website: KnockoutObservable<string>;
 	yelp_id: KnockoutObservable<string>;
@@ -132,6 +129,15 @@ export default class LocationModel {
 		count: number;
 	}>;
 	foursquare_phrases: KnockoutObservable<string>;
+
+	googleSearchType: KnockoutObservable<string>;
+	googleIsLoading: KnockoutObservable<boolean>;
+	yelpSearchType: KnockoutObservable<string>;
+	yelpIsLoading: KnockoutObservable<boolean>;
+	locuSearchType: KnockoutObservable<string>;
+	locuIsLoading: KnockoutObservable<boolean>;
+	foursquareSearchType: KnockoutObservable<string>;
+	foursquareIsLoading: KnockoutObservable<boolean>;
 
 	constructor(currentViewModel, searchType) {
 		this.parentViewModel = currentViewModel;
@@ -269,14 +275,14 @@ export default class LocationModel {
 
 		/**
 		 * Create computed for determining short hand version of
-		 * google_openingHoursObject().open_now
+		 * google_openingHoursObject().isOpen
 		 */
 		this.isItOpenRightNow = ko.pureComputed((): 'Open' | 'Closed' => {
 			if (typeof this.google_openingHoursObject() !== 'undefined') {
-				if (this.google_openingHoursObject().open_now === true) {
+				if (this.google_openingHoursObject().isOpen() === true) {
 					return 'Open';
 				} else if (
-					this.google_openingHoursObject().open_now === false
+					this.google_openingHoursObject().isOpen() === false
 				) {
 					return 'Closed';
 				}
@@ -343,13 +349,14 @@ export default class LocationModel {
 		this.listenerStorage.push(
 			this.infoWindow.addListener(
 				'closeclick',
-				this.parentViewModel.markerCloseClick
+				this.parentViewModel.markerCloseClick.bind(this.parentViewModel)
 			)
 		);
+
 		this.listenerStorage.push(
 			this.infoWindow.addListener(
 				'domready',
-				this.parentViewModel.markerDomReady
+				this.parentViewModel.markerDomReady.bind(this.parentViewModel)
 			)
 		);
 

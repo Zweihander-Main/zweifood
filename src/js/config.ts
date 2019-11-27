@@ -157,11 +157,6 @@ export const API_MAPPINGS_FOR_MODEL = {
 			oType: 1,
 		},
 		{
-			server: 'utc_offset',
-			model: 'google_UTCOffset',
-			oType: 1,
-		},
-		{
 			server: 'url',
 			model: 'google_URL',
 			oType: 1,
