@@ -42,7 +42,7 @@ export default class DetailedAPILock {
 	 * @param  {object} ID      model to lookup
 	 * @return {number}         index of model or -1 if not found
 	 */
-	findID(service, type, ID): number {
+	findID(service: string, type: string, ID: LocationModel): number {
 		return this[service][type].indexOf(ID);
 	}
 	/**
@@ -52,7 +52,7 @@ export default class DetailedAPILock {
 	 * @param  {string} type    type of call
 	 * @param  {object} ID      model to push in
 	 */
-	pushID(service, type, ID): void {
+	pushID(service: string, type: string, ID: LocationModel): void {
 		this[service][type].push(ID);
 		this[service][type][this[service][type].length - 1][
 			service + 'IsLoading'
@@ -69,7 +69,11 @@ export default class DetailedAPILock {
 	 * @param  {object} ID      model to remove
 	 * @return [string,object]  service,model tuple to be used on detailed call
 	 */
-	removeID(service, type, ID): Array<[string, LocationModel]> {
+	removeID(
+		service: string,
+		type: string,
+		ID: LocationModel
+	): Array<[string, LocationModel]> {
 		const index = this.findID(service, type, ID);
 		if (index > -1) {
 			this[service][type][index][service + 'IsLoading'](false);
@@ -96,7 +100,11 @@ export default class DetailedAPILock {
 	 * @param  {object} ID      model to call
 	 * @return undefined        returns if call is already in place
 	 */
-	interceptIDPush(service, type, ID): void | undefined {
+	interceptIDPush(
+		service: string,
+		type: string,
+		ID: LocationModel
+	): void | undefined {
 		for (let i = 0, len = this.intercept.length; i < len; i++) {
 			if (this.intercept[i].ID === ID) {
 				return;
@@ -112,7 +120,7 @@ export default class DetailedAPILock {
 	 * Remove call from intercept array (for a failed previous call)
 	 * @param  {object} ID      model to remove
 	 */
-	interceptIDRemove(ID): void {
+	interceptIDRemove(ID: LocationModel): void {
 		for (let i = this.intercept.length - 1; i >= 0; i--) {
 			if (this.intercept[i].ID === ID) {
 				this.intercept.splice(i, 1);
