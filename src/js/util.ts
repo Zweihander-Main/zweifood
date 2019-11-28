@@ -1,7 +1,3 @@
-interface String {
-	toProperCase(): string;
-}
-
 import * as config from './config';
 import FuzzySet from 'fuzzyset.js';
 
@@ -9,8 +5,9 @@ import FuzzySet from 'fuzzyset.js';
  * Function that converts a string to Proper Case.
  * @return {string} string with proper case
  */
-String.prototype.toProperCase = function(this): string {
-	return this.replace(/\w\S*/g, function(txt) {
+// eslint-disable-next-line @typescript-eslint/unbound-method
+String.prototype.toProperCase = function(this: string): string {
+	return this.replace(/\w\S*/g, (txt) => {
 		return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
 	});
 };
@@ -21,12 +18,11 @@ String.prototype.toProperCase = function(this): string {
  * @param  {array}    sources  array of strings of image locations
  * @param  {function} callback callback function
  */
-export const preload = (sources, callback): void => {
-	const images = [];
-	for (let i = 0, length = sources.length; i < length; ++i) {
-		images[i] = new Image();
-		images[i].src = sources[i];
-	}
+export const preload = (sources: Array<string>, callback: () => void): void => {
+	sources.forEach((imageURL: string) => {
+		const preloadedImage = new Image();
+		preloadedImage.src = imageURL;
+	});
 	if (typeof callback === 'function') {
 		callback();
 	}
@@ -39,9 +35,14 @@ export const preload = (sources, callback): void => {
  * @param  {string}  ... Strings after object are nested levels to search for
  * @return {boolean}     Return true or false if object has given nesting level
  */
-export const checkNested = (obj, level, ...rest): boolean => {
+export const checkNested = (
+	obj: object,
+	level?: string,
+	...rest: Array<string>
+): boolean => {
 	if (obj === undefined) return false;
-	if (rest.length == 0 && obj.hasOwnProperty(level)) return true;
+	if (rest.length == 0 && Object.prototype.hasOwnProperty.call(obj, level))
+		return true;
 	return checkNested(obj[level], ...rest);
 };
 
@@ -49,11 +50,11 @@ export const checkNested = (obj, level, ...rest): boolean => {
  * Gets current time - direct from underscore.js library for debounce function
  * @return {number} Current Date().getTime()
  */
-export const _now: number =
-	Date.now ||
-	function() {
+export const _now: () => number =
+	Date.now.bind(this) ||
+	((): number => {
 		return new Date().getTime();
-	};
+	});
 
 /**
  * Based on underscore.js library
@@ -64,9 +65,13 @@ export const _now: number =
  *                              edge rather than on trailing edge
  * @return {function}           debounced function
  */
-export const debounce = (func, wait, immediate?) => {
+export const debounce = (
+	func: Function,
+	wait: number,
+	immediate?: boolean
+): Function => {
 	let timeout, args, context, timestamp, result;
-	const later = function(): void {
+	const later = (): void => {
 		const last = _now() - timestamp;
 		if (last < wait && last >= 0) {
 			timeout = setTimeout(later, wait - last);
@@ -78,9 +83,9 @@ export const debounce = (func, wait, immediate?) => {
 			}
 		}
 	};
-	return function() {
+	return (...incomingArgs): Function => {
+		args = incomingArgs;
 		context = this;
-		args = arguments;
 		timestamp = _now();
 		const callNow = immediate && !timeout;
 		if (!timeout) timeout = setTimeout(later, wait);
@@ -101,23 +106,26 @@ export const debounce = (func, wait, immediate?) => {
  *                            should be used, ex: {trailing: false}
  * @return {function}         Throttled function
  */
-export const throttle = (func, wait, options) => {
+export const throttle = (
+	func: Function,
+	wait: number,
+	options: { leading?: boolean; trailing?: boolean } = {}
+): Function => {
 	let context, args, result;
 	let timeout = null;
 	let previous = 0;
-	if (!options) options = {};
-	let later = function() {
+	const later = (): void => {
 		previous = options.leading === false ? 0 : _now();
 		timeout = null;
 		result = func.apply(context, args);
 		if (!timeout) context = args = null;
 	};
-	return function() {
-		let now = _now();
+	return (...incomingArgs): Function => {
+		args = incomingArgs;
+		const now = _now();
 		if (!previous && options.leading === false) previous = now;
-		let remaining = wait - (now - previous);
+		const remaining = wait - (now - previous);
 		context = this;
-		args = arguments;
 		if (remaining <= 0 || remaining > wait) {
 			if (timeout) {
 				clearTimeout(timeout);
@@ -146,15 +154,19 @@ export const throttle = (func, wait, options) => {
  *                                 the index of the matched string if a fuzzy
  *                                 match has been made
  */
-export const matchBasedOnName = (arrayOfResults, nameToMatch, nameOfName?) => {
+export const matchBasedOnName = (
+	arrayOfResults: Array<GenericJSON>,
+	nameToMatch: string,
+	nameOfName?: string
+): number | false => {
 	if (typeof nameOfName === 'undefined') {
 		nameOfName = 'name';
 	}
-	let setToMatch = new FuzzySet([]);
+	const setToMatch = new FuzzySet([]);
 	for (let i = 0, len = arrayOfResults.length; i < len; i++) {
 		setToMatch.add(arrayOfResults[i][nameOfName]);
 	}
-	let match = setToMatch.get(nameToMatch);
+	const match = setToMatch.get(nameToMatch);
 	// If there was a match, it'll be at match[0][1], confidence at match[0][0]
 	if (match !== null && match[0][0] > config.MIN_FUZZY_MATCH) {
 		return setToMatch.values().indexOf(match[0][1]);
@@ -169,7 +181,10 @@ export const matchBasedOnName = (arrayOfResults, nameToMatch, nameOfName?) => {
  * @param  {array} a2    second array to compare
  * @return {boolean}     return boolean if array's match or not
  */
-export const allValuesSameInTwoArray = (a1, a2) => {
+export const allValuesSameInTwoArray = <T>(
+	a1: Array<T>,
+	a2: Array<T>
+): boolean => {
 	for (let i = 0, len = a1.length; i < len; i++) {
 		if (a1[i] !== a2[i]) {
 			return false;

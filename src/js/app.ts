@@ -1,10 +1,6 @@
 /* global google, $, ko */
 'use strict';
 
-// interface String {
-// 	toProperCase(): string;
-// }
-
 interface App {
 	googleLoaded: () => void;
 	googleFailedToLoad: () => void;
