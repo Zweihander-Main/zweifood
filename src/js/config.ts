@@ -48,7 +48,7 @@ export interface ApiConfigObject {
 		[key: string]: (apiInfo: {
 			[key: string]: string;
 		}) => string | ((jqXHR: JQueryXHR) => false | void);
-		beforeSend: (apiInfo: {
+		beforeSend?: (apiInfo: {
 			[key: string]: string;
 		}) => (jqXHR: JQueryXHR) => false | void;
 	};
@@ -696,10 +696,10 @@ export const DEFAULT_FAVORITE_BUTTON_FILTER = false;
 
 // necessary for sending to worker
 export const DISTANCE_BETWEEN_TWO_POINTS_IN_METERS = (
-	lat1,
-	lon1,
-	lat2,
-	lon2
+	lat1: number,
+	lon1: number,
+	lat2: number,
+	lon2: number
 ): number => {
 	const p = 0.017453292519943295; // Math.PI / 180
 	const a =
@@ -763,7 +763,9 @@ export const YELP_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 	};
 
 	const apiParameters = {
-		beforeSend: (apiInfo) => {
+		beforeSend: (apiInfo: {
+			[key: string]: string;
+		}): ((xhr: JQueryXHR) => void) => {
 			return (xhr): void => {
 				xhr.setRequestHeader(
 					'Authorization',
@@ -774,10 +776,10 @@ export const YELP_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 	};
 
 	const basicOnlyParameters = {
-		latitude: (point): number => {
+		latitude: (point: Point): number => {
 			return point.lat;
 		},
-		longitude: (point): number => {
+		longitude: (point: Point): number => {
 			return point.lng;
 		},
 		term: 'food',
@@ -811,13 +813,13 @@ export const LOCU_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 
 	const apiParameters = {
 		// eslint-disable-next-line @typescript-eslint/camelcase
-		api_key: (apiInfo): string => {
+		api_key: (apiInfo: { [key: string]: string }): string => {
 			return apiInfo.APIKey;
 		},
 	};
 
 	const basicOnlyParameters = {
-		bounds: (point): string => {
+		bounds: (point: Point): string => {
 			return (
 				point.lat +
 				LAT_LNG_ACCURACY +
@@ -858,7 +860,7 @@ export const FOURSQUARE_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 	};
 
 	const basicOnlyParameters = {
-		radius: (point): number => {
+		radius: (point: Point): number => {
 			return DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
 				point.lat,
 				point.lng,
@@ -866,7 +868,7 @@ export const FOURSQUARE_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 				point.lng + LAT_LNG_ACCURACY
 			);
 		},
-		ll: (point): string => {
+		ll: (point: Point): string => {
 			return point.lat + ',' + point.lng;
 		},
 		limit: 50,
@@ -876,11 +878,11 @@ export const FOURSQUARE_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 
 	const apiParameters = {
 		// eslint-disable-next-line @typescript-eslint/camelcase
-		client_id: (apiInfo): string => {
+		client_id: (apiInfo: { [key: string]: string }): string => {
 			return apiInfo.clientID;
 		},
 		// eslint-disable-next-line @typescript-eslint/camelcase
-		client_secret: (apiInfo): string => {
+		client_secret: (apiInfo: { [key: string]: string }): string => {
 			return apiInfo.clientSecret;
 		},
 	};
