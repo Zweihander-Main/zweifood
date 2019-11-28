@@ -149,7 +149,7 @@ export default class ViewModel {
 		// Array of current API calls - used to throttle calls when scrolling
 		this.getRestaurantsFromGoogleMapsAPICallArray = [];
 		// Object to control API calls from non-Google services
-		this.currentDetailedAPIInfoBeingFetched = new DetailedAPILock(this);
+		this.currentDetailedAPIInfoBeingFetched = new DetailedAPILock();
 		// Observable that is set when an error comes up
 		this.errors = ko.observable(false);
 		// User set variable to show more verbose errors
@@ -1184,12 +1184,12 @@ export default class ViewModel {
 				{
 					placeId: selectedPlace.google_placeId,
 				},
-				(result, status) => {
-					this.currentDetailedAPIInfoBeingFetched.removeID(
-						'google',
-						'detailed',
-						selectedPlace
-					);
+				(result, status): void => {
+					this.currentDetailedAPIInfoBeingFetched
+						.removeID('google', 'detailed', selectedPlace)
+						.forEach((modelTuple): void => {
+							this.getDetailedAPIData(...modelTuple);
+						});
 					if (status !== google.maps.places.PlacesServiceStatus.OK) {
 						this.failAPIFunction(
 							'Google Places Search Error',
@@ -1305,9 +1305,9 @@ export default class ViewModel {
 			const value = configObject.apiParameters[name];
 			const returnedValue = value(interpolatedKeyData);
 			if (name === 'beforeSend') {
-				settings[name] = returnedValue as ((
+				settings[name] = returnedValue as (
 					jqXHR: JQueryXHR
-				) => false | void);
+				) => false | void;
 			} else {
 				settings.data[name] = returnedValue;
 			} //TODO implement this in instructions
@@ -1425,11 +1425,11 @@ export default class ViewModel {
 		 * removing model from API calls management object
 		 */
 		settings.complete = (): void => {
-			this.currentDetailedAPIInfoBeingFetched.removeID(
-				service,
-				APIType,
-				selectedPlace
-			);
+			this.currentDetailedAPIInfoBeingFetched
+				.removeID(service, APIType, selectedPlace)
+				.forEach((modelTuple): void => {
+					this.getDetailedAPIData(...modelTuple);
+				});
 		};
 
 		$.ajax(settings);

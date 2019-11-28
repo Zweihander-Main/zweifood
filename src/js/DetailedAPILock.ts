@@ -15,10 +15,8 @@ export default class DetailedAPILock {
 	locu: SearchType;
 	yelp: SearchType;
 	foursquare: SearchType;
-	parentViewModel: any; //TODO
 
-	constructor(currentViewModel) {
-		this.parentViewModel = currentViewModel; // TODO
+	constructor() {
 		// Intercept array for when a call is waiting on another call
 		this.intercept = [];
 		// Setup arrays for basic and detailed calls for all services
@@ -60,6 +58,7 @@ export default class DetailedAPILock {
 			service + 'IsLoading'
 		](true);
 	}
+
 	/**
 	 * Remove model from array after particular service/method call is
 	 * finished. Also check if in intercept array in which case, call
@@ -68,22 +67,25 @@ export default class DetailedAPILock {
 	 * @param  {string} service name of API service
 	 * @param  {string} type    type of call
 	 * @param  {object} ID      model to remove
+	 * @return [string,object]  service,model tuple to be used on detailed call
 	 */
-	removeID(service, type, ID): void {
+	removeID(service, type, ID): Array<[string, LocationModel]> {
 		const index = this.findID(service, type, ID);
 		if (index > -1) {
 			this[service][type][index][service + 'IsLoading'](false);
 			this[service][type].splice(index, 1);
 		}
-		for (let i = 0, len = this.intercept.length; i < len; i++) {
+		const returnArray = [];
+		for (let i = this.intercept.length - 1; i >= 0; i--) {
 			if (this.intercept[i].ID === ID) {
-				this.parentViewModel.getDetailedAPIData(
+				returnArray.push([
 					this.intercept[i].service,
-					this.intercept[i].ID
-				);
+					this.intercept[i].ID,
+				]);
 				this.intercept.splice(i, 1);
 			}
 		}
+		return returnArray;
 	}
 
 	/**
@@ -111,7 +113,7 @@ export default class DetailedAPILock {
 	 * @param  {object} ID      model to remove
 	 */
 	interceptIDRemove(ID): void {
-		for (let i = 0, len = this.intercept.length; i < len; i++) {
+		for (let i = this.intercept.length - 1; i >= 0; i--) {
 			if (this.intercept[i].ID === ID) {
 				this.intercept.splice(i, 1);
 			}
