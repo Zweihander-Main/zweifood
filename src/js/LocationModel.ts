@@ -77,7 +77,6 @@ export default class LocationModel {
 	locu_cuisines: KnockoutObservable<string>;
 	locu_facebookURL: KnockoutObservable<string>;
 	locu_twitterID: KnockoutObservable<string>;
-	locu_similarVenues: KnockoutObservable<string>; // TODO remove
 	locu_menus: KnockoutObservableArray<GenericJSON>;
 	foursquare_id: KnockoutObservable<string>;
 	foursquare_name: KnockoutObservable<string>;
@@ -193,7 +192,7 @@ export default class LocationModel {
 		 * and to push itself to the favoriteArray for localStorage saving
 		 */
 		this.disposableArray.push(
-			this.isFavorite.subscribe((newValue) => {
+			this.isFavorite.subscribe((newValue: boolean): void => {
 				this.marker().setIcon(
 					currentViewModel.markerImageCreator(
 						newValue,
@@ -210,7 +209,7 @@ export default class LocationModel {
 		 * currentlySelectedLocation consistently and automatically
 		 */
 		this.disposableArray.push(
-			this.isSelected.subscribe((newValue) => {
+			this.isSelected.subscribe((newValue: boolean): void => {
 				currentViewModel.changeCurrentlySelectedItem(newValue, this);
 			})
 		);
@@ -220,7 +219,7 @@ export default class LocationModel {
 		 * status.
 		 */
 		this.disposableArray.push(
-			this.isListed.subscribe((newValue) => {
+			this.isListed.subscribe((newValue: boolean): void => {
 				if (newValue) {
 					this.marker().setOpacity(config.HIGH_MARKER_OPACITY);
 					this.marker(this.marker());
@@ -237,7 +236,7 @@ export default class LocationModel {
 		 * Subscribe to google_priceLevel to update marker image if it changes
 		 */
 		this.disposableArray.push(
-			this.google_priceLevel.subscribe((newValue) => {
+			this.google_priceLevel.subscribe((newValue: number): void => {
 				this.marker().setIcon(
 					currentViewModel.markerImageCreator(
 						this.isFavorite(),
@@ -252,7 +251,7 @@ export default class LocationModel {
 		 * Subscribe to google_name to update marker title if it changes
 		 */
 		this.disposableArray.push(
-			this.google_name.subscribe((newValue) => {
+			this.google_name.subscribe((newValue: string): void => {
 				this.marker().setTitle(newValue);
 				this.marker(this.marker());
 			})
@@ -262,10 +261,12 @@ export default class LocationModel {
 		 * Subscribe to google_geometry to update marker position if it changes
 		 */
 		this.disposableArray.push(
-			this.google_geometry.subscribe((newValue) => {
-				this.marker().setPosition(newValue.location);
-				this.marker(this.marker());
-			})
+			this.google_geometry.subscribe(
+				(newValue: google.maps.places.PlaceGeometry): void => {
+					this.marker().setPosition(newValue.location);
+					this.marker(this.marker());
+				}
+			)
 		);
 
 		/**
@@ -361,7 +362,7 @@ export default class LocationModel {
 		 * previous info and opens this one, sets markerAnimation going
 		 */
 		this.listenerStorage.push(
-			this.marker().addListener('click', () => {
+			this.marker().addListener('click', (): void => {
 				currentViewModel.markerClick(this);
 			})
 		);
@@ -393,12 +394,18 @@ export default class LocationModel {
 	 */
 	dispose(): void {
 		this.marker().setMap(null);
-		ko.utils.arrayForEach(this.disposableArray, function(disposable) {
-			disposable.dispose();
-		});
-		ko.utils.arrayForEach(this.listenerStorage, function(item) {
-			google.maps.event.removeListener(item);
-		});
+		ko.utils.arrayForEach(
+			this.disposableArray,
+			(disposable: KnockoutSubscription): void => {
+				disposable.dispose();
+			}
+		);
+		ko.utils.arrayForEach(
+			this.listenerStorage,
+			(item: google.maps.MapsEventListener): void => {
+				google.maps.event.removeListener(item);
+			}
+		);
 	}
 
 	/**
@@ -467,7 +474,7 @@ export default class LocationModel {
 	 * @param  {string} type   which API type/source was used
 	 * @param  {object} result result from server, mapped using config object
 	 */
-	update(type, result): void {
+	update(type: string, result: GenericJSON): void {
 		const currentType = config.API_MAPPINGS_FOR_MODEL[type];
 		for (let i = 0, len = currentType.length; i < len; i++) {
 			if (typeof result[currentType[i].server] !== 'undefined') {
@@ -486,7 +493,7 @@ export default class LocationModel {
 	 * @param  {object} location  google_geometry.location object from
 	 *                            localStorage
 	 */
-	rebuild(blueprint, location): void {
+	rebuild(blueprint: GenericJSON, location: google.maps.LatLng): void {
 		for (const prop in config.API_MAPPINGS_FOR_MODEL) {
 			const currentType = config.API_MAPPINGS_FOR_MODEL[prop];
 			for (let i = 0, len = currentType.length; i < len; i++) {
@@ -496,9 +503,11 @@ export default class LocationModel {
 				) {
 					this[currentType[i].model](blueprint[currentType[i].model]);
 				} else if (currentType[i].model === 'google_geometry') {
-					const geometryBlueprint = blueprint[currentType[i].model];
-					geometryBlueprint.location = location;
-					this[currentType[i].model](geometryBlueprint);
+					const geometryBlueprint = {
+						...(blueprint['google_geometry'] as object),
+						location,
+					} as google.maps.places.PlaceGeometry;
+					this['google_geometry'](geometryBlueprint);
 				} else {
 					this[currentType[i].model] =
 						blueprint[currentType[i].model];
