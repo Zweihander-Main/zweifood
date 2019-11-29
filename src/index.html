@@ -185,7 +185,7 @@
 							data-bind="foreach: {data: sortedEntries}, scrollToItem: sortedEntries, hoverToggle: true, koPerfectScrollbar: sortedEntries"
 						>
 							<li
-								data-bind="css: { listingIsClosed: isItOpenRightNow() === 'Closed', listingSelected: isSelected }, click: function(data, event) {listWasClicked(data, event, window.innerWidth)}, scrollTo: $root.scrolledItem() == $data"
+								data-bind="css: { listingIsClosed: isItOpenRightNow() === 'Closed', listingSelected: isSelected }, click: function() {listWasClicked();$root.markerToggleWhenClicked(window.innerWidth)}, scrollTo: $root.scrolledItem() == $data"
 							>
 								<h4
 									class="listing-title"

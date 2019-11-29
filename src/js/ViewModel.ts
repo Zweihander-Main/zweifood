@@ -273,14 +273,14 @@ export default class ViewModel {
 		 * Subscribe to currentlySelectedLocation and call scrollToItem on
 		 * change. Stop the infoWindow move listener.
 		 */
-		this.currentlySelectedLocation.subscribe(
-			debounce((newValue) => {
+		this.currentlySelectedLocation.subscribe((...args) => {
+			return debounce((newValue: LocationModel): void => {
 				if (typeof newValue !== 'undefined') {
 					this.scrollToItem();
 					this.userDrag(false);
 				}
-			}, 5)
-		);
+			}, 5).apply(this, args);
+		});
 
 		// Computed array of all IDs and nearby/places search only ids
 		this.idArray = ko.pureComputed(() => {
@@ -288,7 +288,7 @@ export default class ViewModel {
 				all: [],
 				nearby: [],
 			};
-			ko.utils.arrayMap(this.markedLocations(), (item) => {
+			ko.utils.arrayMap(this.markedLocations(), (item: LocationModel) => {
 				if (
 					item.googleSearchType() === 'Nearby' ||
 					item.googleSearchType() === 'Places'
@@ -539,6 +539,12 @@ export default class ViewModel {
 		}
 	}
 
+	markerToggleWhenClicked(width: number): void {
+		if (width < 1200) {
+			this.markerToggled(false);
+		}
+	}
+
 	/**
 	 * Get browser location and send it to panning function
 	 */
@@ -581,7 +587,7 @@ export default class ViewModel {
 	 */
 	removeMultipleLocations(...args): void {
 		return throttle(
-			(newValue) => {
+			(newValue: Array<LocationModel>): void => {
 				//Push favorite to front
 				this.markedLocations.sort((left, right) => {
 					return left.isFavorite() === true

@@ -10,7 +10,6 @@ import * as config from './config';
  *                                  usually 'Radar' or 'Nearby'
  */
 export default class LocationModel {
-	private parentViewModel: any; // TODO
 	isInViewOnMap: KnockoutObservable<boolean>;
 	isListed: KnockoutObservable<boolean>;
 	isSelected: KnockoutObservable<boolean>;
@@ -140,7 +139,6 @@ export default class LocationModel {
 	foursquareIsLoading: KnockoutObservable<boolean>;
 
 	constructor(currentViewModel, searchType) {
-		this.parentViewModel = currentViewModel;
 		// Initialize google properties from the get go
 		this.googleSearchType = ko.observable(searchType);
 		this.googleIsLoading = ko.observable(false);
@@ -153,7 +151,7 @@ export default class LocationModel {
 		// Reflects if marker likely has infoWindow constructed
 		this.hasBeenOpened = false;
 		// Current model number for use in order received sorting
-		this.modelNumber = this.parentViewModel.getLocationModelNumber();
+		this.modelNumber = currentViewModel.getLocationModelNumber();
 		//Reflects if favorite button has been selected for model
 		this.isFavorite = ko.observable(false);
 		/**
@@ -180,12 +178,12 @@ export default class LocationModel {
 		 */
 		this.marker = ko.observable(
 			new google.maps.Marker({
-				map: this.parentViewModel.mainMap,
+				map: currentViewModel.mainMap,
 				opacity:
 					this.isListed() === false
-						? this.parentViewModel.lowMarkerOpacity()
+						? currentViewModel.lowMarkerOpacity()
 						: config.HIGH_MARKER_OPACITY,
-				icon: this.parentViewModel.markerImageCreator(),
+				icon: currentViewModel.markerImageCreator(),
 				shape: config.DEFAULT_MARKER_SHAPE,
 			})
 		);
@@ -197,13 +195,13 @@ export default class LocationModel {
 		this.disposableArray.push(
 			this.isFavorite.subscribe((newValue) => {
 				this.marker().setIcon(
-					this.parentViewModel.markerImageCreator(
+					currentViewModel.markerImageCreator(
 						newValue,
 						this.google_priceLevel()
 					)
 				);
 				this.marker(this.marker());
-				this.parentViewModel.changeFavoriteArray(newValue, this);
+				currentViewModel.changeFavoriteArray(newValue, this);
 			})
 		);
 
@@ -213,10 +211,7 @@ export default class LocationModel {
 		 */
 		this.disposableArray.push(
 			this.isSelected.subscribe((newValue) => {
-				this.parentViewModel.changeCurrentlySelectedItem(
-					newValue,
-					this
-				);
+				currentViewModel.changeCurrentlySelectedItem(newValue, this);
 			})
 		);
 
@@ -231,7 +226,7 @@ export default class LocationModel {
 					this.marker(this.marker());
 				} else {
 					this.marker().setOpacity(
-						this.parentViewModel.lowMarkerOpacity()
+						currentViewModel.lowMarkerOpacity()
 					);
 					this.marker(this.marker());
 				}
@@ -244,7 +239,7 @@ export default class LocationModel {
 		this.disposableArray.push(
 			this.google_priceLevel.subscribe((newValue) => {
 				this.marker().setIcon(
-					this.parentViewModel.markerImageCreator(
+					currentViewModel.markerImageCreator(
 						this.isFavorite(),
 						newValue
 					)
@@ -340,7 +335,7 @@ export default class LocationModel {
 		 * Create infoWindow using template and binds it to model
 		 */
 		this.infoWindow = new google.maps.InfoWindow({
-			content: this.parentViewModel.makeInfoWindowContent(),
+			content: currentViewModel.makeInfoWindowContent(),
 		});
 
 		/**
@@ -349,14 +344,14 @@ export default class LocationModel {
 		this.listenerStorage.push(
 			this.infoWindow.addListener(
 				'closeclick',
-				this.parentViewModel.markerCloseClick.bind(this.parentViewModel)
+				currentViewModel.markerCloseClick.bind(currentViewModel)
 			)
 		);
 
 		this.listenerStorage.push(
 			this.infoWindow.addListener(
 				'domready',
-				this.parentViewModel.markerDomReady.bind(this.parentViewModel)
+				currentViewModel.markerDomReady.bind(currentViewModel)
 			)
 		);
 
@@ -367,7 +362,7 @@ export default class LocationModel {
 		 */
 		this.listenerStorage.push(
 			this.marker().addListener('click', () => {
-				this.parentViewModel.markerClick(this);
+				currentViewModel.markerClick(this);
 			})
 		);
 	}
@@ -376,13 +371,10 @@ export default class LocationModel {
 	 * Triggers click event and pans to marker when location is selected from
 	 * marker list
 	 */
-	listWasClicked(data, event, width): void {
+	listWasClicked(): void {
 		new google.maps.event.trigger(this.marker(), 'click');
 		const map = this.marker().getMap() as google.maps.Map; //TODO test
 		map.panTo(this.google_geometry().location);
-		if (width < 1200) {
-			this.parentViewModel.markerToggled(false);
-		}
 	}
 
 	/**
