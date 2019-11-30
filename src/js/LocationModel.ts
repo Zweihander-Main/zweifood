@@ -1,6 +1,7 @@
 /* global google, ko*/
 
 import * as config from './config';
+import ViewModel from './ViewModel';
 
 /**
  * Model for every location on the map, created from Google data from
@@ -137,7 +138,7 @@ export default class LocationModel {
 	foursquareSearchType: KnockoutObservable<string>;
 	foursquareIsLoading: KnockoutObservable<boolean>;
 
-	constructor(currentViewModel, searchType) {
+	constructor(currentViewModel: ViewModel, searchType: string) {
 		// Initialize google properties from the get go
 		this.googleSearchType = ko.observable(searchType);
 		this.googleIsLoading = ko.observable(false);
@@ -382,9 +383,9 @@ export default class LocationModel {
 	 * Usability function to call the models search type based on what type
 	 * is needed
 	 * @param  {string} type Search type to be called ie yelp, google, ect.
-	 * @return {string}      Contents of search type observable
+	 * @return {ko.observable:string}      Search type observable
 	 */
-	searchType(type): string {
+	searchType(type: string): KnockoutObservable<string> {
 		return this[type.toLowerCase() + 'SearchType'];
 	}
 
@@ -474,7 +475,10 @@ export default class LocationModel {
 	 * @param  {string} type   which API type/source was used
 	 * @param  {object} result result from server, mapped using config object
 	 */
-	update(type: string, result: GenericJSON): void {
+	update(
+		type: string,
+		result: GenericJSON | google.maps.places.PlaceResult
+	): void {
 		const currentType = config.API_MAPPINGS_FOR_MODEL[type];
 		for (let i = 0, len = currentType.length; i < len; i++) {
 			if (typeof result[currentType[i].server] !== 'undefined') {

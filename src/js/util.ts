@@ -6,7 +6,7 @@ import FuzzySet from 'fuzzyset.js';
  * @return {string} string with proper case
  */
 // eslint-disable-next-line @typescript-eslint/unbound-method
-String.prototype.toProperCase = function(this: string): string {
+String.prototype.toProperCase = function(): string {
 	return this.replace(/\w\S*/g, (txt) => {
 		return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
 	});
@@ -155,7 +155,7 @@ export const throttle = (
  *                                 match has been made
  */
 export const matchBasedOnName = (
-	arrayOfResults: Array<GenericJSON>,
+	arrayOfResults: Array<GenericJSON | google.maps.places.PlaceResult>,
 	nameToMatch: string,
 	nameOfName?: string
 ): number | false => {

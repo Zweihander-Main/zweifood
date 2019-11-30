@@ -1,5 +1,6 @@
 /// <reference types="jquery" />
 
+import LocationModel from 'LocationModel';
 import imageMarker1 from '../img/marker-1.png';
 import imageMarker2 from '../img/marker-2.png';
 import imageMarker3 from '../img/marker-3.png';
@@ -20,10 +21,25 @@ import yelpStars5 from '../img/yelpStars/small_5.png';
 import imageReticle from '../img/reticle.png';
 
 export interface Point {
-	//TODO implement more
 	lat: number;
 	lng: number;
 }
+
+export interface WorkerHandler {
+	lat: Array<string>;
+	lng: Array<string>;
+}
+
+export interface WorkerCommunicationObject {
+	resultsArray: Array<GenericJSON>;
+	locationsArray: Array<GenericJSON>;
+	initialPoint: Point;
+	maxDistance: number;
+	service: string;
+	minFuzzyMatch: number;
+	workerHandler: WorkerHandler;
+}
+
 /**
  * Object with the following properties: //TODO
  * settings 			settings for jQuery Ajax call
@@ -58,10 +74,7 @@ export interface ApiConfigObject {
 	extraSlash?: boolean;
 	basicReturnType?: string | number | Array<string | number>;
 	detailedReturnType?: string | number | Array<string | number>;
-	workerHandler: {
-		lat: Array<string>;
-		lng: Array<string>;
-	};
+	workerHandler: WorkerHandler;
 }
 
 /**
@@ -303,11 +316,6 @@ export const API_MAPPINGS_FOR_MODEL = {
 		{
 			server: 'twitter_id',
 			model: 'locu_twitterID',
-			oType: 1,
-		},
-		{
-			server: 'similar_venues',
-			model: 'locu_similarVenues',
 			oType: 1,
 		},
 		{
@@ -751,7 +759,7 @@ export const API_URLS = {
 
 // Information for return object can be found in callAPIInfo function
 export const YELP_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
-	const workerHandler = {
+	const workerHandler: WorkerHandler = {
 		lat: ['location', 'coordinate', 'latitude'],
 		lng: ['location', 'coordinate', 'longitude'],
 	};
@@ -798,7 +806,7 @@ export const YELP_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 };
 
 export const LOCU_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
-	const workerHandler = {
+	const workerHandler: WorkerHandler = {
 		lat: [],
 		lng: ['long'],
 	};
@@ -887,7 +895,7 @@ export const FOURSQUARE_SEARCH_API_PROPERTIES = (): ApiConfigObject => {
 		},
 	};
 
-	const workerHandler = {
+	const workerHandler: WorkerHandler = {
 		lat: ['location', 'lat'],
 		lng: ['location', 'lng'],
 	};

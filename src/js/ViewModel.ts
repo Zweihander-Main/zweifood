@@ -35,6 +35,12 @@ interface ErrorInterface {
 	killOnMarkers: boolean;
 }
 type SortType = 'count' | 'alpha' | 'rating' | 'distance';
+interface LocationArrayForWorkers {
+	lat: number;
+	lng: number;
+	name: string;
+	google_placeId: string; //eslint-disable-line @typescript-eslint/camelcase
+}
 
 ////////////////////////////
 // Section IV: View Model //
@@ -71,7 +77,11 @@ export default class ViewModel {
 	currentDetailedAPIInfoBeingFetched: DetailedAPILock;
 	errors: KnockoutObservable<boolean | ErrorInterface>;
 	verboseErrors: KnockoutObservable<boolean>;
-	checkNested: (obj, level, ...rest) => boolean; //TODO
+	checkNested: (
+		obj: object,
+		level?: string,
+		...rest: Array<string>
+	) => boolean;
 	markerToggled: KnockoutObservable<boolean>;
 	optionsToggled: KnockoutObservable<boolean>;
 	regularInfoWindowPan: KnockoutObservable<boolean>;
@@ -95,7 +105,7 @@ export default class ViewModel {
 	}>;
 	sortedEntries: ko.PureComputed<Array<LocationModel>>;
 
-	constructor(map) {
+	constructor(map: google.maps.Map) {
 		// Initialize
 		this.mainMap = map;
 		// Keep track of map center for saving - is set by createMap
@@ -193,7 +203,7 @@ export default class ViewModel {
 		 * Subscribe to lowMarkerOpacity user set variable to set all markers to
 		 * new opacity
 		 */
-		this.lowMarkerOpacity.subscribe((newValue) => {
+		this.lowMarkerOpacity.subscribe((newValue: number): void => {
 			newValue = +Number(newValue).toFixed(2);
 			ko.utils.arrayForEach(this.markedLocations(), (item) => {
 				if (item.isListed() === false) {
@@ -207,7 +217,7 @@ export default class ViewModel {
 		});
 
 		// When map center changes, save it to localStorage
-		this.mainMapCenter.subscribe((newValue) => {
+		this.mainMapCenter.subscribe((newValue: google.maps.LatLng): void => {
 			this.setLocalStorage(
 				'mapCenter',
 				JSON.stringify({
@@ -226,7 +236,7 @@ export default class ViewModel {
 					string,
 					KnockoutObservable<string>
 				];
-				value.subscribe((newValue) => {
+				value.subscribe((newValue: string): void => {
 					this.setLocalStorage(
 						`APIKeys_${service}|||${key}`,
 						newValue
@@ -244,14 +254,16 @@ export default class ViewModel {
 		 * Subscribe to markedLocations to start removing locations if the
 		 * maxMarkerLimit is exceeded
 		 */
-		this.markedLocations.subscribe((newValue) => {
-			if (newValue.length > this.maxMarkerLimit()) {
-				this.removeMultipleLocations(newValue);
+		this.markedLocations.subscribe(
+			(newValue: Array<LocationModel>): void => {
+				if (newValue.length > this.maxMarkerLimit()) {
+					this.removeMultipleLocations(newValue);
+				}
 			}
-		});
+		);
 
 		// Subscribe to favoriteArray to save it to localStorage at intervals
-		this.favoriteArray.subscribe((newValue) => {
+		this.favoriteArray.subscribe((newValue: Array<LocationModel>): void => {
 			const favoritesArray = [];
 			ko.utils.arrayForEach(newValue, (item) => {
 				favoritesArray.push(item.toJSON());
@@ -273,35 +285,43 @@ export default class ViewModel {
 		 * Subscribe to currentlySelectedLocation and call scrollToItem on
 		 * change. Stop the infoWindow move listener.
 		 */
-		this.currentlySelectedLocation.subscribe((...args) => {
-			return debounce((newValue: LocationModel): void => {
-				if (typeof newValue !== 'undefined') {
-					this.scrollToItem();
-					this.userDrag(false);
-				}
-			}, 5).apply(this, args);
-		});
+		this.currentlySelectedLocation.subscribe(
+			(...args: [LocationModel]): Function => {
+				return debounce((newValue: LocationModel): void => {
+					if (typeof newValue !== 'undefined') {
+						this.scrollToItem();
+						this.userDrag(false);
+					}
+				}, 5).apply(this, args);
+			}
+		);
 
 		// Computed array of all IDs and nearby/places search only ids
-		this.idArray = ko.pureComputed(() => {
+		this.idArray = ko.pureComputed((): {
+			all: Array<string>;
+			nearby: Array<string>;
+		} => {
 			const returnArray = {
 				all: [],
 				nearby: [],
 			};
-			ko.utils.arrayMap(this.markedLocations(), (item: LocationModel) => {
-				if (
-					item.googleSearchType() === 'Nearby' ||
-					item.googleSearchType() === 'Places'
-				) {
-					returnArray.nearby.push(item.google_placeId);
+			ko.utils.arrayMap(
+				this.markedLocations(),
+				(item: LocationModel): void => {
+					if (
+						item.googleSearchType() === 'Nearby' ||
+						item.googleSearchType() === 'Places'
+					) {
+						returnArray.nearby.push(item.google_placeId);
+					}
+					returnArray.all.push(item.google_placeId);
 				}
-				returnArray.all.push(item.google_placeId);
-			});
+			);
 			return returnArray;
 		});
 
 		// Computed check if priceButtonFilter has changed
-		this.priceButtonFilterHasChanged = ko.pureComputed(() => {
+		this.priceButtonFilterHasChanged = ko.pureComputed((): boolean => {
 			return !allValuesSameInTwoArray(this.priceButtonFilter(), [
 				true,
 				true,
@@ -316,14 +336,17 @@ export default class ViewModel {
 		 * searched and not filtered. Returns both an array of filtered models
 		 * and an array of the names of those models.
 		 */
-		this.listableEntries = ko.computed(() => {
+		this.listableEntries = ko.computed((): {
+			entries: Array<LocationModel>;
+			allNames: Array<string>;
+		} => {
 			const returnArray = {
 				entries: [],
 				allNames: [],
 			};
 			returnArray.entries = ko.utils.arrayFilter(
 				this.markedLocations(),
-				(item) => {
+				(item: LocationModel): boolean => {
 					if (
 						(item.googleSearchType() === 'Nearby' ||
 							item.googleSearchType() === 'Places') &&
@@ -347,62 +370,79 @@ export default class ViewModel {
 		 * Computed array, takes listableEntries computed entries array and
 		 * sorts it according to sortType observable
 		 */
-		this.sortedEntries = ko.pureComputed(() => {
-			const returnArray = this.listableEntries().entries;
-			if (this.sortType() === 'count') {
-				returnArray.sort((left, right) => {
-					return left.modelNumber < right.modelNumber ? -1 : 1;
-				});
-			} else if (this.sortType() === 'alpha') {
-				returnArray.sort((left, right) => {
-					return left.google_name() === right.google_name()
-						? 0
-						: left.google_name() < right.google_name()
-						? -1
-						: 1;
-				});
-			} else if (this.sortType() === 'rating') {
-				// Sort undefined to the end of the list
-				returnArray.sort((left, right) => {
-					if (typeof left.google_rating() === 'undefined') {
-						if (typeof right.google_rating() === 'undefined') {
-							return 0;
-						} else {
-							return 1;
+		this.sortedEntries = ko.pureComputed(
+			(): Array<LocationModel> => {
+				const returnArray = this.listableEntries().entries;
+				if (this.sortType() === 'count') {
+					returnArray.sort(
+						(left: LocationModel, right: LocationModel): number => {
+							return left.modelNumber < right.modelNumber
+								? -1
+								: 1;
 						}
-					} else if (typeof right.google_rating() === 'undefined') {
-						return -1;
-					} else {
-						return left.google_rating() < right.google_rating()
-							? 1
-							: -1;
-					}
-				});
-			} else if (this.sortType() === 'distance') {
-				returnArray.sort((left, right) => {
-					const x1 = left.google_geometry().location.lat();
-					const x2 = right.google_geometry().location.lat();
-					const x3 = this.mainMapCenter().lat();
-					const y1 = left.google_geometry().location.lng();
-					const y2 = right.google_geometry().location.lng();
-					const y3 = this.mainMapCenter().lng();
-					const dist1 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
-						x1,
-						y1,
-						x3,
-						y3
 					);
-					const dist2 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
-						x2,
-						y2,
-						x3,
-						y3
+				} else if (this.sortType() === 'alpha') {
+					returnArray.sort(
+						(left: LocationModel, right: LocationModel): number => {
+							return left.google_name() === right.google_name()
+								? 0
+								: left.google_name() < right.google_name()
+								? -1
+								: 1;
+						}
 					);
-					return dist1 === dist2 ? 0 : dist1 < dist2 ? -1 : 1;
-				});
+				} else if (this.sortType() === 'rating') {
+					// Sort undefined to the end of the list
+					returnArray.sort(
+						(left: LocationModel, right: LocationModel): number => {
+							if (typeof left.google_rating() === 'undefined') {
+								if (
+									typeof right.google_rating() === 'undefined'
+								) {
+									return 0;
+								} else {
+									return 1;
+								}
+							} else if (
+								typeof right.google_rating() === 'undefined'
+							) {
+								return -1;
+							} else {
+								return left.google_rating() <
+									right.google_rating()
+									? 1
+									: -1;
+							}
+						}
+					);
+				} else if (this.sortType() === 'distance') {
+					returnArray.sort(
+						(left: LocationModel, right: LocationModel): number => {
+							const x1 = left.google_geometry().location.lat();
+							const x2 = right.google_geometry().location.lat();
+							const x3 = this.mainMapCenter().lat();
+							const y1 = left.google_geometry().location.lng();
+							const y2 = right.google_geometry().location.lng();
+							const y3 = this.mainMapCenter().lng();
+							const dist1 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
+								x1,
+								y1,
+								x3,
+								y3
+							);
+							const dist2 = config.DISTANCE_BETWEEN_TWO_POINTS_IN_METERS(
+								x2,
+								y2,
+								x3,
+								y3
+							);
+							return dist1 === dist2 ? 0 : dist1 < dist2 ? -1 : 1;
+						}
+					);
+				}
+				return returnArray;
 			}
-			return returnArray;
-		});
+		);
 
 		// Limit resorting, slows down too much otherwise
 		this.listableEntries.extend({
@@ -419,7 +459,7 @@ export default class ViewModel {
 	 * @param  {boolean} newValue isListed subscribed value
 	 * @param  {object} model     model which changed
 	 */
-	changeCurrentlySelectedItem(newValue, model): void {
+	changeCurrentlySelectedItem(newValue: boolean, model: LocationModel): void {
 		if (newValue === true) {
 			this.currentlySelectedLocation(model);
 		} else {
@@ -432,7 +472,7 @@ export default class ViewModel {
 	 * @param  {boolean} newValue isFavorite subscribed value
 	 * @param  {object} model     model which changed
 	 */
-	changeFavoriteArray(newValue, model): void {
+	changeFavoriteArray(newValue: boolean, model: LocationModel): void {
 		if (newValue === true) {
 			this.favoriteArray.push(model);
 		} else {
@@ -474,7 +514,7 @@ export default class ViewModel {
 	 * previous info and opens this one, sets markerAnimation going
 	 * @param  {object} model model that contains infoWindow
 	 */
-	markerClick(model): void {
+	markerClick(model: LocationModel): void {
 		/* Change in API as of 3.23: infoWindow needs to be forced to
 												re-render if marker is re-clicked */
 		if (model.hasBeenOpened === true) {
@@ -491,7 +531,10 @@ export default class ViewModel {
 		}
 		model.isSelected(true);
 		this.markerAnimation(model);
-		model.infoWindow.open(model.marker().map, model.marker());
+		model.infoWindow.open(
+			model.marker().getMap() as google.maps.Map,
+			model.marker()
+		);
 	}
 
 	/**
@@ -499,9 +542,9 @@ export default class ViewModel {
 	 * animation
 	 * @param  {model} loc  model with marker to animate
 	 */
-	markerAnimation(loc): void {
+	markerAnimation(loc: LocationModel): void {
 		loc.marker().setAnimation(google.maps.Animation.BOUNCE);
-		setTimeout(() => {
+		setTimeout((): void => {
 			loc.marker().setAnimation(null);
 		}, 750);
 	}
@@ -514,28 +557,31 @@ export default class ViewModel {
 	 * @return {object}             markerObject that can be fed into icon
 	 *                              property of marker
 	 */
-	markerImageCreator(isFavorite, priceLevel): OptMarkerImage {
+	markerImageCreator(
+		isFavorite?: boolean,
+		priceLevel?: number
+	): google.maps.ReadonlyIcon {
 		const markerObject = this.defaultMarkerImage;
 		if (isFavorite === true) {
 			markerObject.url = config.MARKER_IMAGE_URL_FAV;
-			return markerObject;
+			return markerObject as google.maps.ReadonlyIcon;
 		}
 		switch (priceLevel) {
 			case 1:
 				markerObject.url = config.MARKER_IMAGE_URL_1;
-				return markerObject;
+				return markerObject as google.maps.ReadonlyIcon;
 			case 2:
 				markerObject.url = config.MARKER_IMAGE_URL_2;
-				return markerObject;
+				return markerObject as google.maps.ReadonlyIcon;
 			case 3:
 				markerObject.url = config.MARKER_IMAGE_URL_3;
-				return markerObject;
+				return markerObject as google.maps.ReadonlyIcon;
 			case 4:
 				markerObject.url = config.MARKER_IMAGE_URL_4;
-				return markerObject;
+				return markerObject as google.maps.ReadonlyIcon;
 			default:
 				markerObject.url = config.MARKER_IMAGE_URL_EMPTY;
-				return markerObject;
+				return markerObject as google.maps.ReadonlyIcon;
 		}
 	}
 
@@ -563,7 +609,7 @@ export default class ViewModel {
 	 * and options window.
 	 * @param  {object} position browser position coordinates
 	 */
-	mapPanFromNavigation(position): void {
+	mapPanFromNavigation(position: Position): void {
 		this.mapPan(position.coords.latitude, position.coords.longitude);
 		this.markerCloseClick();
 		this.optionsToggled(false);
@@ -574,7 +620,7 @@ export default class ViewModel {
 	 * @param  {number} lat latitude
 	 * @param  {number} lng longitude
 	 */
-	mapPan(lat, lng): void {
+	mapPan(lat: number, lng: number): void {
 		const userLatLng = new google.maps.LatLng(lat, lng);
 		this.mainMap.panTo(userLatLng);
 	}
@@ -585,17 +631,19 @@ export default class ViewModel {
 	 * subscriber
 	 * @param  {Array}  newValue       newValue of markedLocations array
 	 */
-	removeMultipleLocations(...args): void {
+	removeMultipleLocations(...args: [Array<LocationModel>]): void {
 		return throttle(
 			(newValue: Array<LocationModel>): void => {
 				//Push favorite to front
-				this.markedLocations.sort((left, right) => {
-					return left.isFavorite() === true
-						? 1
-						: left.modelNumber < right.modelNumber
-						? -1
-						: 1;
-				});
+				this.markedLocations.sort(
+					(left: LocationModel, right: LocationModel): number => {
+						return left.isFavorite() === true
+							? 1
+							: left.modelNumber < right.modelNumber
+							? -1
+							: 1;
+					}
+				);
 				for (
 					let i = 0;
 					i < config.MARKER_LIMIT_REMOVAL_BULK_AMOUNT;
@@ -631,9 +679,11 @@ export default class ViewModel {
 	 * @param  {string} name                name of property to set
 	 * @param  {string} item)               value of property to set
 	 */
-	setLocalStorage(...args): (name: string, item: string) => void {
+	setLocalStorage(
+		...args: [string, string]
+	): (name: string, item: string) => void {
 		return throttle(
-			(name, item) => {
+			(name: string, item: string) => {
 				if (this.storageAvailable === true) {
 					localStorage.setItem(name, item);
 				}
@@ -650,15 +700,18 @@ export default class ViewModel {
 	 * to pass to web workers
 	 * @return {array} array of limited-info models
 	 */
-	locationArrayForWorkers(): Array<object> {
-		return ko.utils.arrayMap(this.listableEntries().entries, (item) => {
-			return {
-				lat: item.google_geometry().location.lat(),
-				lng: item.google_geometry().location.lng(),
-				name: item.google_name(),
-				google_placeId: item.google_placeId, //eslint-disable-line @typescript-eslint/camelcase
-			};
-		});
+	locationArrayForWorkers(): Array<LocationArrayForWorkers> {
+		return ko.utils.arrayMap(
+			this.listableEntries().entries,
+			(item: LocationModel): LocationArrayForWorkers => {
+				return {
+					lat: item.google_geometry().location.lat(),
+					lng: item.google_geometry().location.lng(),
+					name: item.google_name(),
+					google_placeId: item.google_placeId, //eslint-disable-line @typescript-eslint/camelcase
+				};
+			}
+		);
 	}
 
 	/**
@@ -667,13 +720,13 @@ export default class ViewModel {
 	 * @param  {object}  item model to check
 	 * @return {Boolean}      if the model is filtered by the query
 	 */
-	isSearchFiltered(item): boolean {
+	isSearchFiltered(item: LocationModel): boolean {
 		if (typeof this.searchQuery() !== 'undefined') {
 			if (
 				item
 					.google_name()
 					.toLowerCase()
-					.indexOf(this.searchQuery().toLowerCase()) >= 0
+					.includes(this.searchQuery().toLowerCase())
 			) {
 				return false;
 			} else {
@@ -691,7 +744,7 @@ export default class ViewModel {
 	 * @return {Boolean}      if the model is filtered by the filters
 	 *                        selected
 	 */
-	isButtonFiltered(item): boolean {
+	isButtonFiltered(item: LocationModel): boolean {
 		if (this.priceButtonFilterHasChanged() === true) {
 			if (typeof item.google_priceLevel() !== 'undefined') {
 				for (let i = 0; i < 5; i++) {
@@ -763,7 +816,7 @@ export default class ViewModel {
 	 * marker.
 	 * @param  {object} currentBounds map.getBounds() from Google API
 	 */
-	checkIfOnMap(currentBounds): void {
+	checkIfOnMap(currentBounds: google.maps.LatLngBounds): void {
 		ko.utils.arrayForEach(this.markedLocations(), (item) => {
 			if (
 				currentBounds.contains(item.google_geometry().location) ===
@@ -782,7 +835,7 @@ export default class ViewModel {
 	 * @param  {string} iDToCompare google_placeId to use as comparison
 	 * @return {object/null}        return model if found, null if not
 	 */
-	compareIDs(iDToCompare): LocationModel | null {
+	compareIDs(iDToCompare: string): LocationModel | null {
 		return ko.utils.arrayFirst(this.markedLocations(), (item) => {
 			return item.google_placeId === iDToCompare;
 		});
@@ -790,29 +843,34 @@ export default class ViewModel {
 
 	/**
 	 * Function to handle API success, parse through results, call workers.
-	 * @param  {array} results                Array of result objects from
+	 * @param  {array} result                 Result object(s) from
 	 *                                        server
 	 * @param  {object} selectedPlace         model that is being updated
 	 * @param  {function} setResultSearchType function to set search type
-	 * @param  {string} service               name of api service
+	 * @param  {string} service               name of API service
 	 * @param  {object} clonedMarkedLocations clone of listableLocations to
 	 *                                        pass to worker
 	 * @param  {object} initialPoint          object with lat and lng props
 	 *                                        for worker
 	 * @param  {object} workerHandler         object to be parsed by worker
-	 *                                        that is specific to the api
+	 *                                        that is specific to the API
 	 *                                        being called and is defined
 	 *                                        in the config object
 	 */
 	successAPIFunction(
-		results,
-		selectedPlace,
-		setResultSearchType,
-		service,
-		clonedMarkedLocations?,
-		initialPoint?,
-		workerHandler?
+		result:
+			| Array<GenericJSON>
+			| GenericJSON
+			| google.maps.places.PlaceResult
+			| Array<google.maps.places.PlaceResult>,
+		selectedPlace: LocationModel,
+		setResultSearchType: (result: LocationModel, override?: string) => void,
+		service: string,
+		clonedMarkedLocations?: Array<GenericJSON>,
+		initialPoint?: config.Point,
+		workerHandler?: config.WorkerHandler
 	): void {
+		const results = Array.isArray(result) ? result : [result];
 		let type;
 		if (typeof clonedMarkedLocations !== 'undefined') {
 			type = 'basic';
@@ -848,12 +906,12 @@ export default class ViewModel {
 				service: service,
 				minFuzzyMatch: config.MIN_FUZZY_MATCH,
 				workerHandler: workerHandler,
-			};
+			} as config.WorkerCommunicationObject;
 
 			this.workerHandler(workerArray, service, setResultSearchType);
 		} else {
 			setResultSearchType(selectedPlace);
-			selectedPlace.update(service, results);
+			selectedPlace.update(service, results[0]);
 		}
 	}
 
@@ -863,13 +921,13 @@ export default class ViewModel {
 	 * readable and useful information.
 	 * @param  {string} customMessage Custom message to accompany error
 	 * @param  {string} textStatus    Text of the error
-	 * @param  {object} errorThrown   Error object thrown - optional
+	 * @param  {string} errorThrown   Error string thrown - optional
 	 * @param  {boolean} verbose      If the error is verbose or not
 	 */
 	failAPIFunction(
-		customMessage,
-		textStatus,
-		errorThrown?,
+		customMessage: string,
+		textStatus: string,
+		errorThrown?: string,
 		verbose = false
 	): void {
 		let customTextStatus, killOnMarkers;
@@ -911,7 +969,7 @@ export default class ViewModel {
 	 * @param  {string} service       name of API to call
 	 * @param  {object} selectedPlace model to update with data
 	 */
-	getDetailedAPIData(service, selectedPlace): void {
+	getDetailedAPIData(service: string, selectedPlace: LocationModel): void {
 		if (selectedPlace.searchType(service)() === 'None') {
 			if (
 				this.currentDetailedAPIInfoBeingFetched.findID(
@@ -952,7 +1010,7 @@ export default class ViewModel {
 	 * or completed previously for a particular service.
 	 * @param  {object} currentLoc model to update with info
 	 */
-	callSearchAPIs(currentLoc): void {
+	callSearchAPIs(currentLoc: LocationModel): void {
 		const clonedMarkedLocations = ko.toJS(this.locationArrayForWorkers());
 		for (
 			let i = 0, len = config.CONFIGURED_SEARCH_TYPES.length;
@@ -986,9 +1044,11 @@ export default class ViewModel {
 	 *                                        web workers
 	 */
 	callBasicAPIData(
-		service,
-		selectedPlace,
-		clonedMarkedLocations = ko.toJS(this.locationArrayForWorkers())
+		service: string,
+		selectedPlace: LocationModel,
+		clonedMarkedLocations: Array<GenericJSON> = ko.toJS(
+			this.locationArrayForWorkers()
+		)
 	): void {
 		this.currentDetailedAPIInfoBeingFetched.pushID(
 			service,
@@ -1008,7 +1068,7 @@ export default class ViewModel {
 	 * array that displays in the credits modal
 	 * @param  {array} attributionsArray array of attributions found
 	 */
-	checkAndAddFullAttributions(attributionsArray): void {
+	checkAndAddFullAttributions(attributionsArray: Array<string>): void {
 		const attributionsToPush = [];
 		for (let z = 0, len = attributionsArray.length; z < len; z++) {
 			if (this.attributionsArray.indexOf(attributionsArray[z]) === -1) {
@@ -1027,7 +1087,12 @@ export default class ViewModel {
 	 * @param  {number} callArrayIndex index of google call array of
 	 *                                 current set of calls
 	 */
-	processNearbyResults(results, status, pagination, callArrayIndex): void {
+	processNearbyResults(
+		results: Array<google.maps.places.PlaceResult>,
+		status: google.maps.places.PlacesServiceStatus,
+		pagination: google.maps.places.PlaceSearchPagination,
+		callArrayIndex: number
+	): void {
 		if (status !== google.maps.places.PlacesServiceStatus.OK) {
 			this.failAPIFunction('Google Maps Nearby Search Error', status);
 			return;
@@ -1043,7 +1108,7 @@ export default class ViewModel {
 						this.successAPIFunction(
 							results[i],
 							newLoc,
-							() => {
+							(): undefined => {
 								return;
 							},
 							'google'
@@ -1058,8 +1123,7 @@ export default class ViewModel {
 							this.successAPIFunction(
 								results[i],
 								matchedLocation,
-								this.setAPIResultSearchType('Nearby', 'google')
-									.setSearchType,
+								this.setAPIResultSearchType('Nearby', 'google'),
 								'google'
 							);
 						}
@@ -1073,7 +1137,7 @@ export default class ViewModel {
 			}
 			this.markedLocations.push(...markerList);
 			if (pagination && pagination.hasNextPage) {
-				setTimeout(() => {
+				setTimeout((): void => {
 					if (
 						this.getRestaurantsFromGoogleMapsAPICallArray[
 							callArrayIndex
@@ -1087,49 +1151,6 @@ export default class ViewModel {
 	}
 
 	/**
-	 * Process the results from a radar Google search.
-	 * @param  {object} results results from server
-	 * @param  {object} status  status object from server
-	 */
-	processRadarResults(results, status): void {
-		if (status !== google.maps.places.PlacesServiceStatus.OK) {
-			this.failAPIFunction('Google Maps Radar Search Error', status);
-			return;
-		} else {
-			/**
-			 * Add all markers and push at once into markedLocations
-			 *  for performance
-			 */
-			const markerList = [];
-			for (let i = 0, len = results.length; i < len; i++) {
-				// If marker doesn't exist yet, create
-				if (!this.idArray().all.includes(results[i].place_id)) {
-					const newLoc = new LocationModel(this, 'Radar');
-					this.successAPIFunction(
-						results[i],
-						newLoc,
-						() => {
-							return null;
-						},
-						'google'
-					);
-					markerList.push(newLoc);
-				}
-				/**
-				 * not going to update for performance and because no
-				 * info to update
-				 */
-				if (results[i].html_attributions.length !== 0) {
-					this.checkAndAddFullAttributions(
-						results[i].html_attributions
-					);
-				}
-			}
-			this.markedLocations.push(...markerList);
-		}
-	}
-
-	/**
 	 * Function called to populate map markers with data from google -
 	 * called initially and on map pan
 	 * @param  {number} callArrayIndex index of the current call in the
@@ -1138,7 +1159,7 @@ export default class ViewModel {
 	 *                                 continue. if not, map has panned and
 	 *                                 pagination should cancel.
 	 */
-	getRestaurantsFromGoogleMapsAPI(callArrayIndex): void {
+	getRestaurantsFromGoogleMapsAPI(callArrayIndex: number): void {
 		const currentMapBounds = this.mainMap.getBounds();
 
 		// Only search in current bounds and for restaurants
@@ -1146,18 +1167,23 @@ export default class ViewModel {
 			rankby: 'distance',
 			bounds: currentMapBounds,
 			type: 'restaurant',
-		};
+		} as google.maps.places.PlaceSearchRequest;
 
-		// Call radar and nearby search
-		// this.service.radarSearch(request, this.processRadarResults);
-		this.service.nearbySearch(request, (results, status, pagination) => {
-			this.processNearbyResults(
-				results,
-				status,
-				pagination,
-				callArrayIndex
-			);
-		});
+		this.service.nearbySearch(
+			request,
+			(
+				results: Array<google.maps.places.PlaceResult>,
+				status: google.maps.places.PlacesServiceStatus,
+				pagination: google.maps.places.PlaceSearchPagination
+			): void => {
+				this.processNearbyResults(
+					results,
+					status,
+					pagination,
+					callArrayIndex
+				);
+			}
+		);
 	}
 
 	/**
@@ -1172,7 +1198,10 @@ export default class ViewModel {
 	 *                                  no discernible information to match
 	 *                                  against for the other APIs.
 	 */
-	getDetailedGooglePlacesAPIInfo(selectedPlace, callback): void {
+	getDetailedGooglePlacesAPIInfo(
+		selectedPlace: LocationModel,
+		callback: (model: LocationModel) => void
+	): void {
 		if (
 			this.currentDetailedAPIInfoBeingFetched.findID(
 				'google',
@@ -1206,8 +1235,7 @@ export default class ViewModel {
 					this.successAPIFunction(
 						result,
 						selectedPlace,
-						this.setAPIResultSearchType('Places', 'google')
-							.setSearchType,
+						this.setAPIResultSearchType('Places', 'google'),
 						'google'
 					);
 					callback(selectedPlace);
@@ -1227,14 +1255,9 @@ export default class ViewModel {
 	 * @return {function} setSearchType constructed function to pass
 	 */
 	setAPIResultSearchType(
-		type,
-		service
-	): {
-		setSearchType: (
-			result: { searchType: (a: string) => (b: string) => void },
-			override: string
-		) => void;
-	} {
+		type: string,
+		service: string
+	): (result: LocationModel, override?: string) => void {
 		const inputs = {
 			type,
 			service,
@@ -1245,8 +1268,8 @@ export default class ViewModel {
 		 * @param {string} override override if not found for matching
 		 */
 		const setSearchType = (
-			result: { searchType: (a: string) => (b: string) => void }, //TODO
-			override: string
+			result: LocationModel,
+			override?: string
 		): void => {
 			let toSet = inputs.type.toProperCase();
 			if (override) {
@@ -1255,9 +1278,7 @@ export default class ViewModel {
 			result.searchType(inputs.service)(toSet);
 		};
 
-		return {
-			setSearchType,
-		};
+		return setSearchType;
 	}
 
 	/**
@@ -1270,16 +1291,12 @@ export default class ViewModel {
 	 * @param  {object}   selectedPlace         model to update
 	 * @param  {object}   clonedMarkedLocations clone of list-able locations
 	 *                                          for worker object
-	 * @param  {Function} callback              callback function that is
-	 *                                          called when the initial call
-	 *                                          is sent out
 	 */
 	callAPIInfo(
-		APIType,
-		service,
-		selectedPlace,
-		clonedMarkedLocations?,
-		callback = (): void => {}
+		APIType: string,
+		service: string,
+		selectedPlace: LocationModel,
+		clonedMarkedLocations?: Array<GenericJSON>
 	): void {
 		// See config for documentation on interface
 		const configObject = config[
@@ -1288,7 +1305,10 @@ export default class ViewModel {
 		const settings = configObject.settings;
 		const returnType = configObject[APIType + 'ReturnType'];
 		const keyData = Object.entries(this['APIKeys_' + service]).reduce(
-			(acc, [key, value]: [string, KnockoutObservable<string>]) => {
+			(
+				acc: { [key: string]: string },
+				[key, value]: [string, KnockoutObservable<string>]
+			) => {
 				acc[key] = value();
 				return acc;
 			},
@@ -1359,14 +1379,13 @@ export default class ViewModel {
 		 * is successful
 		 * @param  {object} results results from call
 		 */
-		settings.success = (results): void => {
-			let theResult = results;
+		settings.success = (results: Array<GenericJSON>): void => {
+			let theResult;
 			/**
 			 * Parse through the results until the array of result objects
 			 *  is found
 			 */
-
-			if (typeof returnType === 'object') {
+			if (Array.isArray(returnType)) {
 				for (let i = 0, len = returnType.length; i < len; i++) {
 					theResult = theResult[returnType[i]];
 				}
@@ -1380,7 +1399,7 @@ export default class ViewModel {
 				this.successAPIFunction(
 					theResult,
 					selectedPlace,
-					this.setAPIResultSearchType(APIType, service).setSearchType,
+					this.setAPIResultSearchType(APIType, service),
 					service,
 					clonedMarkedLocations,
 					initialPoint,
@@ -1433,13 +1452,12 @@ export default class ViewModel {
 		settings.complete = (): void => {
 			this.currentDetailedAPIInfoBeingFetched
 				.removeID(service, APIType, selectedPlace)
-				.forEach((modelTuple): void => {
+				.forEach((modelTuple: [string, LocationModel]): void => {
 					this.getDetailedAPIData(...modelTuple);
 				});
 		};
 
 		$.ajax(settings);
-		callback();
 	}
 
 	/**
@@ -1449,22 +1467,15 @@ export default class ViewModel {
 	 *                              {maxWidth: 300}
 	 * @return {string}             URL of photo or empty string
 	 */
-	getGooglePhotoURL(photoObject, parameter): string {
+	getGooglePhotoURL(
+		photoObject: google.maps.places.PlacePhoto,
+		parameter: google.maps.places.PhotoOptions
+	): string {
 		if (typeof photoObject.getUrl === 'function') {
 			return photoObject.getUrl(parameter);
 		} else {
 			return '';
 		}
-	}
-
-	/**
-	 * Declares input undefined, useful for ensuring web workers are
-	 * fully killed
-	 * @param  {object} toClear likely a web worker which has finished
-	 */
-	avoidMemeoryLeaksDueToEventListeners(toClear): void {
-		toClear = undefined;
-		return toClear;
 	}
 
 	/**
@@ -1476,10 +1487,14 @@ export default class ViewModel {
 	 * @param  {function} resultFunction function to call to set search type
 	 *                                   when match is found
 	 */
-	workerHandler(workerObject, service, resultFunction): void {
+	workerHandler(
+		workerObject: config.WorkerCommunicationObject,
+		service: string,
+		resultFunction: (result: LocationModel, override?: string) => void
+	): void {
 		if (this.workersAvailable === true) {
-			const worker = new Worker('/js/workerFillMarkerData.ts');
-			worker.onmessage = (e): void => {
+			let worker = new Worker('/js/workerFillMarkerData.ts');
+			worker.onmessage = (e: MessageEvent): void => {
 				const returnObject = e.data;
 				for (let i = 0, len = returnObject.length; i < len; i++) {
 					const matchedLocation = this.compareIDs(
@@ -1488,8 +1503,8 @@ export default class ViewModel {
 					resultFunction(matchedLocation);
 					matchedLocation.update(service, returnObject[i]);
 				}
-				// Worker should kill itthis but make sure
-				this.avoidMemeoryLeaksDueToEventListeners(worker);
+				// Worker should kill this but make sure
+				worker = undefined;
 			};
 			worker.postMessage(workerObject);
 		}
@@ -1591,7 +1606,12 @@ export default class ViewModel {
 	 * @param {number} offsetx X pixels to offset by
 	 * @param {number} offsety Y pixels to offset by
 	 */
-	static setResizeListenerMapRecenter(map, latlng, offsetx, offsety): void {
+	static setResizeListenerMapRecenter(
+		map: google.maps.Map,
+		latlng: google.maps.LatLng,
+		offsetx: number,
+		offsety: number
+	): void {
 		const point1 = map
 			.getProjection()
 			.fromLatLngToPoint(
@@ -1630,15 +1650,15 @@ export default class ViewModel {
 	 *                            the outer one
 	 */
 	static setResizeListenerCenterWindow(
-		theElement,
-		model,
-		x,
-		y,
-		time,
-		xModifier
+		theElement: JQuery,
+		model: LocationModel,
+		x: boolean,
+		y: boolean,
+		time: number,
+		xModifier: number
 	): void {
 		setTimeout(
-			() => {
+			(): void => {
 				let xAmount = 0;
 				let yAmount = 0;
 				if (x === true) {
@@ -1678,7 +1698,7 @@ export default class ViewModel {
 				}
 				if (xAmount !== 0 || yAmount !== 0) {
 					ViewModel.setResizeListenerMapRecenter(
-						model.marker().map,
+						model.marker().getMap() as google.maps.Map,
 						undefined,
 						xAmount,
 						yAmount
@@ -1699,7 +1719,11 @@ export default class ViewModel {
 	 * @param  {object} model      currently selected location
 	 * @param  {number} xModifier  size modifier for removing operating
 	 */
-	reCheckInfoWindowIsCentered(theElement, model, xModifier): void {
+	reCheckInfoWindowIsCentered(
+		theElement: JQuery,
+		model: LocationModel,
+		xModifier: number
+	): void {
 		let time: number | false = 100;
 		if (this.regularInfoWindowPan() === true) {
 			time = 600;
@@ -1721,7 +1745,7 @@ export default class ViewModel {
 				0,
 				xModifier
 			);
-			this.currentInfoWindowCheck = setTimeout(() => {
+			this.currentInfoWindowCheck = setTimeout((): void => {
 				this.reCheckInfoWindowIsCentered(theElement, model, xModifier);
 			}, time);
 		}

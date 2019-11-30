@@ -5,6 +5,6 @@ type GenericJSON = {
 	[key: string]: genericJSONValues | GenericJSON;
 };
 declare interface String {
-	toProperCase(str: string): string;
+	toProperCase(): string;
 }
 /// <reference path="./google.maps.d.ts" />
