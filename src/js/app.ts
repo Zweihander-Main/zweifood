@@ -129,20 +129,23 @@ const app: App = ((): App => {
 					return false;
 				}
 			}
+			if (typeof binding !== 'undefined') {
+				const bindingHandler = ko.bindingHandlers[
+					binding
+				] as KoInternalBindingHandlers;
+				input = bindingHandler.update(
+					element,
+					input,
+					allBindings,
+					viewModel,
+					bindingContext,
+					true //TODO
+				);
+			}
+			return input as string;
 		} else {
 			return false;
 		}
-		if (typeof binding !== 'undefined') {
-			input = ko.bindingHandlers[binding as 'generateStars'].update(
-				element,
-				input,
-				allBindings,
-				viewModel,
-				bindingContext,
-				true //TODO
-			);
-		}
-		return input as string;
 	};
 
 	/**
@@ -333,7 +336,7 @@ const app: App = ((): App => {
 			);
 			autocomplete.bindTo('bounds', map);
 
-			autocomplete.addListener('place_changed', function() {
+			autocomplete.addListener('place_changed', (): void => {
 				markerCloseClick();
 				value(false);
 				$.slidebars.close();
@@ -396,13 +399,13 @@ const app: App = ((): App => {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.hoverToggle = {
-		init: function(
+		init: (
 			element: HTMLElement,
 			valueAccessor: () => boolean,
 			allBindings: ko.AllBindings,
 			viewModel: ViewModel,
 			bindingContext: ko.BindingContext
-		): void {
+		): void => {
 			ko.utils.registerEventHandler(element, 'mouseover', (): void => {
 				bindingContext.$data.shouldScroll(false);
 				$(element).stop(false, true);
