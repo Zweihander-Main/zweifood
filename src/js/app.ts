@@ -1,11 +1,10 @@
 /* global google, $, ko */
 'use strict';
 
-interface App {
-	googleLoaded: () => void;
-	googleFailedToLoad: () => void;
-	preloadFontsAndImages: () => void;
-}
+type checkNestedArray =
+	| [object, string]
+	| [object, string, string]
+	| [object, string, string, string];
 
 import './imports.ts';
 
@@ -45,6 +44,7 @@ import WebFont from 'webfontloader';
 import * as config from './config';
 import { preload, throttle, checkNested } from './util';
 import ViewModel from './ViewModel';
+import LocationModel from './LocationModel';
 /**
  * App contains utility functions, the view model, model definitions, and
  * success/fail functions for Google maps (that create the map and view model).
@@ -71,7 +71,7 @@ const app: App = ((): App => {
 	 *                                attached to
 	 */
 	const perfectScrollbarUpdatePerfectScrollbar = throttle(
-		(jqueryObject): void => {
+		(jqueryObject: JQuery): void => {
 			jqueryObject.data('perfectScrollbar').update();
 		},
 		16,
@@ -98,21 +98,28 @@ const app: App = ((): App => {
 	 * @return {string/boolean}         	   String of parsed input or false
 	 */
 	const dropdownInterpretValue = (
-		input,
-		binding,
-		element,
-		allBindings,
-		viewModel,
-		bindingContext
+		input: string | checkNestedArray | object,
+		binding?: string,
+		element?: HTMLElement,
+		allBindings?: ko.AllBindings,
+		viewModel?: ViewModel,
+		bindingContext?: ko.BindingContext
 	): string | false => {
 		if (typeof input !== 'undefined' && input !== null) {
 			// Array will likely be a checkNested object
-			if (input.constructor === Array) {
-				if (typeof input[0] !== 'undefined') {
-					if (checkNested(...input) === true) {
+			if (Array.isArray(input)) {
+				if (
+					typeof input[0] !== 'undefined' &&
+					typeof input[0] === 'object'
+				) {
+					if (
+						checkNested(
+							...(input as [object, string, string, string])
+						) === true
+					) {
 						let returnValue = input[0];
 						for (let i = 1, len = input.length; i < len; i++) {
-							returnValue = returnValue[input[i]];
+							returnValue = returnValue[input[i] as string];
 						}
 						input = returnValue;
 					} else {
@@ -126,27 +133,26 @@ const app: App = ((): App => {
 			return false;
 		}
 		if (typeof binding !== 'undefined') {
-			input = ko.bindingHandlers[binding].update(
+			input = ko.bindingHandlers[binding as 'generateStars'].update(
 				element,
 				input,
 				allBindings,
 				viewModel,
 				bindingContext,
-				true
+				true //TODO
 			);
 		}
-		return input;
+		return input as string;
 	};
 
 	/**
 	 * Called from click or after setTimeout for verbose errors from
 	 * errorsHandler bindingHandler
-	 * @param  {object} element element from bindingHandler
+	 * @param  {object} element jQuery element from bindingHandler
 	 * @param  {number} time    animation length
 	 */
-	const errorsHandlerKillPanel = (element, time): void => {
-		element.hide(time, function() {
-			element.unbind('click', errorsHandlerOnClickPanel);
+	const errorsHandlerKillPanel = (element: JQuery, time: number): void => {
+		element.hide(time, (): void => {
 			element.remove();
 		});
 	};
@@ -155,26 +161,24 @@ const app: App = ((): App => {
 	 * Removes error panel on click or after a timeout
 	 * @param  {object} event event listener object
 	 */
-	const errorsHandlerOnClickPanel = (event): void => {
-		errorsHandlerKillPanel($(event.currentTarget), 50);
+	const errorsHandlerOnClickPanel = (event: JQuery.TriggeredEvent): void => {
+		const element = $(event.currentTarget);
+		errorsHandlerKillPanel(element, 50);
+		element.off('click', errorsHandlerOnClickPanel);
 	};
 
 	/**
 	 * Called from perfectScrollbar bindingHandler, calls perfect scrollbar
 	 * update and then kills itself to deal with a bug with marker list getting
 	 * populated too quickly
-	 * @param  {[type]} event [description]
+	 * @param  {Event} event Event from handler
 	 */
-	const perfectScrollbarHoverHandler = (event, element): void => {
-		perfectScrollbarUpdatePerfectScrollbar($(element));
-		perfectScrollbarKillHandler(element);
-	};
-
-	/**
-	 * Kills event listener that deals with bug for perfectScrollbar
-	 */
-	const perfectScrollbarKillHandler = (element): void => {
-		$(element).unbind('mouseenter', perfectScrollbarHoverHandler);
+	const perfectScrollbarMouseEnterHandler = (
+		event: JQuery.TriggeredEvent
+	): void => {
+		const element = $(event.currentTarget);
+		perfectScrollbarUpdatePerfectScrollbar(element);
+		element.off('mouseenter', perfectScrollbarMouseEnterHandler);
 	};
 
 	/**
@@ -185,7 +189,11 @@ const app: App = ((): App => {
 	 * @param  {object} toggledObservable observable associated with the menu
 	 *                                    state
 	 */
-	const menuToggleToggleMenu = (element, menu, toggledObservable): void => {
+	const menuToggleToggleMenu = (
+		element: HTMLElement,
+		menu: string,
+		toggledObservable: KnockoutObservable<boolean>
+	): void => {
 		$(element).toggleClass('mobile-button-pressed');
 		const theMenu = $('#' + menu);
 		$(element).trigger('mouseleave');
@@ -218,22 +226,33 @@ const app: App = ((): App => {
 		/**
 		 * Bind jQuery UI autocomplete to element
 		 */
-		init: function(element, valueAccessor): void {
+		init: (element: HTMLElement, valueAccessor: () => any): void => {
+			//TODO
 			$(element).autocomplete(valueAccessor());
 		},
 		/**
 		 * Sync updated source or input data to autocomplete widget
 		 */
-		update: function(element, valueAccessor, allBindingsAccessor): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: () => any,
+			allBindingsAccessor: ko.AllBindings
+		): void => {
 			$(element).autocomplete({
-				source: function(request, response) {
+				source: (
+					request: { term: string },
+					response: (res: Array<string>) => void
+				): void => {
 					const results = $.ui.autocomplete.filter(
 						valueAccessor().source,
 						request.term
 					);
 					response(results.slice(0, 6));
 				},
-				select: function(event, ui) {
+				select: (
+					event: JQueryEventObject,
+					ui: JQueryUI.AutocompleteUIParams
+				): void => {
 					allBindingsAccessor().textInput(ui.item.value);
 				},
 			});
@@ -248,7 +267,7 @@ const app: App = ((): App => {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.textInputForAutocomplete = {
-		update: function(element, valueAccessor): void {
+		update: (element: HTMLElement, valueAccessor: () => string): void => {
 			const value = ko.unwrap(valueAccessor());
 			if (value === '') {
 				$(element).trigger('change');
@@ -263,7 +282,7 @@ const app: App = ((): App => {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.focusBox = {
-		init: function(element): void {
+		init: (element: HTMLElement): void => {
 			$(element).on('input change autocompletechange', function() {
 				const value = $(this).val();
 				const theElement = $(this);
@@ -291,13 +310,13 @@ const app: App = ((): App => {
 		 * bindingContext. Calls close click on infoWindow and closes options
 		 * and settings menu. Value should be observable of options menu state.
 		 */
-		init: function(
-			element,
-			valueAccessor,
-			allBindingsAccessor,
-			viewModel,
-			bindingContext
-		): void {
+		init: (
+			element: HTMLInputElement,
+			valueAccessor: () => KnockoutObservable<boolean>,
+			allBindingsAccessor: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext
+		): void => {
 			const allBindings = allBindingsAccessor(),
 				map = bindingContext.$data.mainMap,
 				value = valueAccessor(),
@@ -338,14 +357,14 @@ const app: App = ((): App => {
 		/**
 		 * Make sure input elements value is bound
 		 */
-		update: function(element, valueAccessor): void {
+		update: (element: HTMLElement, valueAccessor: () => string): void => {
 			ko.bindingHandlers.value.update(element, valueAccessor());
 		},
 	};
 
 	/** @type {Object} Bind jQuery Sliderbars plugin to element */
 	ko.bindingHandlers.koSlideOutMenu = {
-		init: function(): void {
+		init: (): void => {
 			$.slidebars();
 		},
 	};
@@ -357,11 +376,11 @@ const app: App = ((): App => {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.scrollTo = {
-		update: function(element, valueAccessor): void {
+		update: (element: HTMLElement, valueAccessor: () => boolean): void => {
 			const _value = valueAccessor();
 			const _valueUnwrapped = ko.unwrap(_value);
 			if (_valueUnwrapped) {
-				const scrollItemIntoView = throttle(function() {
+				const scrollItemIntoView = throttle((): void => {
 					$(element).scrollintoview({
 						duration: 100,
 					});
@@ -378,13 +397,13 @@ const app: App = ((): App => {
 	 */
 	ko.bindingHandlers.hoverToggle = {
 		init: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext
+			element: HTMLElement,
+			valueAccessor: () => boolean,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext
 		): void {
-			ko.utils.registerEventHandler(element, 'mouseover', function() {
+			ko.utils.registerEventHandler(element, 'mouseover', (): void => {
 				bindingContext.$data.shouldScroll(false);
 				$(element).stop(false, true);
 			});
@@ -396,30 +415,39 @@ const app: App = ((): App => {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.koSlider = {
-		init: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext
-		): void {
-			ko.bindingHandlers.value.init(
-				element,
-				valueAccessor,
-				allBindings,
-				viewModel,
-				bindingContext
-			);
-			const passValue = valueAccessor();
+		init: (
+			element: HTMLElement,
+			valueAccessor: () => {
+				value: KnockoutObservable<number>;
+				step: number;
+				min: number;
+				max: number;
+			},
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext
+		): void => {
+			ko.bindingHandlers.value.init(element, valueAccessor, allBindings);
+			const initialValue = valueAccessor();
+			const passValue = {
+				value: initialValue.value(),
+				step: initialValue.step,
+				min: initialValue.min,
+				max: initialValue.max,
+			};
 			passValue.value = valueAccessor().value();
 			$(element)
 				.slider(passValue)
-				.on('slidechange', function(event, ui) {
+				.on('slidechange', (event: JQueryEventObject, ui: any) => {
 					valueAccessor().value(ui.value);
 				});
 		},
 	};
 
+	interface KoRateItInput {
+		value: number;
+		observable: KnockoutObservable<number>;
+	}
 	/**
 	 * Listens for rateIt plugin reset to reset binded value
 	 * @type {Object}
@@ -431,18 +459,24 @@ const app: App = ((): App => {
 		 * reset event is called (after the reset button is clicked or when
 		 * all filters are cleared).
 		 */
-		init: function(element, valueAccessor): void {
+		init: (
+			element: HTMLElement,
+			valueAccessor: () => KoRateItInput
+		): void => {
 			const observable = ko.unwrap(valueAccessor()).observable;
-			$(element).bind('reset', function() {
+			$(element).on('reset', (): void => {
 				observable(0);
 			});
 		},
 		/**
 		 * Value should be object with value property corresponding to the value
-		 * binded to the rateit plugin. Calls to reset the state of the stars
+		 * binded to the rateIt plugin. Calls to reset the state of the stars
 		 * if the value is -1 (as it would be when all filters are cleared).
 		 */
-		update: function(element, valueAccessor): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: () => KoRateItInput
+		): void => {
 			const value = ko.unwrap(valueAccessor()).value;
 			if (value === -1) {
 				$(element).rateit('reset');
@@ -451,8 +485,8 @@ const app: App = ((): App => {
 	};
 
 	/**
-	 * Binding to set classes on infowindow that has appeared - called when the
-	 * info window template is parsed by knockout (so is called everytime a new
+	 * Binding to set classes on infoWindow that has appeared - called when the
+	 * info window template is parsed by knockout (so is called every time a new
 	 * infoWindow is opened). Classes are styles using CSS.
 	 * @type {Object}
 	 */
@@ -461,9 +495,9 @@ const app: App = ((): App => {
 		 * Element will be the infoWindow template that is used as the contents
 		 * of every window. Sets classes on root parent of infoWindow, parent of
 		 * infoWindow elements that style it, and those elements. Resets some
-		 * element inline styling that can't be overriden by CSS.
+		 * element inline styling that can't be overridden by CSS.
 		 */
-		init: function(element): void {
+		init: (element: HTMLElement): void => {
 			const subContainer = $(element)
 				.parent()
 				.addClass('custom-info-window-subcontainer');
@@ -504,13 +538,13 @@ const app: App = ((): App => {
 		 * when a new infoWindow is opened. Element should be the most root
 		 * level info-window element that is user-defined.
 		 */
-		update: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext
-		): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: () => any,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext
+		): void => {
 			const model = ko.unwrap(valueAccessor());
 			// Remove previous infoWindow calls if present
 			if (element.resizeSensor) {
@@ -520,7 +554,7 @@ const app: App = ((): App => {
 			//CurrentlySelectedElement could be undefined
 			if (typeof model !== 'undefined') {
 				const theElement = $(element);
-				// Select the outer infowindow ideally
+				// Select the outer infoWindow ideally
 				let infoWindow = $('#custom-info-window-background');
 				let xModifier = 0;
 				if (typeof infoWindow.get(0) === 'undefined') {
@@ -534,14 +568,14 @@ const app: App = ((): App => {
 				 * Call .open when infoWindow is resized to have
 				 * Google check if it's still in view
 				 */
-				new ResizeSensor(element, function() {
+				new ResizeSensor(element, (): void => {
 					bindingContext.$data.regularInfoWindowPan(true);
 					// Could previously use this but stopped working with API 3.23
 					// model.infoWindow.open(window.map, model.marker());
 					$(model.infoWindow.content).height(
 						$(model.infoWindow.content).height()
 					);
-					// Alternate method, not neccessary probably
+					// Alternate method, not necessary probably
 					// model.infoWindow.setContent($(model.infoWindow.content).get(0));
 				});
 				/**
@@ -550,7 +584,7 @@ const app: App = ((): App => {
 				 * method of adjusting the map to stop the check from being
 				 * called for a bit.
 				 */
-				setTimeout(function() {
+				setTimeout((): void => {
 					bindingContext.$data.reCheckInfoWindowIsCentered(
 						infoWindow,
 						model,
@@ -568,7 +602,7 @@ const app: App = ((): App => {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.koBootstrapTooltip = {
-		init: function(): void {
+		init: (): void => {
 			$('[data-toggle="tooltip"]').tooltip({
 				container: 'body',
 			});
@@ -586,18 +620,19 @@ const app: App = ((): App => {
 		 * to update the scrollbar when the marker list is first created and
 		 * populated by knockout.
 		 */
-		init: function(element): void {
+		init: (element: HTMLElement): void => {
 			$(element).data('perfectScrollbar', new perfectScrollbar(element));
-			$(element).bind('mouseenter', function(event) {
-				perfectScrollbarHoverHandler(event, element);
-			});
+			$(element).on('mouseenter', perfectScrollbarMouseEnterHandler);
 		},
 		/**
 		 * Calls updatePerfectScrollbar whenever element is updated - ensures
 		 * smooth usage with rapidly updating marker list as the plugin
 		 * struggles to autoupdate 100% of the time otherwise.
 		 */
-		update: function(element, valueAccessor): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: () => KnockoutObservableArray<LocationModel>
+		): void => {
 			ko.utils.unwrapObservable(valueAccessor());
 			perfectScrollbarUpdatePerfectScrollbar($(element));
 		},
@@ -617,14 +652,14 @@ const app: App = ((): App => {
 		 *                                  them to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext,
-			internal
-		): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: (() => number) | number,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext,
+			internal: boolean
+		): void | string => {
 			let stars;
 			if (typeof valueAccessor === 'function') {
 				stars = ko.unwrap(valueAccessor());
@@ -653,7 +688,7 @@ const app: App = ((): App => {
 				}
 			}
 		},
-	};
+	} as KoInternalBindingHandlers;
 
 	/**
 	 * Converts a passed in url (as value) to an image and sets it to innerHTML
@@ -669,14 +704,14 @@ const app: App = ((): App => {
 		 *                                  it to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext,
-			internal
-		): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: (() => string) | string,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext,
+			internal: boolean
+		): string | void => {
 			let value;
 			if (typeof valueAccessor === 'function') {
 				value = ko.unwrap(valueAccessor());
@@ -695,7 +730,7 @@ const app: App = ((): App => {
 				}
 			}
 		},
-	};
+	} as KoInternalBindingHandlers;
 
 	/**
 	 * For use primarily by dropdown. Converts a passed in URL to a link with
@@ -711,14 +746,14 @@ const app: App = ((): App => {
 		 *                                  it to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext,
-			internal
-		): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: (() => string) | string,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext,
+			internal: boolean
+		): void | string => {
 			let value;
 			if (typeof valueAccessor === 'function') {
 				value = ko.unwrap(valueAccessor());
@@ -738,7 +773,7 @@ const app: App = ((): App => {
 				}
 			}
 		},
-	};
+	} as KoInternalBindingHandlers;
 
 	/**
 	 * Binding handler to generate dollar icons based on price level.
@@ -753,14 +788,14 @@ const app: App = ((): App => {
 		 *                                  them to the element. Useful for use
 		 *                                  in other bindingHandlers.
 		 */
-		update: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext,
-			internal
-		): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: (() => number) | number,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext,
+			internal: boolean
+		): void | string => {
 			let price;
 			if (typeof valueAccessor === 'function') {
 				price = ko.unwrap(valueAccessor());
@@ -779,7 +814,7 @@ const app: App = ((): App => {
 				}
 			}
 		},
-	};
+	} as KoInternalBindingHandlers;
 
 	/**
 	 * Binding handler for bootstrap modal - useful for allowing tooltip and
@@ -788,14 +823,19 @@ const app: App = ((): App => {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.koModal = {
-		init: function(element, valueAccessor): void {
+		init: (element: HTMLElement, valueAccessor: () => string): void => {
 			const value = ko.unwrap(valueAccessor());
-			ko.utils.registerEventHandler(element, 'click', function() {
+			ko.utils.registerEventHandler(element, 'click', (): void => {
 				$(value).modal();
 			});
 		},
 	};
 
+	interface MenuToggleInput {
+		menu: string;
+		toggledObservable: KnockoutObservable<boolean>;
+		toggled: boolean;
+	}
 	/**
 	 * Binding handler for toggling visibility classes on marker list and
 	 * options list when buttons are clicked. Value should be a string
@@ -806,18 +846,24 @@ const app: App = ((): App => {
 		/**
 		 * Creates click listener.
 		 */
-		init: function(element, valueAccessor): void {
+		init: (
+			element: HTMLElement,
+			valueAccessor: () => MenuToggleInput
+		): void => {
 			const value = ko.unwrap(valueAccessor());
 			const menu = value.menu;
 			const toggledObservable = value.toggledObservable;
-			ko.utils.registerEventHandler(element, 'click', function() {
+			ko.utils.registerEventHandler(element, 'click', (): void => {
 				menuToggleToggleMenu(element, menu, toggledObservable);
 			});
 		},
 		/**
 		 * Kills the menu if a location has been selected and the menu is open.
 		 */
-		update: function(element, valueAccessor): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: () => MenuToggleInput
+		): void => {
 			const value = ko.unwrap(valueAccessor());
 			const menu = value.menu;
 			const toggled = value.toggled;
@@ -836,13 +882,13 @@ const app: App = ((): App => {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.scrollToItem = {
-		update: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext
-		): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: () => KnockoutObservableArray<LocationModel>,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext
+		): void => {
 			ko.utils.unwrapObservable(valueAccessor());
 			bindingContext.$data.scrollToItem();
 		},
@@ -850,18 +896,18 @@ const app: App = ((): App => {
 
 	/**
 	 * Binding handler to render infoWindowTemplate template when initial
-	 * bit of html fed to infoWindow contents is parsed via knockout's
+	 * bit of HTML fed to infoWindow contents is parsed via knockout's
 	 * applyBindings. Replaces initial HTML.
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.infoWindowTemplate = {
-		init: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext
-		): void {
+		init: (
+			element: HTMLElement,
+			valueAccessor: () => string,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext
+		): void => {
 			if (
 				!$(element)
 					.prev()
@@ -878,9 +924,14 @@ const app: App = ((): App => {
 		},
 	};
 
+	interface ErrorsInput {
+		data: KnockoutObservable<boolean | ErrorInterface>;
+		verbose: KnockoutObservable<boolean>;
+	}
+
 	/**
 	 * Binding handler for error container - parses errors fed into it and
-	 * uses element as container for their dom nodes
+	 * uses element as container for their DOM nodes
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.errorsHandler = {
@@ -890,19 +941,23 @@ const app: App = ((): App => {
 		 * Verbose errors die after 3 seconds, normal errors have to be clicked
 		 * to be removed.
 		 */
-		update: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext
-		): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: () => ErrorsInput,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext
+		): void => {
 			const error = valueAccessor().data();
 			if (error !== false) {
 				valueAccessor().data(false);
 				const verbose = valueAccessor().verbose();
-				const isVerbose = error.verbose;
-				if (verbose === true || isVerbose === false) {
+				const isVerbose =
+					typeof error === 'object' ? error.verbose : undefined;
+				if (
+					(verbose === true || isVerbose === false) &&
+					typeof error === 'object'
+				) {
 					const killOnMarkers = error.killOnMarkers;
 					const customMessage = error.customMessage;
 					const textStatus = error.textStatus;
@@ -922,10 +977,11 @@ const app: App = ((): App => {
 						.children()
 						.last();
 					added.show(200);
-					added.bind('click', errorsHandlerOnClickPanel);
+					added.on('click', errorsHandlerOnClickPanel);
 					if (isVerbose === true) {
-						setTimeout(function() {
+						setTimeout((): void => {
 							errorsHandlerKillPanel(added, 200);
+							added.off('click', errorsHandlerOnClickPanel);
 						}, 3000);
 					}
 					/**
@@ -933,22 +989,22 @@ const app: App = ((): App => {
 					 * entries. When they do, kill the affected panels.
 					 */
 					if (killOnMarkers === true) {
-						const waitForEntriesLength = (): Promise<
-							() => void
-						> => {
-							const poll = (resolve): void => {
+						const waitForEntriesLength = (): Promise<() => void> => {
+							const poll = (resolve: () => void): void => {
 								if (
 									bindingContext.$data.listableEntries()
 										.entries.length > 0
 								) {
 									resolve();
-								} else setTimeout(() => poll(resolve), 100);
+								} else
+									setTimeout((): void => poll(resolve), 100);
 							};
 							return new Promise(poll);
 						};
 
-						waitForEntriesLength().then(() => {
+						waitForEntriesLength().then((): void => {
 							errorsHandlerKillPanel(added, 200);
+							added.off('click', errorsHandlerOnClickPanel);
 						});
 					}
 				}
@@ -962,7 +1018,10 @@ const app: App = ((): App => {
 	 * @type {Object}
 	 */
 	ko.bindingHandlers.listOutOpeningHours = {
-		update: function(element, valueAccessor): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: () => google.maps.places.OpeningHours
+		): void => {
 			const value = ko.unwrap(valueAccessor());
 			if (
 				typeof value !== 'undefined' &&
@@ -986,9 +1045,9 @@ const app: App = ((): App => {
 		/**
 		 * Binds bootstrap's dropdown to jQuery UI's positioning function for
 		 * the purpose of using jQuery UI's collision detection to flip the
-		 * dropdown when neccessary.
+		 * dropdown when necessary.
 		 */
-		init: function(element): void {
+		init: (element: HTMLElement): void => {
 			$(element).on('shown.bs.dropdown', function() {
 				const menu = $(this).find('.dropdown-menu');
 				if (menu !== null && menu.length === 1) {
@@ -1020,13 +1079,13 @@ const app: App = ((): App => {
 		 *      }
 		 *  }
 		 */
-		update: function(
-			element,
-			valueAccessor,
-			allBindings,
-			viewModel,
-			bindingContext
-		): void {
+		update: (
+			element: HTMLElement,
+			valueAccessor: () => any,
+			allBindings: ko.AllBindings,
+			viewModel: ViewModel,
+			bindingContext: ko.BindingContext
+		): void => {
 			const value = valueAccessor().data;
 			const starter =
 				'<button type="button" class="btn btn-default ' +
@@ -1140,15 +1199,19 @@ const app: App = ((): App => {
 	 *                               	    number to
 	 * @return {number}           	        Converted number
 	 */
-	ko.extenders.numeric = function(target, precision): number {
-		const result = ko.computed({
-			read: function() {
-				const num = +Number(target()).toFixed(precision);
+	ko.extenders.numeric = (
+		target: number | string,
+		precision: number
+	): ko.PureComputed<string | number> => {
+		return ko.pureComputed({
+			read: (): number => {
+				const num = +Number(this.target()).toFixed(precision);
 				return num;
 			},
-			write: target,
+			write: (value: string | number): void => {
+				this.target(value);
+			},
 		});
-		return result;
 	};
 
 	///////////////////////////////////////
@@ -1164,23 +1227,23 @@ const app: App = ((): App => {
 	 * Called if the Google Maps API has failed to load, lets the user know
 	 * to try again later
 	 */
-	function googleFailedToLoad(): void {
+	const googleFailedToLoad = (): void => {
 		alert('Google Maps failed to load. Please try again later.');
-	}
+	};
 
 	/**
 	 * Called if the Google Maps API has successfully loaded.
 	 */
-	function googleLoaded(): void {
+	const googleLoaded = (): void => {
 		googlePreloaded = true;
-	}
+	};
 
 	/**
 	 * Function to create the google map as well as create and setup the
 	 * viewModel
 	 */
-	function createMap(): void {
-		// Double check api is really loaded
+	const createMap = (): void => {
+		// Double check API is really loaded
 		if (typeof google === 'undefined') {
 			googleFailedToLoad();
 		} else {
@@ -1203,7 +1266,7 @@ const app: App = ((): App => {
 				mapTypeControlOptions: {
 					mapTypeIds: [],
 				}, //remove some controls
-				styles: defaultStyle,
+				styles: defaultStyle as Array<google.maps.MapTypeStyle>,
 			};
 
 			// Define reticle to be pegged at center of map
@@ -1214,7 +1277,7 @@ const app: App = ((): App => {
 				anchor: new google.maps.Point(8, 8),
 			}; // marker anchor point
 
-			const reticleShape = {
+			const reticleShape: google.maps.MarkerShape = {
 				coords: [8, 8, 8, 8], // 1px
 				type: 'rect', // rectangle
 			};
@@ -1239,7 +1302,7 @@ const app: App = ((): App => {
 			 * too frequently and performance is the same
 			 */
 			const centerReticle = throttle(
-				function(center) {
+				(center: google.maps.LatLng): void => {
 					reticleMarker.setPosition(center);
 				},
 				16,
@@ -1258,7 +1321,7 @@ const app: App = ((): App => {
 			 * Throttled to avoid over-query errors.
 			 */
 			const callAPIs = throttle(
-				function() {
+				(): void => {
 					if (
 						typeof viewModel1
 							.getRestaurantsFromGoogleMapsAPICallArray[
@@ -1291,7 +1354,7 @@ const app: App = ((): App => {
 			 * @param  {object} map.getCenter() coordinates object
 			 */
 			const boundsChange = throttle(
-				function(center) {
+				(center: google.maps.LatLng): void => {
 					viewModel1.checkIfOnMap(viewModel1.mainMap.getBounds());
 					viewModel1.mainMapCenter(center);
 					callAPIs();
@@ -1309,7 +1372,7 @@ const app: App = ((): App => {
 			google.maps.event.addListener(
 				mainGoogleMap,
 				'bounds_changed',
-				function() {
+				(): void => {
 					const center = mainGoogleMap.getCenter();
 					boundsChange(center);
 					centerReticle(center);
@@ -1323,7 +1386,7 @@ const app: App = ((): App => {
 			google.maps.event.addListener(
 				mainGoogleMap,
 				'dragstart',
-				function() {
+				(): void => {
 					viewModel1.userDrag(true);
 				}
 			);
@@ -1346,16 +1409,16 @@ const app: App = ((): App => {
 				viewModel1.getNavWithCallback();
 			}
 		}
-	}
+	};
 
 	/**
 	 * Called when preloading starts. Waits for images, fonts, and maps API to
 	 * load and then calls createMap() to init map and viewModel. Finally,
 	 * removes loading screen.
 	 */
-	function waitUntilEverythingLoaded(): void {
+	const waitUntilEverythingLoaded = (): void => {
 		const waitForAllLoadedVariables = (): Promise<() => void> => {
-			const poll = (resolve): void => {
+			const poll = (resolve: () => void): void => {
 				if (
 					imagesPreloaded === true &&
 					fontsPreloaded === true &&
@@ -1367,20 +1430,20 @@ const app: App = ((): App => {
 			return new Promise(poll);
 		};
 
-		waitForAllLoadedVariables().then(() => {
+		waitForAllLoadedVariables().then((): void => {
 			createMap();
 			$('#loading').fadeOut(500);
 		});
-	}
+	};
 
 	/**
 	 * Called from HTML right after maps API script starts to load. Loads
 	 * web fonts and sets functions to declare fontsPreloaded as true when
-	 * either a success, failure, or 10 seconds are up. Also preloads marker
+	 * either a success, failure, or 10 seconds are up. Also preload marker
 	 * images for map as that takes the longest for Google Maps to fetch.
 	 * Finally calls function to wait for images, fonts, and API to load.
 	 */
-	function preloadFontsAndImages(): void {
+	const preloadFontsAndImages = (): void => {
 		const WebFontConfig = {
 			google: {
 				families: [
@@ -1421,12 +1484,12 @@ const app: App = ((): App => {
 				config.YELP_STAR_IMAGES[45],
 				config.YELP_STAR_IMAGES[5],
 			],
-			function() {
+			(): void => {
 				imagesPreloaded = true;
 			}
 		);
 		waitUntilEverythingLoaded();
-	}
+	};
 
 	/**
 	 * Expose only success and fail functions to the rest of the page

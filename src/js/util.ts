@@ -36,7 +36,7 @@ export const preload = (sources: Array<string>, callback: () => void): void => {
  * @return {boolean}     Return true or false if object has given nesting level
  */
 export const checkNested = (
-	obj: object,
+	obj?: object,
 	level?: string,
 	...rest: Array<string>
 ): boolean => {

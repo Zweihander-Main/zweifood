@@ -28,12 +28,6 @@ interface OptMarkerImage {
 	size?: google.maps.Size;
 	url?: string;
 }
-interface ErrorInterface {
-	customMessage: string;
-	textStatus: string;
-	verbose: boolean;
-	killOnMarkers: boolean;
-}
 type SortType = 'count' | 'alpha' | 'rating' | 'distance';
 interface LocationArrayForWorkers {
 	lat: number;
