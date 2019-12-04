@@ -1055,12 +1055,12 @@ const app: App = ((): App => {
 				const menu = $(this).find('.dropdown-menu');
 				if (menu !== null && menu.length === 1) {
 					const btn = menu.parent();
-					const withinContainer = $('#info-window-template');
+					const withinContainer = $('#info-window-tabs-info');
 					menu.position({
 						of: btn,
 						my: 'left top',
 						at: 'left bottom',
-						collision: 'flip',
+						collision: 'flipfit',
 						within: withinContainer,
 					});
 				}
@@ -1427,6 +1427,11 @@ const app: App = ((): App => {
 					fontsPreloaded === true &&
 					googlePreloaded === true
 				) {
+					// eslint-disable-next-line no-console
+					console.log(
+						'ZweiFood loaded. Version: ' +
+							process.env.npm_package_version
+					);
 					resolve();
 				} else setTimeout(() => poll(resolve), 100);
 			};
