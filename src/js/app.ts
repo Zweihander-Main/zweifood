@@ -521,10 +521,6 @@ const app: App = ((): App => {
 					'background-color': '',
 					'border-radius': '',
 				});
-				backgroundContainer.css({
-					'background-color': '',
-					'border-radius': '',
-				});
 			}
 		},
 	};
