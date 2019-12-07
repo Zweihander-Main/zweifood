@@ -8,7 +8,8 @@
 		"build": "parcel build src/index.html --out-dir build",
 		"devAll": "netlify dev",
 		"buildServe": "npm run build && browser-sync start --s build",
-		"postinstall": "netlify-lambda install"
+		"postinstall": "netlify-lambda install",
+		"prebuild": "cd .netlify/functions/apifetch && npm i"
 	},
 	"main": "index.html",
 	"private": true,
