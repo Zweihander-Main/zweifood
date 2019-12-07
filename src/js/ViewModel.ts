@@ -1374,7 +1374,7 @@ export default class ViewModel {
 		 * @param  {object} results results from call
 		 */
 		settings.success = (results: Array<GenericJSON>): void => {
-			let theResult;
+			let theResult: GenericJSON | Array<GenericJSON> = results;
 			/**
 			 * Parse through the results until the array of result objects
 			 *  is found
@@ -1385,8 +1385,6 @@ export default class ViewModel {
 				}
 			} else if (typeof returnType !== 'undefined') {
 				theResult = theResult[returnType];
-			} else {
-				theResult = results;
 			}
 			//Success/fail in finding array of result objects
 			if (typeof theResult !== 'undefined') {

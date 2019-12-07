@@ -746,7 +746,7 @@ export const API_KEYS = {
 };
 
 export const LOCAL_API_FORWARDER_URL =
-	process.env.LOCAL_API_FORWARDER || '/.netlify/functions/apifetch?url='; //TODO test without local_API_forwarder
+	process.env.LOCAL_API_FORWARDER || '/.netlify/functions/apifetch?url=';
 
 export const REMOTE_API_CORS_FORWARDER_URL =
 	'https://cors-anywhere.herokuapp.com/';
