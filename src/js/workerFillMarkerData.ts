@@ -115,7 +115,8 @@ onmessage = (e: MessageEvent): void => {
 			returnObject.push(correctResult);
 		}
 	}
-	postMessage(returnObject, '*'); // No sensitive data being sent back
+	// eslint-disable-next-line
+	postMessage(returnObject);
 	// Kill self
 	close();
 };
