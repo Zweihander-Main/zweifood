@@ -115,6 +115,9 @@ onmessage = (e: MessageEvent): void => {
 			returnObject.push(correctResult);
 		}
 	}
+	// Get around issues with TypeScript and web workers without splitting up repo:
+	// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+	// @ts-ignore
 	postMessage(returnObject);
 	// Kill self
 	close();
