@@ -1330,7 +1330,7 @@ export default class ViewModel {
 				) => false | void;
 			} else {
 				settings.data[name] = returnedValue;
-			} //TODO implement this in instructions
+			}
 		}
 
 		let initialPoint;

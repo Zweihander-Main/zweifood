@@ -40,7 +40,7 @@ const checkIfMarkerIsWithinBounds = (
  * @return {number/false}         index of match or false
  */
 const matchBasedOnNameForWorker = (
-	setToMatch, //TODO -- also test
+	setToMatch,
 	nameToMatch: string,
 	minFuzzyMatch: number
 ): number | false => {
@@ -115,7 +115,6 @@ onmessage = (e: MessageEvent): void => {
 			returnObject.push(correctResult);
 		}
 	}
-	// eslint-disable-next-line
 	postMessage(returnObject);
 	// Kill self
 	close();

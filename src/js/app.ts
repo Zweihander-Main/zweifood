@@ -139,8 +139,8 @@ const app: App = ((): App => {
 					allBindings,
 					viewModel,
 					bindingContext,
-					true //TODO
-				);
+					true
+				) as string;
 			}
 			return input as string;
 		} else {
@@ -229,8 +229,10 @@ const app: App = ((): App => {
 		/**
 		 * Bind jQuery UI autocomplete to element
 		 */
-		init: (element: HTMLElement, valueAccessor: () => any): void => {
-			//TODO
+		init: (
+			element: HTMLElement,
+			valueAccessor: () => JQueryUI.AutocompleteOptions
+		): void => {
 			$(element).autocomplete(valueAccessor());
 		},
 		/**
@@ -238,7 +240,7 @@ const app: App = ((): App => {
 		 */
 		update: (
 			element: HTMLElement,
-			valueAccessor: () => any,
+			valueAccessor: () => JQueryUI.AutocompleteOptions,
 			allBindingsAccessor: ko.AllBindings
 		): void => {
 			$(element).autocomplete({
@@ -426,9 +428,7 @@ const app: App = ((): App => {
 				min: number;
 				max: number;
 			},
-			allBindings: ko.AllBindings,
-			viewModel: ViewModel,
-			bindingContext: ko.BindingContext
+			allBindings: ko.AllBindings
 		): void => {
 			ko.bindingHandlers.value.init(element, valueAccessor, allBindings);
 			const initialValue = valueAccessor();
@@ -441,9 +441,15 @@ const app: App = ((): App => {
 			passValue.value = valueAccessor().value();
 			$(element)
 				.slider(passValue)
-				.on('slidechange', (event: JQueryEventObject, ui: any) => {
-					valueAccessor().value(ui.value);
-				});
+				.on(
+					'slidechange',
+					(
+						event: JQuery.TriggeredEvent,
+						ui: JQueryUI.SliderUIParams
+					): void => {
+						valueAccessor().value(ui.value);
+					}
+				);
 		},
 	};
 
@@ -539,7 +545,7 @@ const app: App = ((): App => {
 		 */
 		update: (
 			element: HTMLElement,
-			valueAccessor: () => any,
+			valueAccessor: () => LocationModel,
 			allBindings: ko.AllBindings,
 			viewModel: ViewModel,
 			bindingContext: ko.BindingContext
@@ -571,8 +577,8 @@ const app: App = ((): App => {
 					bindingContext.$data.regularInfoWindowPan(true);
 					// Could previously use this but stopped working with API 3.23
 					// model.infoWindow.open(window.map, model.marker());
-					$(model.infoWindow.content).height(
-						$(model.infoWindow.content).height()
+					$(model.infoWindow.getContent() as Element).height(
+						$(model.infoWindow.getContent() as Element).height()
 					);
 					// Alternate method, not necessary probably
 					// model.infoWindow.setContent($(model.infoWindow.content).get(0));
@@ -1036,6 +1042,35 @@ const app: App = ((): App => {
 	};
 
 	/**
+	 *  Value object takes the following form:
+	 *  data {
+	 *      'name of property' {
+	 *      		'value': value of property - if object with properties,
+	 *      				 should be put in as checkNested array ie
+	 *      				 [object, 'string_of_first_property', 'second']
+	 *      		'value_binding': name of binding to apply to value
+	 *      		'value_binding_show_text': show text next to value
+	 *      							       binding output
+	 *              'value_n': additional values to add to same property
+	 *              'append': string to append next to last value if value_n
+	 *                        is declared
+	 *      }
+	 *  }
+	 */
+	interface DropdownInput {
+		data: {
+			[key: string]: {
+				value: string | checkNestedArray;
+				value_binding: string;
+				value_binding_show_text: boolean;
+				value_2?: string;
+				value_3?: string;
+				append?: string;
+			};
+		};
+	}
+
+	/**
 	 * Binding handler to handle creating bootstrap dropdowns in infoWindows
 	 * (which contain the same piece of information from different sources)
 	 * @type {Object}
@@ -1062,25 +1097,10 @@ const app: App = ((): App => {
 				}
 			});
 		},
-		/**
-		 *  Value object takes the following form:
-		 *  data {
-		 *      'name of property' {
-		 *      		'value': value of property - if object with properties,
-		 *      				 should be put in as checkNested array ie
-		 *      				 [object, 'string_of_first_property', 'second']
-		 *      		'value_binding': name of binding to apply to value
-		 *      		'value_binding_show_text': show text next to value
-		 *      							       binding output
-		 *              'value_n': additional values to add to same property
-		 *              'append': string to append next to last value if value_n
-		 *                        is declared
-		 *      }
-		 *  }
-		 */
+
 		update: (
 			element: HTMLElement,
-			valueAccessor: () => any,
+			valueAccessor: () => DropdownInput,
 			allBindings: ko.AllBindings,
 			viewModel: ViewModel,
 			bindingContext: ko.BindingContext

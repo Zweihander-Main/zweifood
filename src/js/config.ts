@@ -1,6 +1,5 @@
 /// <reference types="jquery" />
 
-import LocationModel from 'LocationModel';
 import imageMarker1 from '../img/marker-1.png';
 import imageMarker2 from '../img/marker-2.png';
 import imageMarker3 from '../img/marker-3.png';
@@ -41,11 +40,12 @@ export interface WorkerCommunicationObject {
 }
 
 /**
- * Object with the following properties: //TODO
+ * Object with the following properties:
  * settings 			settings for jQuery Ajax call
- * basicOnlyParameters parameters to parse through for call,
- * 						can include functions which will be fed
- * 						lat, lng parameters
+ * apiParameters        parameters to parse through for call,
+ * 						can include beforeSend which will be fed
+ * 						jqXHR parameter
+ * basicOnlyParameters  parameters to send in call
  * basicURL            URL for basic searches
  * detailedURL         URL for detailed searches
  * extraSlash           optional, adds extra slash after detailed id

@@ -24,7 +24,10 @@
 			"es6": true
 		},
 		"parserOptions": {
-			"project": "tsconfig.json",
+			"project": [
+				"tsconfig.json",
+				"./src/**/tsconfig.json"
+			],
 			"ecmaVersion": 2019
 		},
 		"plugins": [

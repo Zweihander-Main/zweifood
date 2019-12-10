@@ -39,12 +39,12 @@ declare interface KoInternalBindingHandlers<
 	) => void | { controlsDescendantBindings: boolean };
 	update?: (
 		element: E,
-		valueAccessor: () => V,
+		valueAccessor: (() => V) | V,
 		allBindingsAccessor: ko.AllBindings,
 		viewModel: VM,
 		bindingContext: ko.BindingContext,
 		internal?: boolean
-	) => void;
+	) => void | string;
 	preprocess?: (
 		value: string,
 		name: string,

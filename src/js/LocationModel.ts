@@ -375,7 +375,7 @@ export default class LocationModel {
 	 */
 	listWasClicked(): void {
 		new google.maps.event.trigger(this.marker(), 'click');
-		const map = this.marker().getMap() as google.maps.Map; //TODO test
+		const map = this.marker().getMap() as google.maps.Map;
 		map.panTo(this.google_geometry().location);
 	}
 
