@@ -1,5 +1,6 @@
-/* global google, ko*/
+/* global google */
 
+import ko from 'knockout';
 import * as config from './config';
 import ViewModel from './ViewModel';
 

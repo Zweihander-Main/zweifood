@@ -1,4 +1,8 @@
-/* global google, ko, $ */
+/* global google */
+
+import ko from 'knockout';
+import $ from 'jquery';
+
 import {
 	storageAvailable,
 	workersAvailable,

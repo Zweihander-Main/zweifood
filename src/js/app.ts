@@ -1,4 +1,4 @@
-/* global google, $, ko */
+/* global google */
 'use strict';
 
 type checkNestedArray =
@@ -6,8 +6,14 @@ type checkNestedArray =
 	| [object, string, string]
 	| [object, string, string, string];
 
-import './imports.ts';
-
+import $ from 'jquery';
+import 'jquery-migrate';
+if (process.env.NODE_ENV === 'production') {
+	$.migrateMute = true;
+}
+window['$'] = window['jQuery'] = $;
+import ko from 'knockout';
+window['ko'] = ko;
 import 'jquery-ui';
 import 'jquery-ui/ui/widget';
 import 'jquery-ui/ui/version';
