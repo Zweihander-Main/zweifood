@@ -10,6 +10,7 @@ import ViewModel from './ViewModel';
  * @param {object} currentViewModel viewModel to which this model belongs to
  * @param {string} searchType       Google search type which created model,
  *                                  usually 'Radar' or 'Nearby'
+ * @class          LocationModel (name)
  */
 export default class LocationModel {
 	isInViewOnMap: KnockoutObservable<boolean>;

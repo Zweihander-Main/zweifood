@@ -1,5 +1,6 @@
 @import 'bootstrap/dist/css/bootstrap.css';
 @import 'owp.glyphicons/glyphicons.css';
+
 /*
 Table of Contents
 1. Whole page CSS
@@ -14,6 +15,7 @@ Table of Contents
 10. Media Queries
 11. Slidebars CSS
 */
+
 /* 1. Whole page CSS */
 body {
 	margin: 100px 0 0 0;

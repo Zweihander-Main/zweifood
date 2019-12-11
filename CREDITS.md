@@ -128,6 +128,8 @@ https://stackoverflow.com/questions/172821/detecting-when-a-divs-height-changes-
 
 https://stackoverflow.com/questions/6458840/on-input-change-event Input/change event help
 
+https://stackoverflow.com/questions/56356655/structuring-a-typescript-project-with-workers TypeScript and Workers reference
+
 ### Knockmeout
 
 http://www.knockmeout.net/2011/03/reacting-to-changes-in-knockoutjs.html observables help

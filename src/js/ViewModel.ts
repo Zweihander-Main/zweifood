@@ -40,15 +40,12 @@ interface LocationArrayForWorkers {
 	google_placeId: string; //eslint-disable-line @typescript-eslint/camelcase
 }
 
-////////////////////////////
-// Section IV: View Model //
-////////////////////////////
-
 /**
- * View Model for initialized Google map
+ * View Model for initialized Google maps.
+ *
  * @param {object} map Google map viewModel is to use
+ * @class          ViewModel (name)
  */
-
 export default class ViewModel {
 	mainMap: google.maps.Map;
 	mainMapCenter: KnockoutObservable<google.maps.LatLng>;

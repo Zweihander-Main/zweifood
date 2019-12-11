@@ -1,10 +1,18 @@
 import * as config from './config';
 import LocationModel from './LocationModel';
+
 interface SearchType {
 	basic?: Array<LocationModel>;
 	detailed: Array<LocationModel>;
 }
 
+/**
+ * Class for creating software locks around detailed API calls. This is useful
+ * when a basic data call has been made and a detailed call has been scheduled
+ * to follow it.
+ *
+ * @class      DetailedAPILock (name)
+ */
 export default class DetailedAPILock {
 	intercept: Array<{
 		ID: LocationModel;
@@ -45,6 +53,7 @@ export default class DetailedAPILock {
 	findID(service: string, type: string, ID: LocationModel): number {
 		return this[service][type].indexOf(ID);
 	}
+
 	/**
 	 * Push model to array when it's being called using service and
 	 * method
