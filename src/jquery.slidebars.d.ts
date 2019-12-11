@@ -1,3 +1,6 @@
 interface JQueryStatic {
-	slidebars(): JQuery;
+	slidebars: {
+		(): JQuery;
+		close(): void;
+	};
 }
