@@ -27,6 +27,8 @@ Note that heavy usage will likely run up against the free tier API limits. In th
 -   DotEnv
 -   Netlify Functions
 -   Prettier
+-   Jest
+-   Puppeteer
 
 ##### Originally (2015)
 
@@ -65,11 +67,13 @@ Note that heavy usage will likely run up against the free tier API limits. In th
 -   `npm run build`: Build application for production
 -   `npm run buildServe`: Serve production files
 -   `npm run preBuild`: Called automatically for production builds in Netlify pipeline (pulls in node_modules for Netlify functions)
+-   `npm run test`: Calls jest for testing
 
 ### Current Todos:
 
 -   Build out Jest testing
     -   Google Maps API may break application since it's running on the latest branch
+    -   Should add in Snapshot testing where appropriate in addition to building out Puppeteer
 -   Break out more generic object and inline object typings into interfaces
 -   Reduce dependence on libraries
     -   Slidebars upgrade or removal
@@ -95,6 +99,7 @@ Note that heavy usage will likely run up against the free tier API limits. In th
 -   Rethink static vs non-static methods in ViewModel class
 -   Better systems for selecting particular data from API objects
 -   Change InfoWindow rendering to more Google recommended approach
+-   Improve CI workflow
 
 ### Development notes:
 
