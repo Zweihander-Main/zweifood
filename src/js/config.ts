@@ -1,5 +1,3 @@
-/// <reference types="jquery" />
-
 import imageMarker1 from '../img/marker-1.png';
 import imageMarker2 from '../img/marker-2.png';
 import imageMarker3 from '../img/marker-3.png';

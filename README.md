@@ -69,7 +69,7 @@ Note that heavy usage will likely run up against the free tier API limits. In th
 ### Current Todos:
 
 -   Build out Jest testing
-    -   Snapshot testing important since app runs on latest Google Maps API
+    -   Google Maps API may break application since it's running on the latest branch
 -   Break out more generic object and inline object typings into interfaces
 -   Reduce dependence on libraries
     -   Slidebars upgrade or removal
@@ -94,6 +94,7 @@ Note that heavy usage will likely run up against the free tier API limits. In th
 -   Make adding search types more consistent and easier
 -   Rethink static vs non-static methods in ViewModel class
 -   Better systems for selecting particular data from API objects
+-   Change InfoWindow rendering to more Google recommended approach
 
 ### Development notes:
 

@@ -1,27 +1,24 @@
 {
 	"name": "ZweiFood",
-	"version": "1.1.0",
-	"description": "ZweiFood",
+	"version": "1.2.0",
+	"description": "ZweiFood - Front end web application which coalesces data from multiple sources in the pursuit of finding somewhere decent to eat.",
 	"author": "Zweihänder",
 	"scripts": {
 		"dev": "parcel src/index.html --out-dir build",
-		"build": "parcel build src/index.html --out-dir build",
+		"build": "rm -rf ./build && parcel build src/index.html --out-dir build",
 		"devAll": "netlify dev",
 		"buildServe": "npm run build && browser-sync start --s build",
-		"prebuild": "cd .netlify/functions/apifetch && npm i"
+		"prebuild": "cd .netlify/functions/apifetch && npm i",
+		"test": "jest"
 	},
 	"main": "index.html",
 	"private": true,
 	"license": "MIT",
-	"babel": {
-		"presets": [
-			"@babel/preset-env"
-		]
-	},
 	"eslintConfig": {
 		"env": {
 			"browser": true,
-			"es6": true
+			"es6": true,
+			"jest/globals": true
 		},
 		"parserOptions": {
 			"project": [
@@ -89,6 +86,17 @@
 		"Firefox ESR",
 		"not dead"
 	],
+	"jest": {
+		"transform": {
+			"^.+\\.(ts|tsx)$": "ts-jest",
+			".+\\.(css|styl|less|sass|scss|png|jpg|ttf|woff|woff2)$": "jest-transform-stub"
+		},
+		"coverageDirectory": "coverage",
+		"roots": [
+			"<rootDir>/src/"
+		],
+		"preset": "jest-puppeteer"
+	},
 	"dependencies": {
 		"bootstrap": "^4.4.0",
 		"css-element-queries": "^1.2.2",
@@ -106,24 +114,31 @@
 		"webfontloader": "^1.6.28"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.7.4",
-		"@babel/preset-env": "^7.7.4",
-		"@babel/register": "^7.7.4",
 		"@types/bootstrap": "^4.3.1",
+		"@types/expect-puppeteer": "^3.3.3",
 		"@types/googlemaps": "^3.38.1",
+		"@types/jest": "^24.0.23",
+		"@types/jest-environment-puppeteer": "^4.3.1",
 		"@types/jquery": "^3.3.31",
 		"@types/jquery.rateit": "^1.1.1",
 		"@types/jqueryui": "^1.12.9",
 		"@types/knockout": "^3.4.66",
+		"@types/puppeteer": "^2.0.0",
 		"@typescript-eslint/eslint-plugin": "^2.9.0",
 		"@typescript-eslint/parser": "^2.9.0",
 		"browser-sync": "^2.26.7",
 		"eslint": "^6.7.1",
 		"eslint-config-prettier": "^6.7.0",
+		"eslint-plugin-jest": "^23.1.1",
 		"eslint-plugin-prettier": "^3.1.1",
+		"jest": "^24.9.0",
+		"jest-puppeteer": "^4.3.0",
+		"jest-transform-stub": "^2.0.0",
 		"netlify-cli": "^2.21.0",
 		"parcel-bundler": "^1.12.4",
 		"prettier": "^1.19.1",
+		"puppeteer": "^2.0.0",
+		"ts-jest": "^24.2.0",
 		"typescript": "^3.7.2"
 	}
 }
