@@ -9,6 +9,7 @@
 		"devAll": "netlify dev",
 		"buildServe": "npm run build && browser-sync start --s build",
 		"prebuild": "cd .netlify/functions/apifetch && npm i",
+		"postbuild": "cp ./static/* ./build/",
 		"test": "jest"
 	},
 	"main": "index.html",
