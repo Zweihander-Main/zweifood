@@ -2,6 +2,13 @@
 @jest-environment jsdom
 */
 
+/**
+ * TODO:
+ * Confirm 3rd party library loading
+ * Mock Google Maps API calls
+ * Mock API calls
+ */
+
 import app from '../js/app';
 
 describe('App', () => {
