@@ -46,7 +46,8 @@ Note that heavy usage will likely run up against the free tier API limits. In th
     - Special Notes:
     - Source/Dev: src folder, Production: build folder
     - You can load the app from the filesystem however you won't be able to use web workers and as such, performance will be impacted
-2. Run one of the commands from the [Scripts](#scripts) section. You'll most likely want `npm run devAll` for development and `npm run build` for production.
+2. Switch out the Google Maps API key located in [index.html](./src/index.html)
+3. Run one of the commands from the [Scripts](#scripts) section. You'll most likely want `npm run devAll` for development and `npm run build` for production.
 
 ### Environment Variables
 
