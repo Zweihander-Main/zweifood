@@ -66,7 +66,8 @@ Note that heavy usage will likely run up against the free tier API limits. In th
 -   `npm run dev`: Run `parcel serve` without a backend/Netlify functions server (can use a separate server using `LOCAL_API_FORWARDER` environment variable)
 -   `npm run build`: Build application for production
 -   `npm run buildServe`: Serve production files
--   `npm run preBuild`: Called automatically for production builds in Netlify pipeline (pulls in node_modules for Netlify functions)
+-   `npm run preBuild`: Pulls in node_modules for Netlify functions (called automatically for production builds in Netlify pipeline)
+-   `npm run postBuild`: Copies files in static folder to build folder (called automatically for production builds in Netlify pipeline)
 -   `npm run test`: Calls jest for testing
 
 ### Current Todos:
