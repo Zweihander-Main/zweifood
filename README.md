@@ -2,7 +2,7 @@
 
 > Front end web application which coalesces data from multiple sources in the pursuit of finding somewhere decent to eat. [Live demo.](https://food.zweihander.me/)
 
-![Screenshot of ZweiFood](./docs/ZweiFood.png)
+![Screenshot of ZweiFood](./docs/ZweiFood.PNG)
 
 ### Introduction
 
