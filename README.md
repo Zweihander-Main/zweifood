@@ -102,6 +102,7 @@ Note that heavy usage will likely run up against the free tier API limits. In th
 -   Better systems for selecting particular data from API objects
 -   Change InfoWindow rendering to more Google recommended approach
 -   Improve CI workflow
+-   Better way to handle GMaps API key using env variables
 
 ### Development notes:
 
