@@ -8,7 +8,7 @@
 
 What happens when you need to find the Best™ possible restaurant for tonight's dinner? You make a web application of course!
 
-ZweiFood is power search tool for finding nearby restaurants and pulling data about them from several sources (Google, Yelp, Locu, Foursquare) to allow an end user to make the best possible decision about where to grab a bite.
+ZweiFood is a power search tool for finding nearby restaurants and pulling data about them from several sources (Google, Yelp, Locu, Foursquare) to allow an end user to make the best possible decision about where to grab a bite.
 
 It's a front-end application that can be run entirely client-side with user-supplied keys or alternately can proxy requests through a serverless backend (in this case, a Netlify function) which will add operator supplied keys to all requests.
 
