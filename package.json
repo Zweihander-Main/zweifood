@@ -127,7 +127,7 @@
 		"@types/puppeteer": "^2.0.0",
 		"@typescript-eslint/eslint-plugin": "^2.9.0",
 		"@typescript-eslint/parser": "^2.9.0",
-		"browser-sync": "^2.27.12",
+		"browser-sync": "^3.0.2",
 		"eslint": "^6.7.1",
 		"eslint-config-prettier": "^6.7.0",
 		"eslint-plugin-jest": "^23.1.1",
